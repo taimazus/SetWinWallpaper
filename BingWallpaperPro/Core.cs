@@ -27,6 +27,12 @@ public sealed class Preferences
     public bool IsServerMode { get; set; }
     public string ServerShareName { get; set; } = "Wallpapers";
     public List<string> Favorites { get; set; } = [];
+    public bool EnableGlobalHotkeys { get; set; } = true;
+    public bool ShowDesktopWidget { get; set; }
+    public double WidgetLeft { get; set; } = -1;
+    public double WidgetTop { get; set; } = -1;
+    public bool SyncWindowsAccentColor { get; set; }
+    public bool AutoCleanDesktopIcons { get; set; }
 }
 
 public sealed class Photo
@@ -223,7 +229,17 @@ public sealed class WallpaperEngine
 
         if (settings.Desktop)
         {
-            try { WindowsIntegration.SetDesktop((await SelectAsync(false)).FilePath, settings.Fit); messages.Add("تصویر دسکتاپ تغییر کرد."); }
+            try
+            {
+                var desktopPhoto = await SelectAsync(false);
+                WindowsIntegration.SetDesktop(desktopPhoto.FilePath, settings.Fit);
+                messages.Add("تصویر دسکتاپ تغییر کرد.");
+                if (settings.SyncWindowsAccentColor && File.Exists(desktopPhoto.FilePath))
+                {
+                    try { WindowsIntegration.SyncWindowsAccentColor(desktopPhoto.FilePath); }
+                    catch { }
+                }
+            }
             catch (Exception ex) { failed = true; messages.Add("تغییر دسکتاپ ناموفق بود: " + ex.Message); }
         }
         if (settings.LockScreen)

@@ -566,4 +566,217 @@ public static class WindowsIntegration
         return photos;
     }
     public static void Open(string target) => Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
+
+    #region Win32 Global Hotkeys
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+
+    public const uint MOD_ALT = 0x0001;
+    public const uint MOD_CONTROL = 0x0002;
+    public const uint MOD_SHIFT = 0x0004;
+    public const uint MOD_WIN = 0x0008;
+    public const uint MOD_NOREPEAT = 0x4000;
+    public const int WM_HOTKEY = 0x0312;
+
+    public const int HOTKEY_ID_NEXT_WALLPAPER = 0x9001;
+    public const int HOTKEY_ID_FAVORITE = 0x9002;
+    public const int HOTKEY_ID_TOGGLE_WIDGET = 0x9003;
+    #endregion
+
+    #region Win32 Multi-Monitor IDesktopWallpaper COM API
+    public enum DesktopWallpaperPosition
+    {
+        Center = 0,
+        Tile = 1,
+        Stretch = 2,
+        Fit = 3,
+        Fill = 4,
+        Span = 5
+    }
+
+    [ComImport]
+    [Guid("B92B56A9-8555-4772-9338-78F20265BE04")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    public interface IDesktopWallpaper
+    {
+        void SetWallpaper([MarshalAs(UnmanagedType.LPWStr)] string monitorID, [MarshalAs(UnmanagedType.LPWStr)] string wallpaper);
+        [return: MarshalAs(UnmanagedType.LPWStr)]
+        string GetWallpaper([MarshalAs(UnmanagedType.LPWStr)] string monitorID);
+        [return: MarshalAs(UnmanagedType.LPWStr)]
+        string GetMonitorDevicePathAt(uint monitorIndex);
+        uint GetMonitorDevicePathCount();
+        void GetMonitorRECT([MarshalAs(UnmanagedType.LPWStr)] string monitorID, out System.Drawing.Rectangle displayRect);
+        void SetBackgroundColor(uint color);
+        uint GetBackgroundColor();
+        void SetPosition(DesktopWallpaperPosition position);
+        DesktopWallpaperPosition GetPosition();
+        void SetSlideshow(IntPtr items);
+        IntPtr GetSlideshow();
+        void SetSlideshowOptions(uint options, uint slideshowTick);
+        void GetSlideshowOptions(out uint options, out uint slideshowTick);
+        void AdvanceSlideshow([MarshalAs(UnmanagedType.LPWStr)] string monitorID, uint direction);
+        uint GetStatus();
+        bool Enable();
+    }
+
+    [ComImport]
+    [Guid("C2CF3110-460E-4fc1-B9D0-8A1C0C9CC4BD")]
+    public class DesktopWallpaperCoClass
+    {
+    }
+
+    public static uint GetMonitorCount()
+    {
+        try
+        {
+            var wallpaper = (IDesktopWallpaper)new DesktopWallpaperCoClass();
+            return wallpaper.GetMonitorDevicePathCount();
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    public static void SetMonitorWallpaper(uint monitorIndex, string filePath)
+    {
+        Store.LoadImage(filePath, 32);
+        try
+        {
+            var wallpaper = (IDesktopWallpaper)new DesktopWallpaperCoClass();
+            var monitorId = wallpaper.GetMonitorDevicePathAt(monitorIndex);
+            wallpaper.SetWallpaper(monitorId, Path.GetFullPath(filePath));
+            Store.Log($"Multi-Monitor: Wallpaper set on display #{monitorIndex} ({monitorId}): {filePath}");
+        }
+        catch (Exception ex)
+        {
+            Store.Log($"Multi-Monitor COM fallback to standard SetDesktop: {ex.Message}");
+            SetDesktop(filePath, "Fill");
+        }
+    }
+    #endregion
+
+    #region Theme Accent Color Sync
+    [DllImport("dwmapi.dll", EntryPoint = "#127", PreserveSig = false)]
+    static extern void DwmSetColorizationColor(uint crColorization, bool fOpaqueBlend);
+
+    public static System.Windows.Media.Color CalculateDominantColor(string imagePath)
+    {
+        try
+        {
+            var bitmap = Store.LoadImage(imagePath, 64);
+            var width = bitmap.PixelWidth;
+            var height = bitmap.PixelHeight;
+            if (width <= 0 || height <= 0) return System.Windows.Media.Color.FromRgb(18, 94, 83);
+
+            var stride = (width * 32 + 7) / 8;
+            var pixels = new byte[height * stride];
+            var formatConverted = new System.Windows.Media.Imaging.FormatConvertedBitmap(bitmap, System.Windows.Media.PixelFormats.Bgra32, null, 0);
+            formatConverted.CopyPixels(pixels, stride, 0);
+
+            long totalR = 0, totalG = 0, totalB = 0;
+            int count = 0;
+
+            for (int y = 0; y < height; y += 2)
+            {
+                for (int x = 0; x < width; x += 2)
+                {
+                    int index = y * stride + x * 4;
+                    byte b = pixels[index];
+                    byte g = pixels[index + 1];
+                    byte r = pixels[index + 2];
+
+                    // Exclude pure darks and washed out brights
+                    int brightness = (r + g + b) / 3;
+                    if (brightness is > 30 and < 230)
+                    {
+                        totalR += r;
+                        totalG += g;
+                        totalB += b;
+                        count++;
+                    }
+                }
+            }
+
+            if (count == 0) return System.Windows.Media.Color.FromRgb(20, 102, 87);
+            return System.Windows.Media.Color.FromRgb((byte)(totalR / count), (byte)(totalG / count), (byte)(totalB / count));
+        }
+        catch
+        {
+            return System.Windows.Media.Color.FromRgb(18, 94, 83);
+        }
+    }
+
+    public static void SyncWindowsAccentColor(string imagePath)
+    {
+        try
+        {
+            var color = CalculateDominantColor(imagePath);
+            uint argb = (0xFFu << 24) | ((uint)color.R << 16) | ((uint)color.G << 8) | color.B;
+
+            try
+            {
+                DwmSetColorizationColor(argb, false);
+            }
+            catch { }
+
+            try
+            {
+                using var dwmKey = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\DWM");
+                dwmKey?.SetValue("ColorizationColor", (int)argb, RegistryValueKind.DWord);
+                dwmKey?.SetValue("AccentColor", (int)argb, RegistryValueKind.DWord);
+            }
+            catch { }
+
+            Store.Log($"Windows Theme Accent Color synced to dominant color #{color.R:X2}{color.G:X2}{color.B:X2}");
+        }
+        catch (Exception ex)
+        {
+            Store.Log("Accent color sync warning: " + ex.Message);
+        }
+    }
+    #endregion
+
+    #region Desktop Icons Clean Mode
+    [DllImport("user32.dll", SetLastError = true)]
+    static extern IntPtr FindWindow(string lpClassName, string? lpWindowName);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string? lpszWindow);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+    public static void ToggleDesktopIcons(bool? forceShow = null)
+    {
+        try
+        {
+            var progman = FindWindow("Progman", null);
+            var shellView = FindWindowEx(progman, IntPtr.Zero, "SHELLDLL_DefView", null);
+            if (shellView == IntPtr.Zero)
+            {
+                var workerW = IntPtr.Zero;
+                do
+                {
+                    workerW = FindWindowEx(IntPtr.Zero, workerW, "WorkerW", null);
+                    shellView = FindWindowEx(workerW, IntPtr.Zero, "SHELLDLL_DefView", null);
+                } while (workerW != IntPtr.Zero && shellView == IntPtr.Zero);
+            }
+
+            if (shellView != IntPtr.Zero)
+            {
+                // Send Toggle Desktop Icons command (0x7402)
+                SendMessage(shellView, 0x0111, new IntPtr(0x7402), IntPtr.Zero);
+                Store.Log("Desktop icons visibility toggled.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Store.Log("ToggleDesktopIcons error: " + ex.Message);
+        }
+    }
+    #endregion
 }

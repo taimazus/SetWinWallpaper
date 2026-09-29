@@ -14,6 +14,8 @@ public partial class MainWindow : Window
     Photo Selected => Gallery.SelectedItem as Photo ?? throw new InvalidOperationException("ابتدا یک تصویر انتخاب کنید.");
     bool busy;
     DiagnosticReport? diagnosticReport;
+    DesktopWidgetWindow? desktopWidget;
+    System.Windows.Interop.HwndSource? hwndSource;
 
     public MainWindow()
     {
@@ -36,6 +38,15 @@ public partial class MainWindow : Window
         QuickSourceBox.ItemsSource = SourceCatalog.Options; QuickSourceBox.SelectedIndex = 0;
         ServerModeCheck.IsChecked = preferences.IsServerMode || WindowsIntegration.IsWindowsServer();
         ServerShareBox.Text = WindowsIntegration.GetDefaultServerSharePath(preferences.ServerShareName);
+        HotkeysCheck.IsChecked = preferences.EnableGlobalHotkeys;
+        DesktopWidgetCheck.IsChecked = preferences.ShowDesktopWidget;
+        AccentColorCheck.IsChecked = preferences.SyncWindowsAccentColor;
+        Loaded += MainWindow_Loaded;
+        Closing += MainWindow_Closing;
+        if (preferences.ShowDesktopWidget)
+        {
+            try { desktopWidget = new DesktopWidgetWindow(); desktopWidget.Show(); } catch { }
+        }
         UpdateSourceControls();
         try { LoadArchive(); } catch (Exception ex) { StatusText.Text = ex.Message; }
     }
@@ -70,7 +81,11 @@ public partial class MainWindow : Window
         preferences.Desktop = DesktopCheck.IsChecked == true; preferences.LockScreen = LockCheck.IsChecked == true;
         preferences.DailyTime = TimeBox.Text;
         preferences.IsServerMode = ServerModeCheck.IsChecked == true;
+        preferences.EnableGlobalHotkeys = HotkeysCheck.IsChecked == true;
+        preferences.ShowDesktopWidget = DesktopWidgetCheck.IsChecked == true;
+        preferences.SyncWindowsAccentColor = AccentColorCheck.IsChecked == true;
         Store.Save(preferences);
+        RegisterHotkeys();
     }
 
     void LoadArchive(string? root = null)
@@ -350,4 +365,111 @@ public partial class MainWindow : Window
         return Task.CompletedTask;
     }, "راهنمای برنامه باز شد.");
     async void OpenData_Click(object sender, RoutedEventArgs e) => await Work(() => { Directory.CreateDirectory(Store.Root); WindowsIntegration.Open(Store.Root); return Task.CompletedTask; }, "پوشه داده‌های برنامه باز شد.");
+
+    void MainWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var handle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            hwndSource = System.Windows.Interop.HwndSource.FromHwnd(handle);
+            hwndSource?.AddHook(HwndHook);
+            RegisterHotkeys();
+        }
+        catch { }
+    }
+
+    void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        UnregisterHotkeys();
+    }
+
+    void RegisterHotkeys()
+    {
+        try
+        {
+            var handle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            if (handle == IntPtr.Zero) return;
+            UnregisterHotkeys();
+            if (preferences.EnableGlobalHotkeys)
+            {
+                // Win + Alt + W (Next Wallpaper)
+                WindowsIntegration.RegisterHotKey(handle, WindowsIntegration.HOTKEY_ID_NEXT_WALLPAPER, WindowsIntegration.MOD_WIN | WindowsIntegration.MOD_ALT | WindowsIntegration.MOD_NOREPEAT, 0x57);
+                // Win + Alt + S (Favorite Wallpaper)
+                WindowsIntegration.RegisterHotKey(handle, WindowsIntegration.HOTKEY_ID_FAVORITE, WindowsIntegration.MOD_WIN | WindowsIntegration.MOD_ALT | WindowsIntegration.MOD_NOREPEAT, 0x53);
+            }
+        }
+        catch { }
+    }
+
+    void UnregisterHotkeys()
+    {
+        try
+        {
+            var handle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            if (handle != IntPtr.Zero)
+            {
+                WindowsIntegration.UnregisterHotKey(handle, WindowsIntegration.HOTKEY_ID_NEXT_WALLPAPER);
+                WindowsIntegration.UnregisterHotKey(handle, WindowsIntegration.HOTKEY_ID_FAVORITE);
+            }
+        }
+        catch { }
+    }
+
+    IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (msg == WindowsIntegration.WM_HOTKEY)
+        {
+            int id = wParam.ToInt32();
+            if (id == WindowsIntegration.HOTKEY_ID_NEXT_WALLPAPER)
+            {
+                Update_Click(this, new RoutedEventArgs());
+                handled = true;
+            }
+            else if (id == WindowsIntegration.HOTKEY_ID_FAVORITE)
+            {
+                Favorite_Click(this, new RoutedEventArgs());
+                handled = true;
+            }
+        }
+        return IntPtr.Zero;
+    }
+
+    async void MultiMonitor_Click(object sender, RoutedEventArgs e) => await Work(() =>
+    {
+        var count = WindowsIntegration.GetMonitorCount();
+        for (uint i = 0; i < count; i++)
+        {
+            WindowsIntegration.SetMonitorWallpaper(i, Selected.FilePath);
+        }
+        return Task.CompletedTask;
+    }, "تصویر روی تمامی مانیتورهای سیستم اعمال شد.");
+
+    async void ShareCard_Click(object sender, RoutedEventArgs e) => await Work(() =>
+    {
+        var path = CardGenerator.GenerateShareableCard(Selected);
+        WindowsIntegration.Open(Path.GetDirectoryName(path)!);
+        return Task.CompletedTask;
+    }, "کارت گرافیکی منظره ایجاد شد و پوشه مربوطه باز گردید.");
+
+    void OpenDesktopWidget_Click(object sender, RoutedEventArgs e)
+    {
+        if (desktopWidget == null || !desktopWidget.IsLoaded)
+        {
+            desktopWidget = new DesktopWidgetWindow();
+            desktopWidget.Show();
+            preferences.ShowDesktopWidget = true;
+            DesktopWidgetCheck.IsChecked = true;
+            Store.Save(preferences);
+        }
+        else
+        {
+            desktopWidget.Activate();
+        }
+    }
+
+    void ToggleDesktopIcons_Click(object sender, RoutedEventArgs e)
+    {
+        WindowsIntegration.ToggleDesktopIcons();
+        StatusText.Text = "فرمان پنهان/نمایان‌سازی آیکون‌های دسکتاپ ارسال شد.";
+    }
 }

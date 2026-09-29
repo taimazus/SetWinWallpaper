@@ -174,6 +174,38 @@ public partial class App : Application
             return;
         }
 
+        if (e.Args.Contains("--widget"))
+        {
+            try
+            {
+                ShutdownMode = ShutdownMode.OnLastWindowClose;
+                var widget = new DesktopWidgetWindow();
+                widget.Show();
+                return;
+            }
+            catch (Exception ex)
+            {
+                Store.Log(ex.ToString());
+                Shutdown(1);
+                return;
+            }
+        }
+
+        if (e.Args.Contains("--toggle-icons"))
+        {
+            try
+            {
+                WindowsIntegration.ToggleDesktopIcons();
+                Shutdown(0);
+            }
+            catch (Exception ex)
+            {
+                Store.Log(ex.ToString());
+                Shutdown(1);
+            }
+            return;
+        }
+
         ShutdownMode = ShutdownMode.OnMainWindowClose;
         MainWindow = new MainWindow();
         MainWindow.Show();

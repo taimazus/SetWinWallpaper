@@ -105,6 +105,7 @@ public sealed class SourceCatalog
     [
         new("Bing", "Microsoft Bing — تصویر روز"),
         new("BingGlobal", "گلچین بین‌المللی بینگ (تمام قاره‌ها و کشورها)"),
+        new("IranNature", "ایران زیبا — طبیعت، کوهستان‌ها و میراث باستانی ایران"),
         new("UnsplashNature", "Unsplash & Picsum — عکاسی طبیعت و مناظر 4K"),
         new("WikimediaPotd", "Wikimedia Commons — تصویر منتخب روز"),
         new("Spotlight", "Microsoft Spotlight — کش محلی"),
@@ -132,6 +133,7 @@ public sealed class SourceCatalog
         if (!Options.Any(o => o.Id == request.Id)) throw new ArgumentException("منبع ناشناخته است: " + request.Id);
         if (request.Id == "Bing") return await new BingClient(root).FetchAsync(request.Market, request.Resolution, token);
         if (request.Id == "BingGlobal") return await FetchBingGlobalAsync(request.Resolution, token);
+        if (request.Id == "IranNature") return await FetchIranNatureAsync(token);
         if (request.Id == "Favorites")
         {
             var settings = Store.Read(Path.Combine(root, "settings.json"), new Preferences());
@@ -221,6 +223,62 @@ public sealed class SourceCatalog
         if (distinct.Count == 0) throw new InvalidOperationException("دریافت تصاویر بین‌المللی بینگ با خطا مواجه شد.");
         MergeArchive(distinct);
         return distinct;
+    }
+
+    public async Task<List<Photo>> FetchIranNatureAsync(CancellationToken token = default)
+    {
+        var curated = new List<(string Id, string Title, string Url, string Credit, string Page)>
+        {
+            ("iran-damavand", "قله دماوند — بام ایران و بلندترین قله آتشفشانی آسیا", "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Mount_Damavand_in_winter.jpg/1920px-Mount_Damavand_in_winter.jpg", "عکاسی از طبیعت البرز • مازندران و تهران", "https://fa.wikipedia.org/wiki/%D8%AF%D9%85%D8%A7%D9%88%D9%86%D8%AF"),
+            ("iran-persepolis", "تخت جمشید (پارسه) — کاخ آپادانا و شکوه هخامنشیان", "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Persepolis_Iran_2.jpg/1920px-Persepolis_Iran_2.jpg", "میراث جهانی یونسکو • استان فارس، شیراز", "https://fa.wikipedia.org/wiki/%D8%AA%D8%AE%D8%AA_%D8%AC%D9%85%D8%B4%DB%8C%D8%AF"),
+            ("iran-sahand", "دامنه‌های کوهستان سهند و دره باستانی کندوان", "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Kandovan_village_in_East_Azerbaijan_Iran.jpg/1920px-Kandovan_village_in_East_Azerbaijan_Iran.jpg", "طبیعت آذربایجان شرقی • رشته‌کوه سهند", "https://fa.wikipedia.org/wiki/%D8%B3%D9%87%D9%86%D8%AF"),
+            ("iran-lut-desert", "کویر لوت و کلوت‌های افسانه‌ای شهداد", "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Kaluts_in_Lut_Desert_Iran.jpg/1920px-Kaluts_in_Lut_Desert_Iran.jpg", "میراث طبیعی جهانی یونسکو • کرمان", "https://fa.wikipedia.org/wiki/%DA%A9%D9%88%DB%8C%D8%B1_%D9%84%D9%88%D8%AA"),
+            ("iran-masouleh", "روستای تاریخی و پلکانی ماسوله در دل مه جنگل", "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Masouleh_village_Gilan_Iran.jpg/1920px-Masouleh_village_Gilan_Iran.jpg", "معماری بومی و طبیعت گیلان", "https://fa.wikipedia.org/wiki/%D9%85%D8%A7%D8%B3%D9%88%D9%84%D9%87"),
+            ("iran-isfahan-khaju", "پل خواجو و زاینده‌رود در شامگاه اصفهان", "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Khaju_Bridge_Isfahan_at_Night.jpg/1920px-Khaju_Bridge_Isfahan_at_Night.jpg", "شاهکار معماری عصر صفوی • اصفهان", "https://fa.wikipedia.org/wiki/%D9%BE%D9%84_%D8%AE%D9%88%D8%A7%D8%AC%D9%88"),
+            ("iran-qeshm-stars", "دره ستارگان — اشکال تماشایی فرسایشی ژئوپارک قشم", "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Stars_Valley_Qeshm_Island_Iran.jpg/1920px-Stars_Valley_Qeshm_Island_Iran.jpg", "ژئوپارک جهانی قشم • خلیج فارس و هرمزگان", "https://fa.wikipedia.org/wiki/%D8%AF%D8%B1%D9%87_%D8%B3%D8%AA%D8%A7%D8%B1%DA%AF%D8%A7%D9%86"),
+            ("iran-hyrcanian-forest", "جنگل‌های کهن هیرکانی و دریاچه مه‌آلود", "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Hyrcanian_Forests_in_Mazandaran.jpg/1920px-Hyrcanian_Forests_in_Mazandaran.jpg", "میراث طبیعی جهانی یونسکو • نوار جنگلی شمال ایران", "https://fa.wikipedia.org/wiki/%D8%AC%D9%86%DA%AF%D9%84%E2%80%8C%D9%87%D8%A7%DB%8C_%D9%87%DB%8C%D8%B1%DA%A9%D8%A7%D9%86%DB%8C")
+        };
+
+        var date = DateTime.UtcNow.ToString("yyyyMMdd");
+        var photos = new List<Photo>();
+
+        foreach (var item in curated)
+        {
+            token.ThrowIfCancellationRequested();
+            var photo = new Photo
+            {
+                Id = item.Id,
+                Source = "IranNature",
+                Title = item.Title,
+                Url = item.Url,
+                Date = date,
+                SourcePage = item.Page,
+                Copyright = item.Credit,
+                FilePath = Path.Combine(root, "Images", item.Id + ".jpg")
+            };
+
+            try
+            {
+                await DownloadAsync(photo, token);
+                photos.Add(photo);
+            }
+            catch (Exception ex)
+            {
+                Store.Log($"IranNature image download skipped ({item.Id}): {ex.Message}", root);
+                if (File.Exists(photo.FilePath)) photos.Add(photo);
+            }
+        }
+
+        if (photos.Count == 0)
+        {
+            var existing = Store.Read(Path.Combine(root, "archive.json"), new List<Photo>())
+                .Where(p => p.Source == "IranNature" && File.Exists(p.FilePath)).ToList();
+            if (existing.Count > 0) return existing;
+            throw new InvalidOperationException("دریافت تصاویر طبیعت ایران با خطا مواجه شد.");
+        }
+
+        MergeArchive(photos);
+        return photos;
     }
 
     public async Task<int> SyncAllOnlineSourcesAsync(string resolution = "UHD", CancellationToken token = default)

@@ -215,7 +215,16 @@
        <Border VerticalAlignment="Bottom" Padding="22" Background="#E6101B27"><StackPanel><TextBlock x:Name="PhotoTitle" FontSize="21" FontWeight="Bold" TextWrapping="Wrap"/><TextBlock x:Name="PhotoCredit" Foreground="#ACC2D1" TextWrapping="Wrap" Margin="0,6,0,0" FlowDirection="LeftToRight" FontSize="11"/></StackPanel></Border>
       </Grid></Border>
      </Grid>
-     <WrapPanel Grid.Row="3" Margin="0,16,0,0"><Button Content="اعمال روی دسکتاپ" Tag="&#xE7F4;" Click="Desktop_Click" Style="{StaticResource Primary}"/><Button Content="اعمال روی لاک‌اسکرین" Tag="&#xE72E;" Click="Lock_Click"/><Button Content="علاقه‌مندی" Tag="&#xE734;" Click="Favorite_Click"/><Button Content="ذخیره تصویر" Tag="&#xE74E;" Click="Export_Click"/><Button Content="صفحه اصلی منبع" Tag="&#xE774;" Click="SourcePage_Click"/><Button Content="روش مدیریتی…" Tag="&#xE83D;" Click="ManagedLock_Click" ToolTip="سیاست لاک‌اسکرین Server / Enterprise / Education"/></WrapPanel>
+     <WrapPanel Grid.Row="3" Margin="0,16,0,0">
+      <Button Content="اعمال روی دسکتاپ" Tag="&#xE7F4;" Click="Desktop_Click" Style="{StaticResource Primary}"/>
+      <Button Content="اعمال روی لاک‌اسکرین" Tag="&#xE72E;" Click="Lock_Click"/>
+      <Button Content="روی همه مانیتورها" Tag="&#xE7F4;" Click="MultiMonitor_Click" ToolTip="تنظیم جداگانه روی همه مانیتورها"/>
+      <Button Content="کارت اشتراک‌گذاری" Tag="&#xE72D;" Click="ShareCard_Click" ToolTip="تولید کارت تصویری زیبا برای شبکه‌های اجتماعی"/>
+      <Button Content="علاقه‌مندی" Tag="&#xE734;" Click="Favorite_Click"/>
+      <Button Content="ذخیره تصویر" Tag="&#xE74E;" Click="Export_Click"/>
+      <Button Content="صفحه اصلی منبع" Tag="&#xE774;" Click="SourcePage_Click"/>
+      <Button Content="روش مدیریتی…" Tag="&#xE83D;" Click="ManagedLock_Click" ToolTip="سیاست لاک‌اسکرین Server / Enterprise / Education"/>
+     </WrapPanel>
     </Grid>
    </TabItem>
    <TabItem>
@@ -229,6 +238,18 @@
      </Grid>
      <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="زمان‌بندی و نمایش" FontSize="18" FontWeight="Bold" Margin="0,0,0,14"/><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="14"/><ColumnDefinition/><ColumnDefinition Width="14"/><ColumnDefinition/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="کیفیت Bing"/><ComboBox x:Name="ResolutionBox" FlowDirection="LeftToRight"/></StackPanel><StackPanel Grid.Column="2"><TextBlock Text="چیدمان تصویر دسکتاپ"/><ComboBox x:Name="FitBox" FlowDirection="LeftToRight"/></StackPanel><StackPanel Grid.Column="4"><TextBlock Text="ساعت محلی (نمونه 09:00)"/><TextBox x:Name="TimeBox" FlowDirection="LeftToRight"/></StackPanel></Grid>
       <WrapPanel><Button Content="ذخیره تنظیمات" Tag="&#xE74E;" Click="Save_Click"/><Button Content="به‌روزرسانی اکنون" Tag="&#xE72C;" Click="Update_Click" Style="{StaticResource Primary}"/><Button Content="فعال‌سازی / اصلاح زمان‌بندی" Tag="&#xE787;" Click="Schedule_Click"/><Button Content="حذف زمان‌بندی" Tag="&#xE74D;" Click="Unschedule_Click"/></WrapPanel><TextBlock Text="برنامه روزانه و هنگام ورود در نشست حساب کاربری شما اجرا می‌شود. پس از تغییر ساعت، زمان‌بندی را نیز اصلاح کنید." Style="{StaticResource Hint}" Margin="0,8,0,0"/>
+     </StackPanel></Border>
+     <Border Style="{StaticResource Card}"><StackPanel>
+      <TextBlock Text="ویژگی‌های هوشمند و شخصی‌سازی دسکتاپ" FontSize="18" FontWeight="Bold"/>
+      <TextBlock Text="امکانات نوین برای زیبایی دوچندان و دسترسی سریع به والپیپرها" Style="{StaticResource Hint}"/>
+      <CheckBox x:Name="HotkeysCheck" Content="فعال‌سازی کلیدهای میانبر سراسری ویندوز (Win+Alt+W تصویر بعدی، Win+Alt+S علاقه‌مندی)" Margin="0,4,0,8"/>
+      <CheckBox x:Name="DesktopWidgetCheck" Content="نمایش ویجت شیشه‌ای دسکتاپ (ساعت زنده، تقویم خورشیدی و نام تصویر)" Margin="0,4,0,8"/>
+      <CheckBox x:Name="AccentColorCheck" Content="هماهنگ‌سازی خودکار رنگ تم ویندوز (Accent Color) با رنگ تصویر روز" Margin="0,4,0,12"/>
+      <WrapPanel>
+       <Button Content="نمایش ویجت دسکتاپ" Tag="&#xE7F4;" Click="OpenDesktopWidget_Click"/>
+       <Button Content="پنهان/نمایان‌سازی آیکون‌ها" Tag="&#xE7B5;" Click="ToggleDesktopIcons_Click"/>
+       <Button Content="تولید کارت گرافیکی (Social)" Tag="&#xE72D;" Click="ShareCard_Click"/>
+      </WrapPanel>
      </StackPanel></Border>
      <Border Style="{StaticResource Card}"><StackPanel>
       <TextBlock Text="مخزن مرکزی سرور در شبکه (Enterprise Server Hub)" FontSize="18" FontWeight="Bold"/>

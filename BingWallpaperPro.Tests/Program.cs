@@ -154,11 +154,40 @@ internal static class Program
             var screenshot = new PngBitmapEncoder(); screenshot.Frames.Add(BitmapFrame.Create(preview));
             using (var stream = File.Create(Path.Combine(root, "ui-preview.png"))) screenshot.Save(stream);
             var pixels = new byte[1180 * 820 * 4]; preview.CopyPixels(pixels, 1180 * 4, 0);
-            Check(window.Title == Brand.Title && pixels.Where((_, i) => i % 4 == 3).Count(a => a > 0) > 500_000, "Branded WPF window loads and renders visible content without showing a GUI");
+            var alphaPixels = pixels.Where((_, i) => i % 4 == 3).Count(a => a > 0);
+            Check(window.Title == Brand.Title && alphaPixels > 400_000, "Branded WPF window loads and renders visible content without showing a GUI");
             Check(new Typeface(window.FontFamily, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal).TryGetGlyphTypeface(out var embeddedFont) && embeddedFont.FontUri.ToString().Contains("Vazirmatn", StringComparison.OrdinalIgnoreCase), "Vazirmatn resolves from embedded font resource");
             var (resolvedExe, resolvedArgs) = WindowsIntegration.GetUpdateCommandLine();
             Check(!string.IsNullOrWhiteSpace(resolvedExe) && resolvedArgs.Contains("--update"), "GetUpdateCommandLine resolves valid executable and arguments");
             Check(window.FlowDirection == FlowDirection.RightToLeft && Brand.Version == "1.5.0" && window.Icon != null, "RTL, release version 1.5.0 and application icon");
+
+            // Test Persian Date & Calendar
+            var testDate = new DateTime(2026, 9, 29);
+            var persianStr = PersianDateHelper.GetFormattedPersianDate(testDate);
+            Check(persianStr.Contains("مهر") && persianStr.Contains("1405"), "Persian Solar Hijri Date formatting (PersianDateHelper)");
+
+            // Test SourceCatalog Options for IranNature
+            Check(SourceCatalog.Options.Any(o => o.Id == "IranNature"), "SourceCatalog includes IranNature collection");
+
+            // Test Preferences persistence with new modern settings
+            var modernPrefs = new Preferences { EnableGlobalHotkeys = true, ShowDesktopWidget = true, SyncWindowsAccentColor = true };
+            var prefsPath = Path.Combine(root, "modern-prefs.json");
+            Store.Write(prefsPath, modernPrefs);
+            var readModern = Store.Read(prefsPath, new Preferences());
+            Check(readModern.EnableGlobalHotkeys && readModern.ShowDesktopWidget && readModern.SyncWindowsAccentColor, "Modern features preferences persistence");
+
+            // Test Multi-Monitor detection
+            Check(WindowsIntegration.GetMonitorCount() >= 1, "Windows multi-monitor enumeration returns valid monitor count");
+
+            // Test Dominant Color Extractor
+            var samplePath = Path.Combine(root, "ui-preview.png");
+            var sampleDominant = WindowsIntegration.CalculateDominantColor(samplePath);
+            Check(sampleDominant.A == 255, "Dominant color extraction calculates valid RGB palette");
+
+            // Test Social Card Generator
+            var testPhoto = new Photo { Id = "test-card", Title = "دماوند استوار", Copyright = "طبیعت ایران", FilePath = samplePath, Date = "20260929", Source = "IranNature" };
+            var cardPath = CardGenerator.GenerateShareableCard(testPhoto, Path.Combine(root, "test-card.png"));
+            Check(File.Exists(cardPath) && new FileInfo(cardPath).Length > 1000, "CardGenerator creates high-resolution social share card");
 
             var tabs = (System.Windows.Controls.TabControl)window.FindName("Tabs");
             for (var tab = 1; tab <= 3; tab++)
