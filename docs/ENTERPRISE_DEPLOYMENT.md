@@ -1,7 +1,9 @@
+<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+
 # راهنمای استقرار در شبکه و سرورهای سازمانی (Enterprise Deployment Guide)
 
 **نرم‌افزار سهند نما (Sahand Nama)**  
-**نسخه:** 1.4.0  
+**نسخه:** 1.5.0  
 **شرکت سازنده:** راهکار الکترونیک سهند ([https://irres.ir](https://irres.ir))
 
 ---
@@ -31,15 +33,14 @@ flowchart LR
 برنامه به طور خودکار نوع سیستم‌عامل سرور (Windows Server 2019 / 2022 / 2025) را تشخیص می‌دهد. در پنجره برنامه، به تب **«منابع و برنامه‌ریزی»** رفته و تیک **«فعال‌سازی حالت مخزن سرور شبکه»** را بزنید.
 
 ### گام دوم: ایجاد پوشه اشتراکی (SMB Share)
-روی دکمه **«پوشه مخزن در سرور»** کلیک کنید تا پوشه تصاویر باز شود. سپس با یکی از دو روش زیر آن را Share کنید:
+روی دکمه **«ایجاد و فعال‌سازی Share در ویندوز»** کلیک کنید تا پوشه به صورت خودکار با دسترسی استاندارد Read-Only در شبکه به اشتراک گذاشته شود، یا از دستور PowerShell زیر با دسترسی مدیر استفاده نمایید:
 
-#### از طریق PowerShell در سرور (دسترسی Administrator):
 ```powershell
-New-SmbShare -Name "Wallpapers" -Path "$env:LOCALAPPDATA\BingWallpaperPro\Images" -ReadAccess "Everyone"
+New-SmbShare -Name "Wallpapers" -Path "$env:LOCALAPPDATA\BingWallpaperPro" -ReadAccess "Everyone"
 ```
 
-### گام سوم: کپی آدرس UNC
-روی دکمه **«کپی آدرس UNC برای کلاینت‌ها»** کلیک کنید. آدرس تولید شده به صورت زیر خواهد بود:
+### گام سوم: آدرس UNC برای کلاینت‌ها
+آدرس شبکه تولید شده برای کلاینت‌ها به صورت زیر در دسترس خواهد بود:
 ```
 \\SERVER-NAME\Wallpapers
 ```
@@ -52,30 +53,26 @@ New-SmbShare -Name "Wallpapers" -Path "$env:LOCALAPPDATA\BingWallpaperPro\Images
 
 ### دستور اجرای بی‌صدا (Silent Automation):
 ```cmd
-BingWallpaperPro.exe --update-quiet
+"\\SERVER-NAME\Wallpapers\BingWallpaperPro.exe" --update
 ```
 
-### نمونه اسکریپت لاگین کلاینت‌ها (`LogonScript.ps1`):
-```powershell
-# استقرار تنظیمات اولیه برای استفاده از سرور داخلی
-$configPath = "$env:LOCALAPPDATA\BingWallpaperPro\settings.json"
-$targetDir = "$env:LOCALAPPDATA\BingWallpaperPro"
+### ثبت زمان‌بندی روزانه خودکار روی کلاینت‌ها:
+```cmd
+"\\SERVER-NAME\Wallpapers\BingWallpaperPro.exe" --install-schedule 08:30
+```
 
-if (-not (Test-Path $targetDir)) {
-    New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
+### نمونه الگوی فایل تنظیمات کلاینت (`%LOCALAPPDATA%\BingWallpaperPro\settings.json`):
+```json
+{
+  "Mode": "Same",
+  "DesktopSource": "SharedNetwork",
+  "DesktopFolder": "\\\\SERVER-NAME\\Wallpapers",
+  "LockSource": "SharedNetwork",
+  "LockFolder": "\\\\SERVER-NAME\\Wallpapers",
+  "DailyTime": "08:30",
+  "Desktop": true,
+  "LockScreen": true
 }
-
-$settings = @{
-    DesktopSource = "SharedNetwork"
-    DesktopFolderPath = "\\SERVER-NAME\Wallpapers"
-    LockSource = "SharedNetwork"
-    LockFolderPath = "\\SERVER-NAME\Wallpapers"
-    Mode = "Same"
-    AutoUpdateDesktop = $true
-    AutoUpdateLockScreen = $true
-} | ConvertTo-Json -Depth 5
-
-Set-Content -Path $configPath -Value $settings -Encoding UTF8
 ```
 
 ---
@@ -87,3 +84,5 @@ Set-Content -Path $configPath -Value $settings -Encoding UTF8
 
 **سؤال: آیا کلاینت‌ها امکان تغییر عکس را دارند؟**  
 پاسخ: مدیر شبکه می‌تواند با تنظیم قفل سیاست‌های سازمانی، اعمال عکس را اجباری کند یا به کاربران اجازه انتخاب از میان تصاویر موجود در مخزن سرور را بدهد.
+
+</div>

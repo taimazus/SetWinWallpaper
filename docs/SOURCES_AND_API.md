@@ -1,7 +1,9 @@
+<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+
 # مستندات منابع داده، APIها و الگوریتم یکتاسازی (Sources & API Documentation)
 
 **نرم‌افزار سهند نما (Sahand Nama)**  
-**نسخه:** 1.4.0  
+**نسخه:** 1.5.0  
 **توسعه‌دهنده:** شرکت راهکار الکترونیک سهند ([https://irres.ir](https://irres.ir))
 
 ---
@@ -16,11 +18,12 @@
 | `BingGlobal` | گلچین بین‌المللی بینگ (همه مناطق) | Multi-JSON | `www.bing.com` | UHD (4K) |
 | `UnsplashNature` | عکس‌های برگزیده طبیعت Unsplash | REST / Direct | `picsum.photos`, `images.unsplash.com` | 4K (3840x2160) |
 | `WikimediaPotd` | تصویر برگزیده روز ویکی‌مدیا | MediaWiki Action API | `commons.wikimedia.org`, `upload.wikimedia.org` | Full Original |
-| `UsgsEarthArt` | شگفتی‌های زمین از فضا (USGS) | RSS / XML Feed | `www.usgs.gov` | High-Res GeoTIFF/JPG |
-| `NasaApod` | تصویر نجومی روز ناسا (APOD) | RSS / JSON | `apod.nasa.gov`, `images-assets.nasa.gov` | Ultra HD |
-| `EsaHubble` | تصاویر تلسکوپ هابل و وب (ESA) | RSS 2.0 Feed | `esahubble.org` | 4K / Full Res |
+| `UsgsEarthArt` | شگفتی‌های زمین از فضا (USGS) | RSS / XML Feed | `eros.usgs.gov`, `landsat.usgs.gov` | High-Res Satellite |
+| `NasaDaily` | تصویر نجومی روز ناسا (APOD) | RSS / JSON | `www.nasa.gov`, `images-assets.nasa.gov` | Ultra HD |
+| `NasaLibrary` | کتابخانه تصاویر نجومی ناسا | REST API | `images-api.nasa.gov` | Ultra HD |
+| `EsaHubble` | تصاویر تلسکوپ هابل و وب (ESA) | RSS 2.0 Feed | `esahubble.org`, `cdn.esahubble.org` | 4K / Full Res |
 | `SharedNetwork` | مخزن اشتراکی سرور در شبکه | UNC SMB | `\\<SERVER>\<SHARE>` | کیفیت اصلی |
-| `LocalFolder` | پوشه شخصی در رایانه | Local File System | دیسک محلی | کیفیت اصلی |
+| `Folder` | پوشه شخصی در رایانه | Local File System | دیسک محلی | کیفیت اصلی |
 
 ---
 
@@ -54,20 +57,22 @@ flowchart TD
 
 ---
 
-## ۴. ساختار متادیتای تصاویر (`metadata.json` / `archive.json`)
+## ۴. ساختار متادیتای تصاویر (`archive.json`)
 
 ```json
 [
   {
-    "id": "bing-20260924-us",
-    "title": "دریاچه زمردین در میان کوه‌های آلپ",
-    "caption": "عکاسی شده در ایالت باواریا، آلمان",
-    "copyright": "© John Doe / Bing",
-    "sourceName": "Bing Daily (US)",
-    "sourceUrl": "https://www.bing.com/...",
-    "filePath": "C:\\Users\\...\\AppData\\Local\\BingWallpaperPro\\Images\\2026-09-24-Bing.jpg",
-    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "dateUtc": "2026-09-24T00:00:00Z"
+    "Id": "9b1a5e78c9a3",
+    "Source": "Bing",
+    "SourcePage": "https://www.bing.com/...",
+    "Title": "دریاچه زمردین در میان کوه‌های آلپ",
+    "Copyright": "© John Doe / Bing",
+    "Date": "20260929",
+    "Url": "https://www.bing.com/th?id=...",
+    "Market": "en-US",
+    "FilePath": "C:\\Users\\...\\AppData\\Local\\BingWallpaperPro\\Images\\9b1a5e78c9a3.jpg"
   }
 ]
 ```
+
+</div>

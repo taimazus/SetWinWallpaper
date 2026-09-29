@@ -1,3 +1,5 @@
+<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+
 # دانشنامه و راهنمای جامع سهند نما (Sahand Nama Wiki)
 
 به دانشنامه رسمی نرم‌افزار **سهند نما (Sahand Nama)** خوش آمدید.  
@@ -44,3 +46,5 @@ mindmap
       فونت زیبا Vazirmatn
       نسخه پرتابل بدون پیش‌نیاز
 ```
+
+</div>

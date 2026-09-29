@@ -1,3 +1,5 @@
+<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+
 # راهنمای خط فرمان، اسکریپت‌ها و اتوماسیون (CLI & Automation Guide)
 
 **نرم‌افزار سهند نما (Sahand Nama)**  
@@ -62,3 +64,5 @@
 | فایل گزارش فعالیت | `%LOCALAPPDATA%\BingWallpaperPro\activity.log` |
 | آخرین وضعیت اجرا | `%LOCALAPPDATA%\BingWallpaperPro\last-run.json` |
 | آرشیو سرویس مشترک | `%ALLUSERSPROFILE%\BingWallpaperPro\Feed\` |
+
+</div>

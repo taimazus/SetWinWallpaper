@@ -1,3 +1,5 @@
+<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+
 # معماری فنی و دیاگرام سیستم — سهند نما (Sahand Nama Architecture)
 
 **نسخه:** 1.5.0  
@@ -151,3 +153,5 @@ flowchart TD
 5. **مسیریابی هوشمند و تفکیک دسکتاپ و لاک‌اسکرین:** پشتیبانی از حالت‌های مستقل، همزمان و تفکیک مناطق جغرافیایی.
 6. **محیط کاملاً آفلاین کلاینت:** آزمون بدون اینترنت و واکشی مستقیم از Share شبکه.
 7. **طراحی بصری و فونت فارسی:** تایید بارگذاری قلم فارسی Vazirmatn، جهت‌بندی RTL و آیکون اختصاصی سهند نما.
+
+</div>

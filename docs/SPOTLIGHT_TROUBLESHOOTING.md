@@ -1,7 +1,9 @@
+<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+
 # راهنمای جامع عیب‌یابی و رفع خودکار ایرادات ویندوز Spotlight و صفحه قفل
 
 **نرم‌افزار سهند نما (Sahand Nama)**  
-**نسخه:** 1.4.0  
+**نسخه:** 1.5.0  
 **توسعه‌دهنده:** شرکت راهکار الکترونیک سهند ([https://irres.ir](https://irres.ir))
 
 ---
@@ -28,7 +30,7 @@ graph TD
 
 ## ۲. راهکار ۵ مرحله‌ای و هوشمند خودترمیمی سهند نما
 
-نرم‌افزار سهند نما در متد [WindowsIntegration.ResetSpotlightAsync](file:///c:/Users/Taimazus/Desktop/SetWinWallpaper/BingWallpaperPro/WindowsIntegration.cs#L170) یک فرآیند تعمیر بنیادین و خودکار را اجرا می‌کند:
+نرم‌افزار سهند نما در متد [WindowsIntegration.ResetSpotlightAsync](file:///f:/Projects/SetWinWallpaper/BingWallpaperPro/WindowsIntegration.cs#L283) یک فرآیند تعمیر بنیادین و خودکار را اجرا می‌کند:
 
 ```mermaid
 flowchart TD
@@ -67,7 +69,9 @@ HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager
 #### مرحله ۵: ثبت مجدد پکیج AppX
 اجرای دستور ثبت مجدد بومی پکیج بدون نیاز به اینترنت:
 ```powershell
-Get-AppxPackage Microsoft.Windows.ContentDeliveryManager | Reset-AppxPackage
+Get-AppxPackage -Name Microsoft.Windows.ContentDeliveryManager | Foreach-Object {
+    Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"
+}
 ```
 
 ---
@@ -78,3 +82,5 @@ Get-AppxPackage Microsoft.Windows.ContentDeliveryManager | Reset-AppxPackage
 2. روی دکمه **«رفع خودکار تمام ایرادات»** کلیک کنید.
 3. برنامه ظرف چند ثانیه تمامی گام‌های فوق را به همراه بررسی تنظیمات، زمان‌بندی و آرشیو تصاویر انجام داده و گزارش تایید را نمایش می‌دهد.
 4. در صورت نیاز به بازنشانی اختصاصی Spotlight، روی دکمه **«بازنشانی کامل Spotlight…»** کلیک فرمایید.
+
+</div>

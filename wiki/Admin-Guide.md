@@ -1,3 +1,5 @@
+<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+
 # راهنمای مدیران سیستم و شبکه (System Administrator Guide)
 
 این راهنما ویژه مدیران شبکه، ادمین‌های ویندوز سرور و مسئولان IT سازمان‌ها جهت استقرار بهینه **سهند نما (Sahand Nama)** در سطح شبکه سازمانی تهیه شده است.
@@ -65,3 +67,5 @@ flowchart TD
 BingWallpaperPro.exe --install-service
 ```
 این سرویس با نام `BingWallpaperProFeed` و با اکانت امن `NT AUTHORITY\LocalService` اجرا شده و فایل‌ها را در مسیر عمومی `%ALLUSERSPROFILE%\BingWallpaperPro\Feed\` ذخیره می‌کند.
+
+</div>

@@ -1,3 +1,5 @@
+<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+
 # راهنمای توسعه‌دهندگان (Developer Guide)
 
 این مستند شامل اصول توسعه، معماری کد، نحوه کامپایل، اجرای مجموعه آزمون‌ها و راهنمای افزودن منابع جدید به پروژه **سهند نما (Sahand Nama)** است.
@@ -68,3 +70,5 @@ dotnet publish BingWallpaperPro\BingWallpaperPro.csproj -c Release -r win-x64 --
 2. هاست دامنه منبع را در متد `SourceHttp.Validate` اضافه کنید (سیاست Allowlist سخت‌گیرانه).
 3. متد پارسر متناسب (JSON یا RSS/XML) را پیاده‌سازی کرده و در `FetchAsync` فراخوانی نمایید.
 4. تست اعتبارسنجی منبع جدید را در [BingWallpaperPro.Tests/Program.cs](file:///f:/Projects/SetWinWallpaper/BingWallpaperPro.Tests/Program.cs) اضافه کنید.
+
+</div>
