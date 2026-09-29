@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>راهنمای جامع کاربری نرم‌افزار سهند نما (Sahand Nama)</title>
+  <style>
+    :root {
+      --bg-main: #0a141d;
+      --bg-card: #0f202c;
+      --bg-card-alt: #132736;
+      --border-color: #20384a;
+      --text-main: #e8f1f5;
+      --text-muted: #8ba5b5;
+      --accent: #52d1b2;
+      --accent-hover: #67e2c4;
+      --accent-bg: rgba(82, 209, 178, 0.12);
+      --warning: #f1b952;
+      --danger: #e26161;
+      --info: #64b5f6;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Arial, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.8;
+      font-size: 15px;
+      padding: 30px 20px;
+    }
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+    header {
+      background: linear-gradient(135deg, #102636 0%, #0d1e2b 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 35px 30px;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .logo-box {
+      width: 80px;
+      height: 80px;
+      background: #153247;
+      border: 1px solid var(--accent);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo-box img {
+      width: 58px;
+      height: 58px;
+    }
+    .header-info h1 {
+      font-size: 26px;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+    .header-info .subtitle {
+      color: var(--accent);
+      font-size: 15px;
+      font-weight: 500;
+    }
+    .header-info .meta {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-top: 6px;
+    }
+    .toc {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 30px;
+    }
+    .toc h2 {
+      font-size: 18px;
+      color: var(--accent);
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+    .toc ol {
+      padding-right: 22px;
+    }
+    .toc li {
+      margin-bottom: 8px;
+    }
+    .toc a {
+      color: var(--text-main);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .toc a:hover {
+      color: var(--accent);
+    }
+    section {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 25px;
+    }
+    h2 {
+      font-size: 20px;
+      color: #ffffff;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+    h3 {
+      font-size: 16px;
+      color: var(--accent);
+      margin: 20px 0 10px 0;
+    }
+    p {
+      margin-bottom: 14px;
+      color: #d2e3ed;
+    }
+    ul, ol {
+      margin-bottom: 16px;
+      padding-right: 24px;
+    }
+    li {
+      margin-bottom: 8px;
+      color: #d2e3ed;
+    }
+    .badge {
+      background: var(--accent-bg);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 3px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .subcard {
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 18px;
+    }
+    .subcard h4 {
+      color: var(--accent);
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+    .code-box {
+      direction: ltr;
+      text-align: left;
+      background: #060e14;
+      border: 1px solid #1a3344;
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+      color: #58f0c5;
+      overflow-x: auto;
+      margin: 14px 0;
+    }
+    .alert {
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 16px 0;
+    }
+    .alert-info {
+      background: rgba(100, 181, 246, 0.12);
+      border: 1px solid var(--info);
+      color: #bde0fe;
+    }
+    .alert-warning {
+      background: rgba(241, 185, 82, 0.12);
+      border: 1px solid var(--warning);
+      color: #ffe6a7;
+    }
+    .alert-success {
+      background: var(--accent-bg);
+      border: 1px solid var(--accent);
+      color: #bbf2e5;
+    }
+    footer {
+      text-align: center;
+      padding: 25px;
+      color: var(--text-muted);
+      font-size: 13px;
+      border-top: 1px solid var(--border-color);
+      margin-top: 40px;
+    }
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo-box">
+        <img src="Assets/SahandNama.png" alt="سهند نما">
+      </div>
+      <div class="header-info">
+        <h1>نرم‌افزار سهند نما (Sahand Nama)</h1>
+        <div class="subtitle">مدیریت هوشمند تصاویر دسکتاپ و صفحه قفل ویندوز (نسخه ۱.۴.۰)</div>
+        <div class="meta">محصولی از <strong>شرکت راهکار الکترونیک سهند</strong> — <a href="https://irres.ir" target="_blank" style="color:var(--accent); text-decoration:none;">irres.ir</a></div>
+      </div>
+    </header>
+
+    <div class="toc">
+      <h2>فهرست مطالب راهنما</h2>
+      <ol>
+        <li><a href="#about">درباره نرم‌افزار و معماری سهند نما</a></li>
+        <li><a href="#sources">منابع معتبر آنلاین و تنوع تصاویر</a></li>
+        <li><a href="#server-hub">حالت سرور شبکه (Enterprise Server Hub) و کاهش مصرف اینترنت</a></li>
+        <li><a href="#schedule">زمان‌بندی روزانه (Task Scheduler)</a></li>
+        <li><a href="#diagnostics">مرکز عیب‌یابی و رفع خودکار ایرادات (Spotlight Repair)</a></li>
+        <li><a href="#deduplication">جلوگیری از فایل‌های تکراری با هش SHA-256</a></li>
+        <li><a href="#service">سرویس مستقل پس‌زمینه (Background Service)</a></li>
+        <li><a href="#support">پشتیبانی و تماس با شرکت</a></li>
+      </ol>
+    </div>
+
+    <!-- 1. About -->
+    <section id="about">
+      <h2>۱. درباره نرم‌افزار و معماری سهند نما</h2>
+      <p>
+        <strong>سهند نما</strong> یک نرم‌افزار جامع، مدرن و کاملاً بومی‌شده برای مدیریت و به‌روزرسانی تصاویر پس‌زمینه (Desktop Wallpaper) و صفحه قفل (Lock Screen) در تمامی نسخه‌های ویندوز ۱۰، ۱۱ و ویندوز سرور ۲۰۱۹ به بعد است.
+      </p>
+      <div class="card-grid">
+        <div class="subcard">
+          <h4>🚀 کاملاً مستقل (Self-Contained)</h4>
+          <p>بدون نیاز به نصب فریم‌ورک دات‌نت؛ کلیه کتابخانه‌ها و فایل‌های اجرایی در داخل بسته ۶۴ بیتی نرم‌افزار گنجانده شده است.</p>
+        </div>
+        <div class="subcard">
+          <h4>🎨 رابط کاربری راست‌به‌چپ (RTL)</h4>
+          <p>مجهز به فونت فارسی چشم‌نواز Vazirmatn، آیکون‌های وکتور داخلی و چیدمان استاندارد و مدرن Dark Mode.</p>
+        </div>
+        <div class="subcard">
+          <h4>🏢 راهکار سازمانی و شبکه‌ای</h4>
+          <p>قابلیت راه‌اندازی به عنوان هاب مرکزی در سرور جهت دانلود متمرکز و تغذیه کلاینت‌ها بدون مصرف اینترنت.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Sources -->
+    <section id="sources">
+      <h2>۲. منابع معتبر آنلاین و تنوع تصاویر</h2>
+      <p>برنامه از منابع معتبر جهانی با کیفیت بسیار بالا (FHD / 4K UHD) پشتیبانی می‌کند:</p>
+      <ul>
+        <li><strong>🌐 بینگ (Bing Daily):</strong> تصویر رسمی روز مایکروسافت با تفکیک ۸ منطقه جغرافیایی دنیا (آمریکا، ژاپن، آلمان، انگلستان، کانادا، فرانسه، چین، استرالیا).</li>
+        <li><strong>🌍 گلچین بین‌المللی بینگ (Bing Global):</strong> دریافت همزمان تمامی مناظر روز از تمامی کشورهای تحت پوشش بینگ.</li>
+        <li><strong>🌿 عکس‌های برگزیده Unsplash (Unsplash & Picsum):</strong> برترین عکس‌های 4K از طبیعت، جنگل‌ها، دریاها، کوهستان و شهرهای دیدنی جهان.</li>
+        <li><strong>🏛️ تصویر روز ویکی‌مدیا (Wikimedia POTD):</strong> آثار عکاسی برتر و برگزیده از فرهنگ، هنر، طبیعت و تاریخ جهان.</li>
+        <li><strong>🛰️ شگفتی‌های زمین از فضا (USGS Earth as Art):</strong> تصاویر ماهواره‌ای دیدنی از الگوهای زمین‌شناسی کره زمین ثبت‌شده توسط ماهواره‌های Landsat سازمان زمین‌شناسی آمریکا.</li>
+        <li><strong>🌌 تصویر نجومی روز ناسا (NASA APOD):</strong> پدیده‌های شگفت‌انگیز کیهانی، سیارات، ستاره‌ها و سحابی‌ها همراه با عنوان علمی.</li>
+        <li><strong>🔭 تلسکوپ‌های هابل و جیمز وب (ESA / Hubble):</strong> تازه‌ترین تصاویر با وضوح فوق‌العاده از ژرفای فضا توسط آژانس فضایی اروپا.</li>
+        <li><strong>📁 پوشه محلی یا شبکه (Local / SharedNetwork):</strong> امکان استفاده از عکس‌های شخصی یا پوشه اشتراکی در سرور محلی.</li>
+      </ul>
+    </section>
+
+    <!-- 3. Server Hub -->
+    <section id="server-hub">
+      <h2>۳. حالت سرور شبکه (Enterprise Server Hub)</h2>
+      <p>برای شرکت‌ها و سازمان‌هایی که پهنای باند اینترنت برایشان حائز اهمیت است، سهند نما قابلیت تبدیل به سرور مرکزی توزیع تصاویر را دارد:</p>
+      
+      <div class="alert alert-success">
+        <strong>مکانیزم عملکرد:</strong> سرور به صورت روزانه یک‌بار تمامی گالری‌های آنلاین را دانلود کرده و در پوشه اشتراکی شبکه (مثلاً <code>\\Server\Wallpapers</code>) قرار می‌دهد. کلاینت‌ها تصاویر را مستقیماً از این مسیر شبکه بدون نیاز به اینترنت دریافت می‌کنند.
+      </div>
+
+      <h3>مراحل راه‌اندازی در سرور:</h3>
+      <ol>
+        <li>برنامه را روی ویندوز سرور یا یک سیستم اصلی اجرا کنید.</li>
+        <li>در تب <em>تنظیمات و برنامه‌ریزی</em>، تیک <strong>«فعال‌سازی حالت مخزن سرور شبکه»</strong> را بزنید.</li>
+        <li>پوشه تصاویر را در شبکه با نام <code>Wallpapers</code> و دسترسی خواندن (Read-Only) برای کاربران اشتراک‌گذاری (Share) کنید.</li>
+        <li>روی دکمه <strong>«کپی آدرس UNC برای کلاینت‌ها»</strong> کلیک کرده و مسیر را در کلاینت‌ها (یا Group Policy سازمان) وارد کنید.</li>
+      </ol>
+    </section>
+
+    <!-- 4. Schedule -->
+    <section id="schedule">
+      <h2>۴. زمان‌بندی روزانه (Task Scheduler)</h2>
+      <p>
+        برای اینکه تصاویر دسکتاپ و صفحه قفل به طور خودکار هر روز عوض شوند:
+      </p>
+      <ul>
+        <li>در تب <em>منابع و برنامه‌ریزی</em>، ساعت مورد نظر خود را وارد کنید (مثلاً <code>09:00</code>).</li>
+        <li>روی دکمه <strong>«فعال‌سازی / اصلاح زمان‌بندی»</strong> کلیک کنید.</li>
+        <li>یک Task رسمی در Task Scheduler ویندوز ثبت می‌شود که هنگام روشن شدن سیستم یا در ساعت مشخص‌شده، تصویر را بدون باز شدن پنجره به‌روز می‌کند.</li>
+      </ul>
+    </section>
+
+    <!-- 5. Diagnostics -->
+    <section id="diagnostics">
+      <h2>۵. مرکز عیب‌یابی و رفع خودکار ایرادات (Spotlight Repair)</h2>
+      <p>
+        اگر تصاویر صفحه قفل ویندوز یا Spotlight گیر کرده، تصاویر خاکستری نمایش داده می‌شود یا زمان‌بندی کار نمی‌کند:
+      </p>
+      <div class="card-grid">
+        <div class="subcard">
+          <h4>🔍 عیب‌یابی کامل</h4>
+          <p>بررسی ۲۲ مؤلفه کلیدی سیستم شامل رجیستری، کش، دسترسی‌ها، ارتباط سرور، سیاست‌های امنیتی و بسته‌های ویندوز.</p>
+        </div>
+        <div class="subcard">
+          <h4>⚡ رفع خودکار تمام ایرادات</h4>
+          <p>با یک کلیک، تمام عیوب کشف‌شده به طور امن همراه با ایجاد فایل پشتیبان (Backup) برطرف و تعمیر می‌شوند.</p>
+        </div>
+        <div class="subcard">
+          <h4>🛠️ بازنشانی عمیق Spotlight</h4>
+          <p>پاک‌سازی فایل‌های معیوب و صفر بایتی، ریست بسته‌های ContentDeliveryManager و بازسازی کامل کش و رجیستری صفحه قفل ویندوز.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Deduplication -->
+    <section id="deduplication">
+      <h2>۶. جلوگیری از فایل‌های تکراری با هش SHA-256</h2>
+      <p>
+        سهند نما مجهز به الگوریتم هوشمند سنجش اصالت و مقایسه محتوا (Content Hashing) است. اگر تصویری با نام متفاوت ولی محتوای یکسان قبلاً دانلود شده باشد، دوباره دانلود نمی‌شود و با کلیک روی دکمه <strong>«پاک‌سازی فایل‌های تکراری»</strong>، فایل‌های اضافی از دیسک پاک می‌گردند.
+      </p>
+    </section>
+
+    <!-- 7. Background Service -->
+    <section id="service">
+      <h2>۷. سرویس مستقل پس‌زمینه (Background Service)</h2>
+      <p>
+        برای سناریوهایی که سیستم بدون لاگین کاربر روشن است (مانند سرورهای اختصاصی)، می‌توانید با کلیک روی <strong>«نصب سرویس»</strong>، سرویس ویندوزی سهند نما را با حساب کاربری <code>LocalService</code> فعال کنید.
+      </p>
+    </section>
+
+    <!-- 8. Support -->
+    <section id="support">
+      <h2>۸. پشتیبانی و تماس با شرکت</h2>
+      <p>
+        این نرم‌افزار با بالاترین استانداردهای کیفی توسط تیم مهندسی شرکت راهکار الکترونیک سهند توسعه یافته است.
+      </p>
+      <ul>
+        <li><strong>سازنده:</strong> شرکت راهکار الکترونیک سهند</li>
+        <li><strong>وب‌سایت رسمی:</strong> <a href="https://irres.ir" target="_blank" style="color:var(--accent);">https://irres.ir</a></li>
+        <li><strong>لایسنس فونت:</strong> SIL Open Font License (فونت وزیزمتن)</li>
+      </ul>
+    </section>
+
+    <footer>
+      <p>© کلیه حقوق مادی و معنوی متعلق به <strong>شرکت راهکار الکترونیک سهند</strong> می‌باشد.</p>
+      <p><a href="https://irres.ir">irres.ir</a></p>
+    </footer>
+  </div>
+</body>
+</html>
