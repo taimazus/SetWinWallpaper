@@ -7,6 +7,9 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build Standalone Windows x64 Executable
@@ -28,14 +31,21 @@ jobs:
         run: |
           dotnet publish BingWallpaperPro/BingWallpaperPro.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o output/standalone
 
-      - name: Create Portable Zip Package
+      - name: Create Portable Zip Packages
         shell: pwsh
         run: |
-          Compress-Archive -Path "output/standalone/*" -DestinationPath "output/SahandNama-win-x64.zip" -Force
+          Compress-Archive -Path "output/standalone/*" -DestinationPath "output/SahandNama-v1.5.0-win-x64.zip" -Force
           Copy-Item "output/standalone/BingWallpaperPro.exe" "output/SahandNama-v1.5.0-win-x64.exe" -Force
 
-      - name: Upload Build Artifacts
+      - name: Upload Artifacts to Workflow
         uses: actions/upload-artifact@v4
         with:
           name: SahandNama-win-x64
           path: output/
+
+      - name: Attach Assets to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: pwsh
+        run: |
+          gh release upload v1.5.0 "output/SahandNama-v1.5.0-win-x64.exe" "output/SahandNama-v1.5.0-win-x64.zip" --clobber
