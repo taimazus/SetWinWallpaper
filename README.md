@@ -1,6 +1,6 @@
 <div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
 
-# سهند نما | Sahand Nama (نسخه 1.5.0)
+# سهند نما | Sahand Nama (نسخه 1.6.0)
 
 **سامانه جامع، هوشمند و سازمانی مدیریت و به‌روزرسانی تصاویر پس‌زمینه و صفحه قفل ویندوز**  
 *طراحی و توسعه توسط شرکت راهکار الکترونیک سهند — [https://irres.ir](https://irres.ir)*
@@ -19,8 +19,8 @@
 
 | نوع فایل | لینک دانلود مستقیم از گیت‌هاب | حجم تقریبی | مناسب برای |
 | :--- | :--- | :--- | :--- |
-| 🚀 **فایل اجرایی مستقل (EXE)** | [**دانلود SahandNama-v1.5.0-win-x64.exe**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.5.0/SahandNama-v1.5.0-win-x64.exe) | ~۱۴۰ مگابایت | اجرای فوری با یک کلیک بدون استخراج |
-| 📦 **بسته پرتابل فشرده (ZIP)** | [**دانلود SahandNama-v1.5.0-win-x64.zip**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.5.0/SahandNama-v1.5.0-win-x64.zip) | ~۶۱ مگابایت | پکیج کامل شامل اسکریپت‌های PowerShell و راهنما |
+| 🚀 **فایل اجرایی مستقل (EXE)** | [**دانلود SahandNama-v1.6.0-win-x64.exe**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.6.0/SahandNama-v1.6.0-win-x64.exe) | ~۱۴۰ مگابایت | اجرای فوری با یک کلیک بدون استخراج |
+| 📦 **بسته پرتابل فشرده (ZIP)** | [**دانلود SahandNama-v1.6.0-win-x64.zip**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.6.0/SahandNama-v1.6.0-win-x64.zip) | ~۶۱ مگابایت | پکیج کامل شامل اسکریپت‌های PowerShell و راهنما |
 | 🏷️ **صفحه انتشار نسخه‌ها** | [**مشاهده تمام Releaseها در گیت‌هاب**](https://github.com/taimazus/SetWinWallpaper/releases) | — | تاریخچه تغییرات و دسترسی به تمام نسخه‌ها |
 
 ---
@@ -41,7 +41,7 @@ graph LR
         E[USGS Earth as Art]
     end
     
-    subgraph Engine ["هاب مرکزی سهند نما v1.5.0"]
+    subgraph Engine ["هاب مرکزی سهند نما v1.6.0"]
         Core[موتور دریافت، کش سریع، استخراج پالت رنگی و کارت گرافیکی]
     end
     
@@ -81,7 +81,7 @@ graph LR
 
 ---
 
-## ✨ امکانات برجسته نسخه 1.5.0
+## ✨ امکانات برجسته نسخه 1.6.0
 
 1. ⌨️ **کلیدهای میانبر سراسری ویندوز (Global Hotkeys):**
    - کلید `Win + Alt + W`: دریافت و اعمال فوری والپیپر بعدی بدون نیاز به باز کردن پنجره برنامه.

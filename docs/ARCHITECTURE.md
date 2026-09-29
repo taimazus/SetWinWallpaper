@@ -2,7 +2,7 @@
 
 # معماری فنی و دیاگرام سیستم — سهند نما (Sahand Nama Architecture)
 
-**نسخه:** 1.5.0  
+**نسخه:** 1.6.0  
 **توسعه‌دهنده:** شرکت راهکار الکترونیک سهند ([https://irres.ir](https://irres.ir))  
 **فناوری:** .NET 10.0 (C# 13), WPF (Windows Presentation Foundation), PowerShell Native Bridge, Win32 Native Interop, SCM Service Dispatcher.
 
@@ -17,7 +17,7 @@ graph TD
     UI["رابط کاربری مدرن WPF<br/>(MainWindow & Theme)"] --> Cache["کش سریع حافظه‌ای تصاویر بندانگشتی<br/>(Concurrent In-Memory Cache)"]
     UI --> Controller["کنترلر مرکزی و موتور پس‌زمینه<br/>(WallpaperEngine)"]
     
-    subgraph Core Engine ["موتور مرکزی (Core Engine v1.5.0)"]
+    subgraph Core Engine ["موتور مرکزی (Core Engine v1.6.0)"]
         Controller --> Prefs["مدیریت تنظیمات و ذخیره‌سازی اتمیک<br/>(Preferences & Store)"]
         Controller --> Catalog["کاتالوگ و بارگذاری منابع<br/>(SourceCatalog & SourceHttp)"]
         Controller --> Dedup["سامانه یکتا‌سازی هش SHA-256<br/>(Deduplication Engine)"]
@@ -46,7 +46,7 @@ graph TD
 
 ## ۲. چرخه حیات و معماری سرویس و زمان‌بندی (Service & Scheduling Lifecycle)
 
-در نسخه 1.5.0، سیستم زمان‌بندی و سرویس ویندوز کاملاً مستقل از Culture و دسترسی شبکه طراحی شده است:
+در نسخه 1.6.0، سیستم زمان‌بندی و سرویس ویندوز کاملاً مستقل از Culture و دسترسی شبکه طراحی شده است:
 
 ```mermaid
 stateDiagram-v2

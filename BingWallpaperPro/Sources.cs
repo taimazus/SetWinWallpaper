@@ -162,6 +162,8 @@ public sealed class SourceCatalog
                 _ => throw new ArgumentException("منبع آنلاین ناشناخته: " + request.Id)
             };
 
+        try
+        {
             var bytes = await SourceHttp.ReadAsync(url, 20_000_000, token);
             var candidates = request.Id switch
             {
@@ -184,17 +186,23 @@ public sealed class SourceCatalog
                 { Store.Log($"Skipped {request.Id} image {photo.Url}: {ex.Message}", root); }
             }
         }
+        catch (Exception ex) when (ex is HttpRequestException or IOException or System.Net.Sockets.SocketException or TimeoutException)
+        {
+            Store.Log($"ارتباط با منبع {request.Id} برقرار نشد ({ex.Message}). تلاش برای استفاده از آرشیو محلی...", root);
+            photos = [];
+        }
+        }
         if (photos.Count == 0)
         {
             var fallback = Store.Read(Path.Combine(root, "archive.json"), new List<Photo>())
-                .Where(p => (string.Equals(p.Source, request.Id, StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(p.Source)) && File.Exists(p.FilePath) && new FileInfo(p.FilePath).Length > 1000)
+                .Where(p => File.Exists(p.FilePath) && new FileInfo(p.FilePath).Length > 1000)
                 .ToList();
             if (fallback.Count > 0)
             {
-                Store.Log($"عدم دریافت تصویر جدید از منبع {request.Id}؛ استفاده خودکار از {fallback.Count} تصویر موجود در آرشیو محلی.", root);
+                Store.Log($"استفاده خودکار از {fallback.Count} تصویر موجود در آرشیو محلی برای منبع {request.Id}.", root);
                 return fallback;
             }
-            throw new InvalidOperationException("منبع تصویر سالمی برنگرداند؛ گزارش اجراها و اتصال شبکه را بررسی کنید.");
+            throw new InvalidOperationException($"ارتباط با منبع {request.Id} برقرار نشد و تصویری در آرشیو محلی یافت نشد.");
         }
         MergeArchive(photos); return photos;
     }
