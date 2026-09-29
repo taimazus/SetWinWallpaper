@@ -20,7 +20,7 @@
 | نوع فایل | لینک دانلود مستقیم از گیت‌هاب | حجم تقریبی | مناسب برای |
 | :--- | :--- | :--- | :--- |
 | 🚀 **فایل اجرایی مستقل (EXE)** | [**دانلود SahandNama-v1.5.0-win-x64.exe**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.5.0/SahandNama-v1.5.0-win-x64.exe) | ~۵۰ مگابایت | اجرای فوری با یک کلیک بدون استخراج |
-| 📦 **بسته پرتابل فشرده (ZIP)** | [**دانلود BingWallpaperPro-win-x64.zip**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.5.0/BingWallpaperPro-win-x64.zip) | ~۵۹ مگابایت | پکیج کامل شامل اسکریپت‌های PowerShell و راهنما |
+| 📦 **بسته پرتابل فشرده (ZIP)** | [**دانلود SahandNama-v1.5.0-win-x64.zip**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.5.0/SahandNama-v1.5.0-win-x64.zip) | ~۵۸ مگابایت | پکیج کامل شامل اسکریپت‌های PowerShell و راهنما |
 | 🏷️ **صفحه انتشار نسخه‌ها** | [**مشاهده تمام Releaseها در گیت‌هاب**](https://github.com/taimazus/SetWinWallpaper/releases) | — | تاریخچه تغییرات و دسترسی به تمام نسخه‌ها |
 
 ---
