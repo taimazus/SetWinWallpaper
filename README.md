@@ -1,14 +1,27 @@
-<div dir="rtl" align="right">
+<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
 
 # سهند نما | Sahand Nama (نسخه 1.5.0)
 
 **سامانه جامع، هوشمند و سازمانی مدیریت و به‌روزرسانی تصاویر پس‌زمینه و صفحه قفل ویندوز**  
 *طراحی و توسعه توسط شرکت راهکار الکترونیک سهند — [https://irres.ir](https://irres.ir)*
 
+[![GitHub Release](https://img.shields.io/github/v/release/taimazus/SetWinWallpaper?color=52d1b2&label=Latest%20Release)](https://github.com/taimazus/SetWinWallpaper/releases/latest)
 [![Tests](https://img.shields.io/badge/Tests-57%20Passed-52d1b2.svg)](docs/ARCHITECTURE.md)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20%7C%20Server-blue.svg)](docs/ENTERPRISE_DEPLOYMENT.md)
-[![Architecture](https://img.shields.io/badge/Architecture-x64%20Standalone-orange.svg)](artifacts/standalone/)
+[![Architecture](https://img.shields.io/badge/Architecture-x64%20Standalone-orange.svg)](https://github.com/taimazus/SetWinWallpaper/releases/latest)
 [![License](https://img.shields.io/badge/Font-SIL%20OFL%20Vazirmatn-brightgreen.svg)](BingWallpaperPro/Assets/Fonts/OFL.txt)
+
+---
+
+## 📥 دریافت و دانلود مستقیم خروجی ویندوز (Downloads)
+
+برای استفاده از نرم‌افزار بدون نیاز به نصب هرگونه پیش‌نیاز یا دات‌نت، می‌توانید نسخه‌های آماده ۶۴بیتی را مستقیماً از بخش **Releases** گیت‌هاب دانلود کنید:
+
+| نوع فایل | لینک دانلود مستقیم از گیت‌هاب | حجم تقریبی | مناسب برای |
+| :--- | :--- | :--- | :--- |
+| 🚀 **فایل اجرایی مستقل (EXE)** | [**دانلود SahandNama-v1.5.0-win-x64.exe**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.5.0/SahandNama-v1.5.0-win-x64.exe) | ~۵۰ مگابایت | اجرای فوری با یک کلیک بدون استخراج |
+| 📦 **بسته پرتابل فشرده (ZIP)** | [**دانلود BingWallpaperPro-win-x64.zip**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.5.0/BingWallpaperPro-win-x64.zip) | ~۵۹ مگابایت | پکیج کامل شامل اسکریپت‌های PowerShell و راهنما |
+| 🏷️ **صفحه انتشار نسخه‌ها** | [**مشاهده تمام Releaseها در گیت‌هاب**](https://github.com/taimazus/SetWinWallpaper/releases) | — | تاریخچه تغییرات و دسترسی به تمام نسخه‌ها |
 
 ---
 
@@ -82,27 +95,13 @@ graph LR
    - برگزیده عکاسی باکیفیت 4K طبیعت، کوهستان و شهرهای دنیا (`UnsplashNature`)
    - تصویر برگزیده روز ویکی‌مدیا از فرهنگ، تاریخ و شاهکارهای عکاسی (`WikimediaPotd`)
    - شگفتی‌های زمین‌شناسی از فضا ثبت‌شده با ماهواره‌های لندست (`UsgsEarthArt`)
-   - تصویر نجومی روز ناسا (`NasaApod`) و تصاویر تلسکوپ‌های هابل و جیمز وب (`EsaHubble`)
+   - تصویر نجومی روز ناسا (`NasaDaily`) و تصاویر تلسکوپ‌های هابل و جیمز وب (`EsaHubble`)
 6. **الگوریتم یکتاسازی هوشمند (SHA-256 Deduplication):**
    - مقایسه محتوایی تصاویر و حذف خودکار فایل‌های تکراری و مشابه از دیسک.
 7. **مرکز عیب‌یابی و رفع خودکار ۲۲ گانه:**
    - تعمیر رجیستری، زمان‌بندی، فایل‌های تنظیمات، حافظه کش، و بازسازی عمیق پکیج‌های Spotlight.
 8. **نسخه کاملاً مستقل و پرتابل:**
    - بدون نیاز به نصب هرگونه پیش‌نیاز یا دات‌نت بر روی کلاینت‌ها یا سرورها.
-
----
-
-## 🚀 راهنمای سریع اجرا
-
-### نسخه آماده مستقل (Standalone x64):
-```text
-artifacts\standalone\BingWallpaperPro.exe
-```
-
-### بسته فشرده زیپ:
-```text
-artifacts\BingWallpaperPro-win-x64.zip
-```
 
 ---
 

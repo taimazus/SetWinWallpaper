@@ -1,0 +1,41 @@
+name: Build & Release Sahand Nama (Windows)
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Standalone Windows x64 Executable
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Run Test Suite
+        run: dotnet run --project BingWallpaperPro.Tests/BingWallpaperPro.Tests.csproj
+
+      - name: Publish Standalone Windows x64
+        run: |
+          dotnet publish BingWallpaperPro/BingWallpaperPro.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o output/standalone
+
+      - name: Create Portable Zip Package
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "output/standalone/*" -DestinationPath "output/SahandNama-win-x64.zip" -Force
+          Copy-Item "output/standalone/BingWallpaperPro.exe" "output/SahandNama-v1.5.0-win-x64.exe" -Force
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SahandNama-win-x64
+          path: output/
