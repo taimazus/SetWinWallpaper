@@ -211,7 +211,7 @@ public sealed class SourceCatalog
                 { Store.Log($"Skipped {request.Id} image {photo.Url}: {ex.Message}", root); }
             }
         }
-        catch (Exception ex) when (ex is HttpRequestException or IOException or System.Net.Sockets.SocketException or TimeoutException)
+        catch (Exception ex) when (ex is HttpRequestException or IOException or System.Net.Sockets.SocketException or TimeoutException or System.Xml.XmlException or System.Text.Json.JsonException or InvalidDataException)
         {
             Store.Log($"ارتباط با منبع {request.Id} برقرار نشد ({ex.Message}). تلاش برای استفاده از آرشیو محلی...", root);
             photos = [];
