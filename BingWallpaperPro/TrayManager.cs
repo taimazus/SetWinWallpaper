@@ -59,7 +59,7 @@ public static class TrayManager
     static extern bool DestroyIcon(IntPtr hIcon);
 
     [DllImport("user32.dll")]
-    static extern IntPtr CreateIconFromResourceEx(byte[] pbIconBits, uint cbIconBits, bool fIcon, uint dwVersion, int cxDesired, int cyDesired, uint uFlags);
+    static extern IntPtr CopyIcon(IntPtr hIcon);
 
     static IntPtr currentHwnd = IntPtr.Zero;
     static IntPtr iconHandle = IntPtr.Zero;
@@ -73,13 +73,27 @@ public static class TrayManager
 
         try
         {
-            var stream = Application.GetResourceStream(new Uri("pack://application:,,,/BingWallpaperPro;component/Assets/SahandNama.ico"))?.Stream;
-            if (stream != null)
+            if (iconHandle == IntPtr.Zero)
             {
-                using var ms = new MemoryStream();
-                stream.CopyTo(ms);
-                var bytes = ms.ToArray();
-                iconHandle = CreateIconFromResourceEx(bytes, (uint)bytes.Length, true, 0x00030000, 32, 32, 0);
+                var stream = Application.GetResourceStream(new Uri("pack://application:,,,/BingWallpaperPro;component/Assets/SahandNama.ico"))?.Stream;
+                if (stream != null)
+                {
+                    using var icon = new System.Drawing.Icon(stream, 32, 32);
+                    iconHandle = CopyIcon(icon.Handle);
+                }
+
+                if (iconHandle == IntPtr.Zero)
+                {
+                    var exePath = Environment.ProcessPath ?? System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
+                    if (!string.IsNullOrEmpty(exePath) && File.Exists(exePath))
+                    {
+                        using var icon = System.Drawing.Icon.ExtractAssociatedIcon(exePath);
+                        if (icon != null)
+                        {
+                            iconHandle = CopyIcon(icon.Handle);
+                        }
+                    }
+                }
             }
 
             var nid = new NOTIFYICONDATA
@@ -103,19 +117,14 @@ public static class TrayManager
     {
         trayMenu = new ContextMenu
         {
-            FlowDirection = FlowDirection.RightToLeft,
-            Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E60D1E2D")),
-            Foreground = new SolidColorBrush(Colors.White),
-            BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4D386785")),
-            BorderThickness = new Thickness(1.2),
-            FontSize = 12
+            FlowDirection = FlowDirection.RightToLeft
         };
 
         var openItem = new MenuItem { Header = "🖼️ نمایش سهند نما (پنجره اصلی)", FontWeight = FontWeights.Bold };
         openItem.Click += (_, _) => App.ShowMainWindow();
         trayMenu.Items.Add(openItem);
 
-        trayMenu.Items.Add(new Separator { Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#33FFFFFF")) });
+        trayMenu.Items.Add(new Separator());
 
         var nextItem = new MenuItem { Header = "🎲 تصویر بعدی والپیپر (Win+Alt+W)" };
         nextItem.Click += async (_, _) =>
@@ -182,13 +191,13 @@ public static class TrayManager
         };
         trayMenu.Items.Add(iconsItem);
 
-        trayMenu.Items.Add(new Separator { Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#33FFFFFF")) });
+        trayMenu.Items.Add(new Separator());
 
         var settingsItem = new MenuItem { Header = "⚙️ تنظیمات و منابع تصویر…" };
         settingsItem.Click += (_, _) => App.ShowMainWindow();
         trayMenu.Items.Add(settingsItem);
 
-        var exitItem = new MenuItem { Header = "🚪 خروج کامل از برنامه", Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF8080")) };
+        var exitItem = new MenuItem { Header = "🚪 خروج کامل از برنامه" };
         exitItem.Click += (_, _) => App.ExitApplication();
         trayMenu.Items.Add(exitItem);
     }
