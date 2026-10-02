@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -418,7 +418,10 @@ public partial class MainWindow : Window
             RegisterHotkeys();
             TrayManager.Initialize(handle);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Store.Log("MainWindow_Loaded warning: " + ex.Message);
+        }
     }
 
     void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
@@ -448,7 +451,10 @@ public partial class MainWindow : Window
                 WindowsIntegration.RegisterHotKey(handle, WindowsIntegration.HOTKEY_ID_FAVORITE, WindowsIntegration.MOD_WIN | WindowsIntegration.MOD_ALT | WindowsIntegration.MOD_NOREPEAT, 0x53);
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Store.Log("RegisterHotkeys warning: " + ex.Message);
+        }
     }
 
     void UnregisterHotkeys()
@@ -462,7 +468,10 @@ public partial class MainWindow : Window
                 WindowsIntegration.UnregisterHotKey(handle, WindowsIntegration.HOTKEY_ID_FAVORITE);
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Store.Log("UnregisterHotkeys warning: " + ex.Message);
+        }
     }
 
     IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)

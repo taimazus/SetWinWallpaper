@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -45,7 +45,7 @@ public static class PhotoSelection
 public static partial class SourceHttp
 {
     static readonly HttpClient Client = new(new HttpClientHandler { AllowAutoRedirect = true, MaxAutomaticRedirections = 5 }) { Timeout = Timeout.InfiniteTimeSpan };
-    static SourceHttp() => Client.DefaultRequestHeaders.UserAgent.ParseAdd("BingWallpaperPro/1.4 (Windows desktop wallpaper manager; +https://irres.ir)");
+    static SourceHttp() => Client.DefaultRequestHeaders.UserAgent.ParseAdd("SahandNama/1.7.0 (Windows desktop wallpaper manager; +https://irres.ir)");
 
     public static Uri Validate(string url)
     {

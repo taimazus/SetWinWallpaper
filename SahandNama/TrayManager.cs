@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -110,7 +110,10 @@ public static class TrayManager
             isAdded = Shell_NotifyIcon(NIM_ADD, ref nid);
             BuildContextMenu();
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Store.Log("TrayManager Initialize warning: " + ex.Message);
+        }
     }
 
     static void BuildContextMenu()
@@ -158,7 +161,10 @@ public static class TrayManager
                     ShowBalloon("علاقه‌مندی‌ها", $"تصویر «{current.Title}» به لیست علاقه‌مندی‌ها اضافه شد.");
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Store.Log("TrayManager Favorite item warning: " + ex.Message);
+            }
         };
         trayMenu.Items.Add(favItem);
 
@@ -179,7 +185,10 @@ public static class TrayManager
                     ShowBalloon("رنگ تم ویندوز", "رنگ تم ویندوز با تصویر پس‌زمینه هماهنگ شد.");
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Store.Log("TrayManager Accent item warning: " + ex.Message);
+            }
         };
         trayMenu.Items.Add(accentItem);
 
@@ -187,7 +196,10 @@ public static class TrayManager
         iconsItem.Click += (_, _) =>
         {
             try { WindowsIntegration.ToggleDesktopIcons(); }
-            catch { }
+            catch (Exception ex)
+            {
+                Store.Log("TrayManager ToggleDesktopIcons warning: " + ex.Message);
+            }
         };
         trayMenu.Items.Add(iconsItem);
 
@@ -235,7 +247,10 @@ public static class TrayManager
             };
             Shell_NotifyIcon(NIM_MODIFY, ref nid);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Store.Log("TrayManager ShowBalloon warning: " + ex.Message);
+        }
     }
 
     public static void Dispose()

@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -125,7 +125,10 @@ public partial class DesktopWidgetWindow : Window
             SetWindowCompositionAttribute(hwnd, ref data);
             Marshal.FreeHGlobal(accentPtr);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Store.Log("Widget EnableAcrylicBlur warning: " + ex.Message);
+        }
     }
 
     public void ApplyPreferences()
@@ -200,7 +203,10 @@ public partial class DesktopWidgetWindow : Window
                 ? $"{hw.RamSummary} | {hw.BatterySummary}" 
                 : hw.RamSummary;
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Store.Log("Widget Hardware update warning: " + ex.Message);
+        }
     }
 
     public async Task UpdateWeatherAsync(bool force = false)
@@ -218,7 +224,10 @@ public partial class DesktopWidgetWindow : Window
                 WeatherChip.ToolTip = currentWeather.DetailedTooltip;
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Store.Log("Widget Weather update warning: " + ex.Message);
+        }
     }
 
     public void UpdateWallpaperInfo()
@@ -241,7 +250,10 @@ public partial class DesktopWidgetWindow : Window
                 }
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Store.Log("Widget Wallpaper info warning: " + ex.Message);
+        }
     }
 
     void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -278,7 +290,10 @@ public partial class DesktopWidgetWindow : Window
                 preferences.WidgetTop = Top;
                 Store.Save(preferences);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Store.Log("Widget LocationChanged save warning: " + ex.Message);
+            }
         }
     }
 
@@ -334,7 +349,10 @@ public partial class DesktopWidgetWindow : Window
             }
             Store.Save(preferences);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Store.Log("Widget Favorite_Click warning: " + ex.Message);
+        }
     }
 
     void SyncAccent_Click(object sender, RoutedEventArgs e)
@@ -346,7 +364,10 @@ public partial class DesktopWidgetWindow : Window
                 WindowsIntegration.SyncWindowsAccentColor(currentPhoto.FilePath);
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Store.Log("Widget SyncAccent_Click warning: " + ex.Message);
+        }
     }
 
     void OpenApp_Click(object sender, RoutedEventArgs e)

@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 
 namespace SahandNama;
 
@@ -83,7 +83,10 @@ public static class HardwareMonitor
                 info.RamPercent = (int)memStatus.dwMemoryLoad;
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Store.Log("HardwareMonitor RAM error: " + ex.Message);
+        }
 
         // 2. CPU Usage
         try
@@ -111,7 +114,10 @@ public static class HardwareMonitor
                 info.CpuPercent = lastCpuPercent;
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Store.Log("HardwareMonitor CPU error: " + ex.Message);
+        }
 
         // 3. Battery / Power Status
         try
@@ -126,7 +132,10 @@ public static class HardwareMonitor
                 }
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Store.Log("HardwareMonitor Battery error: " + ex.Message);
+        }
 
         return info;
     }
