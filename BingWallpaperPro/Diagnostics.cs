@@ -185,7 +185,7 @@ public static class Diagnostics
             if (!SourceCatalog.Options.Any(s => s.Id == source)) problems.Add("منبع ناشناخته: " + source);
         if (!BingClient.Markets.Contains(settings.Market) || !BingClient.Markets.Contains(settings.LockMarket)) problems.Add("منطقه Bing نامعتبر است.");
         if (!BingClient.Resolutions.Contains(settings.Resolution)) problems.Add("کیفیت تصویر نامعتبر است.");
-        if (settings.Mode is not ("Same" or "Previous" or "Regions")) problems.Add("حالت انتخاب تصویر نامعتبر است.");
+        if (settings.Mode is not ("Same" or "Previous" or "Regions" or "Random")) problems.Add("حالت انتخاب تصویر نامعتبر است.");
         return problems;
     }
 
@@ -208,7 +208,7 @@ public static class Diagnostics
                 if (!BingClient.Markets.Contains(repaired.Market)) repaired.Market = "en-US";
                 if (!BingClient.Markets.Contains(repaired.LockMarket)) repaired.LockMarket = "en-GB";
                 if (!BingClient.Resolutions.Contains(repaired.Resolution)) repaired.Resolution = "UHD";
-                if (repaired.Mode is not ("Same" or "Previous" or "Regions")) repaired.Mode = "Same";
+                if (repaired.Mode is not ("Same" or "Previous" or "Regions" or "Random")) repaired.Mode = "Same";
             }
         }
         catch

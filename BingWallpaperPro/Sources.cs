@@ -18,7 +18,7 @@ public static class PhotoSelection
 {
     public static SourceRequest Request(Preferences settings, bool lockScreen)
     {
-        if (settings.Mode is not ("Same" or "Previous" or "Regions")) throw new InvalidDataException("حالت انتخاب تصویر ناشناخته است.");
+        if (settings.Mode is not ("Same" or "Previous" or "Regions" or "Random")) throw new InvalidDataException("حالت انتخاب تصویر ناشناخته است.");
         var independent = lockScreen && settings.Mode == "Regions";
         return new SourceRequest(
             independent ? settings.LockSource : settings.DesktopSource,
@@ -27,12 +27,16 @@ public static class PhotoSelection
             independent ? settings.LockFolder : settings.DesktopFolder,
             independent ? settings.LockNetworkSharePath : settings.NetworkSharePath);
     }
-    public static Photo Select(IReadOnlyList<Photo> photos, string source, bool previous, DateOnly day)
+    public static Photo Select(IReadOnlyList<Photo> photos, string source, bool previous, DateOnly day, bool random = false)
     {
         if (photos.Count == 0) throw new InvalidOperationException("منبع انتخاب‌شده تصویر قابل استفاده ندارد.");
         if (previous && photos.Count < 2) throw new InvalidOperationException("برای تصویر قبلی، حداقل دو تصویر در منبع لازم است.");
+        if (random && photos.Count > 1)
+        {
+            return photos[Random.Shared.Next(photos.Count)];
+        }
         // Daily feeds use newest-first. Collections rotate deterministically each local calendar day.
-        var index = source is "Bing" or "NasaDaily" or "WikimediaPotd" or "EsaHubble" ? 0 : day.DayNumber % photos.Count;
+        var index = source is "Bing" or "NasaDaily" or "WikimediaPotd" or "EsaHubble" ? 0 : Math.Abs(day.DayNumber) % photos.Count;
         return photos[(index + (previous ? 1 : 0)) % photos.Count];
     }
 }

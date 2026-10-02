@@ -120,6 +120,10 @@ internal static class Program
             var day = new DateOnly(2026, 9, 24);
             Check(PhotoSelection.Select(candidates, "Bing", true, day).Id == "b", "Previous feed image selection");
             Check(PhotoSelection.Select(candidates, "Folder", false, day).Id != PhotoSelection.Select(candidates, "Folder", false, day.AddDays(1)).Id, "Collection rotates daily and deterministically");
+            var randomSelected = PhotoSelection.Select(candidates, "Folder", false, day, random: true);
+            Check(randomSelected.Id is "a" or "b", "Random mode selects valid candidate");
+            var randomPref = new Preferences { Mode = "Random" };
+            Check(PhotoSelection.Request(randomPref, false).Id == "Bing", "Random mode generates valid source request");
             Reject(() => PhotoSelection.Select(candidates.Take(1).ToArray(), "Folder", true, day), "Previous image requires at least two images");
 
             var localRoot = Path.Combine(root, "local-source"); var inputRoot = Path.Combine(root, "input"); Directory.CreateDirectory(inputRoot);

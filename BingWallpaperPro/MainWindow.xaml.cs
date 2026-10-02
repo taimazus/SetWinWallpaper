@@ -32,7 +32,7 @@ public partial class MainWindow : Window
         LockFolderBox.Text = string.IsNullOrWhiteSpace(preferences.LockFolder) ? preferences.LockNetworkSharePath : preferences.LockFolder;
         MarketBox.SelectedItem = preferences.Market; LockMarketBox.SelectedItem = preferences.LockMarket;
         ResolutionBox.SelectedItem = preferences.Resolution; FitBox.SelectedItem = preferences.Fit;
-        ModeBox.SelectedIndex = preferences.Mode switch { "Previous" => 1, "Regions" => 2, _ => 0 };
+        ModeBox.SelectedIndex = preferences.Mode switch { "Previous" => 1, "Regions" => 2, "Random" => 3, _ => 0 };
         DesktopCheck.IsChecked = preferences.Desktop; LockCheck.IsChecked = preferences.LockScreen;
         TimeBox.Text = preferences.DailyTime;
         QuickSourceBox.ItemsSource = SourceCatalog.Options; QuickSourceBox.SelectedIndex = 0;

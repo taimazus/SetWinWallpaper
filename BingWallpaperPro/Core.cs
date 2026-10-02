@@ -224,7 +224,7 @@ public sealed class WallpaperEngine
             var request = PhotoSelection.Request(settings, lockScreen);
             if (!fetched.TryGetValue(request, out var fetch)) fetched[request] = fetch = catalog.FetchAsync(request);
             var photos = await fetch;
-            return PhotoSelection.Select(photos, request.Id, lockScreen && settings.Mode == "Previous", day);
+            return PhotoSelection.Select(photos, request.Id, lockScreen && settings.Mode == "Previous", day, settings.Mode == "Random");
         }
         var messages = new List<string>();
         var failed = false;
