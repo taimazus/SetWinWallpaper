@@ -660,8 +660,12 @@ public static class WindowsIntegration
     #endregion
 
     #region Theme Accent Color Sync
-    [DllImport("dwmapi.dll", EntryPoint = "#127", PreserveSig = false)]
-    static extern void DwmSetColorizationColor(uint crColorization, bool fOpaqueBlend);
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint msg, UIntPtr wParam, string lParam, uint fuFlags, uint uTimeout, out UIntPtr lpdwResult);
+
+    const uint WM_SETTINGCHANGE = 0x001A;
+    const uint HWND_BROADCAST = 0xFFFF;
+    const uint SMTO_ABORTIFHUNG = 0x0002;
 
     public static System.Windows.Media.Color CalculateDominantColor(string imagePath)
     {
@@ -715,19 +719,24 @@ public static class WindowsIntegration
         try
         {
             var color = CalculateDominantColor(imagePath);
-            uint argb = (0xFFu << 24) | ((uint)color.R << 16) | ((uint)color.G << 8) | color.B;
-
-            try
-            {
-                DwmSetColorizationColor(argb, false);
-            }
-            catch { }
+            int argb = (int)((0xFFu << 24) | ((uint)color.R << 16) | ((uint)color.G << 8) | color.B);
 
             try
             {
                 using var dwmKey = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\DWM");
-                dwmKey?.SetValue("ColorizationColor", (int)argb, RegistryValueKind.DWord);
-                dwmKey?.SetValue("AccentColor", (int)argb, RegistryValueKind.DWord);
+                if (dwmKey != null)
+                {
+                    dwmKey.SetValue("ColorizationColor", argb, RegistryValueKind.DWord);
+                    dwmKey.SetValue("AccentColor", argb, RegistryValueKind.DWord);
+                }
+
+                using var accentKey = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\Accent");
+                if (accentKey != null)
+                {
+                    accentKey.SetValue("AccentColorMenu", argb, RegistryValueKind.DWord);
+                }
+
+                SendMessageTimeout(new IntPtr(HWND_BROADCAST), WM_SETTINGCHANGE, UIntPtr.Zero, "ImmersiveColorSet", SMTO_ABORTIFHUNG, 1000, out _);
             }
             catch { }
 
