@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace BingWallpaperPro;
@@ -103,11 +104,14 @@ public partial class DesktopWidgetWindow : Window
         {
             var hwnd = new WindowInteropHelper(this).Handle;
             if (hwnd == IntPtr.Zero) return;
+            var op = Math.Clamp(preferences.WidgetOpacity, 0.15, 1.0);
+            byte alpha = (byte)Math.Clamp((int)(op * 120), 15, 200); // Tint alpha
+            int gradientColor = unchecked((int)((alpha << 24) | 0x00201408)); // ABGR
             var accent = new AccentPolicy
             {
                 AccentState = 4, // ACCENT_ENABLE_ACRYLICBLURBEHIND
                 AccentFlags = 2,
-                GradientColor = unchecked((int)0x66081420) // Translucent dark glass ABGR
+                GradientColor = gradientColor
             };
             var accentStructSize = Marshal.SizeOf(accent);
             var accentPtr = Marshal.AllocHGlobal(accentStructSize);
@@ -128,9 +132,17 @@ public partial class DesktopWidgetWindow : Window
     {
         preferences = Store.Settings;
 
-        // 1. Opacity
-        var op = Math.Clamp(preferences.WidgetOpacity, 0.2, 1.0);
-        GlassRootBorder.Opacity = op;
+        // 1. Background-only Opacity (Foreground texts, clock and buttons remain 100% crisp & solid)
+        var op = Math.Clamp(preferences.WidgetOpacity, 0.15, 1.0);
+        GlassRootBorder.Opacity = 1.0;
+
+        byte bgAlpha = (byte)Math.Clamp((int)(op * 255), 20, 255);
+        byte borderAlpha = (byte)Math.Clamp((int)(op * 180 + 35), 35, 240);
+
+        GlassRootBorder.Background = new SolidColorBrush(Color.FromArgb(bgAlpha, 0x0B, 0x1A, 0x28));
+        GlassRootBorder.BorderBrush = new SolidColorBrush(Color.FromArgb(borderAlpha, 0x4D, 0x7B, 0x99));
+
+        EnableAcrylicBlur();
 
         // 2. Visibility toggles
         ClockPanel.Visibility = preferences.WidgetShowClock ? Visibility.Visible : Visibility.Collapsed;

@@ -37,30 +37,128 @@
     <Trigger Property="IsPressed" Value="True"><Setter Property="Background" Value="#440E202E"/></Trigger>
    </Style.Triggers>
   </Style>
+
+  <!-- Dark ContextMenu & Submenu Styles -->
+  <Style TargetType="{x:Type ContextMenu}">
+   <Setter Property="SnapsToDevicePixels" Value="True"/>
+   <Setter Property="OverridesDefaultStyle" Value="True"/>
+   <Setter Property="Grid.IsSharedSizeScope" Value="True"/>
+   <Setter Property="HasDropShadow" Value="True"/>
+   <Setter Property="Background" Value="#122332"/>
+   <Setter Property="Foreground" Value="#EDF6F9"/>
+   <Setter Property="BorderBrush" Value="#2D536F"/>
+   <Setter Property="BorderThickness" Value="1"/>
+   <Setter Property="FontFamily" Value="{StaticResource VazirmatnFont}"/>
+   <Setter Property="Template">
+    <Setter.Value>
+     <ControlTemplate TargetType="{x:Type ContextMenu}">
+      <Border Background="#122332" BorderBrush="#2D536F" BorderThickness="1" CornerRadius="12" Padding="6">
+       <Border.Effect>
+        <DropShadowEffect Color="#000000" BlurRadius="20" ShadowDepth="4" Opacity="0.75"/>
+       </Border.Effect>
+       <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
+      </Border>
+     </ControlTemplate>
+    </Setter.Value>
+   </Setter>
+  </Style>
+
+  <Style TargetType="{x:Type Separator}">
+   <Setter Property="Template">
+    <Setter.Value>
+     <ControlTemplate TargetType="{x:Type Separator}">
+      <Border Height="1" Background="#264157" Margin="4,4"/>
+     </ControlTemplate>
+    </Setter.Value>
+   </Setter>
+  </Style>
+
+  <Style TargetType="{x:Type MenuItem}">
+   <Setter Property="Foreground" Value="#EDF6F9"/>
+   <Setter Property="FontSize" Value="12"/>
+   <Setter Property="FontFamily" Value="{StaticResource VazirmatnFont}"/>
+   <Setter Property="Padding" Value="10,6"/>
+   <Setter Property="Cursor" Value="Hand"/>
+   <Setter Property="Template">
+    <Setter.Value>
+     <ControlTemplate TargetType="{x:Type MenuItem}">
+      <Grid>
+       <Border x:Name="ItemBorder" Background="Transparent" BorderBrush="Transparent" BorderThickness="1" CornerRadius="8" Padding="{TemplateBinding Padding}">
+        <Grid>
+         <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="22"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+         </Grid.ColumnDefinitions>
+
+         <!-- Checkmark -->
+         <TextBlock x:Name="CheckGlyph" Text="✓" Foreground="#5BE5C9" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
+
+         <!-- Header -->
+         <ContentPresenter Grid.Column="1" ContentSource="Header" RecognizesAccessKey="True" VerticalAlignment="Center" Margin="6,0,10,0"/>
+
+         <!-- Submenu Arrow -->
+         <TextBlock x:Name="SubmenuArrow" Grid.Column="2" Text="◀" FontSize="10" Foreground="#8FAABC" VerticalAlignment="Center" HorizontalAlignment="Right" Visibility="Collapsed" Margin="4,0,2,0"/>
+        </Grid>
+       </Border>
+
+       <!-- Submenu Popup with dark styling -->
+       <Popup x:Name="PART_Popup" AllowsTransparency="True" Placement="Left" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}" Focusable="False" PopupAnimation="Fade">
+        <Border Background="#122332" BorderBrush="#2D536F" BorderThickness="1" CornerRadius="12" Padding="6" Margin="4">
+         <Border.Effect>
+          <DropShadowEffect Color="#000000" BlurRadius="20" ShadowDepth="4" Opacity="0.75"/>
+         </Border.Effect>
+         <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
+        </Border>
+       </Popup>
+      </Grid>
+
+      <ControlTemplate.Triggers>
+       <Trigger Property="HasItems" Value="True">
+        <Setter TargetName="SubmenuArrow" Property="Visibility" Value="Visible"/>
+       </Trigger>
+       <Trigger Property="IsChecked" Value="True">
+        <Setter TargetName="CheckGlyph" Property="Visibility" Value="Visible"/>
+       </Trigger>
+       <Trigger Property="IsHighlighted" Value="True">
+        <Setter TargetName="ItemBorder" Property="Background" Value="#224842"/>
+        <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#4FBFA8"/>
+        <Setter Property="Foreground" Value="#FFFFFF"/>
+        <Setter TargetName="SubmenuArrow" Property="Foreground" Value="#FFFFFF"/>
+       </Trigger>
+       <Trigger Property="IsEnabled" Value="False">
+        <Setter Property="Opacity" Value="0.45"/>
+       </Trigger>
+      </ControlTemplate.Triggers>
+     </ControlTemplate>
+    </Setter.Value>
+   </Setter>
+  </Style>
  </Window.Resources>
 
  <!-- Right-Click Context Menu -->
  <Window.ContextMenu>
-  <ContextMenu FlowDirection="RightToLeft" Background="#162938" Foreground="#EDF6F9" BorderBrush="#2D536F" BorderThickness="1">
+  <ContextMenu FlowDirection="RightToLeft">
    <MenuItem Header="📌 نحوه قرارگیری ویجت" FontWeight="Bold">
     <MenuItem x:Name="MenuPinDesktop" Header="🪟 چسبیده به پس‌زمینه دسکتاپ (والپیپر)" Click="MenuPinDesktop_Click"/>
     <MenuItem x:Name="MenuPinNormal" Header="🔲 پنجره عادی" Click="MenuPinNormal_Click"/>
     <MenuItem x:Name="MenuPinTopMost" Header="📌 همیشه روی همه پنجره‌ها (TopMost)" Click="MenuPinTopMost_Click"/>
    </MenuItem>
-   <Separator Background="#2D536F"/>
+   <Separator/>
    <MenuItem x:Name="MenuToggleWeather" Header="🌤️ نمایش اطلاعات آب و هوا" IsCheckable="True" Click="MenuToggleWeather_Click"/>
    <MenuItem x:Name="MenuToggleHardware" Header="💻 نمایش وضعیت سخت‌افزار (CPU/RAM)" IsCheckable="True" Click="MenuToggleHardware_Click"/>
    <MenuItem x:Name="MenuToggleClock" Header="🕒 نمایش ساعت و تقویم شمسی" IsCheckable="True" Click="MenuToggleClock_Click"/>
    <MenuItem x:Name="MenuToggleWallpaper" Header="🖼️ نمایش اطلاعات تصویر والپیپر" IsCheckable="True" Click="MenuToggleWallpaper_Click"/>
    <MenuItem x:Name="MenuToggleActions" Header="⚡ نمایش دکمه‌های کنترل سریع" IsCheckable="True" Click="MenuToggleActions_Click"/>
-   <Separator Background="#2D536F"/>
-   <MenuItem Header="🎨 میزان شفافیت (Opacity)">
-    <MenuItem Header="۱۰۰٪ (کاملاً شفاف مات)" Click="MenuOpacity_Click" Tag="1.0"/>
+   <Separator/>
+   <MenuItem Header="🎨 میزان شفافیت پس‌زمینه (Opacity)">
+    <MenuItem Header="۱۰۰٪ (کاملاً مات)" Click="MenuOpacity_Click" Tag="1.0"/>
     <MenuItem Header="۸۵٪ (مات متعادل)" Click="MenuOpacity_Click" Tag="0.85"/>
     <MenuItem Header="۷۰٪ (شیشه‌ای ملایم)" Click="MenuOpacity_Click" Tag="0.70"/>
-    <MenuItem Header="۵۰٪ (بسیار شفاف)" Click="MenuOpacity_Click" Tag="0.50"/>
+    <MenuItem Header="۵۰٪ (شفاف شیشه‌ای)" Click="MenuOpacity_Click" Tag="0.50"/>
+    <MenuItem Header="۳۰٪ (بسیار شفاف)" Click="MenuOpacity_Click" Tag="0.30"/>
    </MenuItem>
-   <Separator Background="#2D536F"/>
+   <Separator/>
    <MenuItem Header="⚙️ تنظیمات پیشرفته در سهند نما…" Click="OpenApp_Click"/>
    <MenuItem Header="✕ پنهان‌سازی ویجت" Click="CloseBtn_Click"/>
   </ContextMenu>
