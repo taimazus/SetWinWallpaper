@@ -1,6 +1,7 @@
 **/bin/
 **/obj/
 artifacts/
+output/
 .vs/
 *.user
 *_wpftmp.csproj
