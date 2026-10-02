@@ -203,11 +203,32 @@ internal static class Program
             Check(SourceCatalog.Options.Any(o => o.Id == "IranNature"), "SourceCatalog includes IranNature collection");
 
             // Test Preferences persistence with new modern settings
-            var modernPrefs = new Preferences { EnableGlobalHotkeys = true, ShowDesktopWidget = true, SyncWindowsAccentColor = true };
+            var modernPrefs = new Preferences 
+            { 
+                EnableGlobalHotkeys = true, 
+                ShowDesktopWidget = true, 
+                SyncWindowsAccentColor = true,
+                WidgetOpacity = 0.85,
+                WidgetPinMode = "Desktop",
+                WidgetShowWeather = true,
+                WidgetCity = "تبریز",
+                WidgetShowHardware = true
+            };
             var prefsPath = Path.Combine(root, "modern-prefs.json");
             Store.Write(prefsPath, modernPrefs);
             var readModern = Store.Read(prefsPath, new Preferences());
-            Check(readModern.EnableGlobalHotkeys && readModern.ShowDesktopWidget && readModern.SyncWindowsAccentColor, "Modern features preferences persistence");
+            Check(readModern.EnableGlobalHotkeys && readModern.ShowDesktopWidget && readModern.SyncWindowsAccentColor && readModern.WidgetOpacity == 0.85 && readModern.WidgetCity == "تبریز", "Modern features and widget preferences persistence");
+
+            // Test Weather Service city lookup & mapping
+            var tehran = WeatherService.FindCity("تهران");
+            var tabriz = WeatherService.FindCity("Tabriz");
+            Check(tehran.Latitude > 35 && tabriz.Longitude > 46, "WeatherService city coordinate lookup for Iranian cities");
+            var (weatherDesc, weatherIcon) = WeatherService.MapWeatherCode(0);
+            Check(weatherDesc.Contains("آفتابی") && weatherIcon == "☀️", "WeatherService code mapping to Persian labels and icons");
+
+            // Test Hardware Monitor
+            var hwStatus = HardwareMonitor.GetCurrentStatus();
+            Check(hwStatus.RamTotalGb > 0 && hwStatus.RamPercent >= 0, "HardwareMonitor returns valid system memory statistics");
 
             // Test Multi-Monitor detection
             Check(WindowsIntegration.GetMonitorCount() >= 1, "Windows multi-monitor enumeration returns valid monitor count");

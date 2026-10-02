@@ -41,6 +41,19 @@ public partial class MainWindow : Window
         HotkeysCheck.IsChecked = preferences.EnableGlobalHotkeys;
         DesktopWidgetCheck.IsChecked = preferences.ShowDesktopWidget;
         AccentColorCheck.IsChecked = preferences.SyncWindowsAccentColor;
+
+        // Desktop Widget rich controls initialization
+        WidgetCityBox.ItemsSource = WeatherService.Cities.Select(c => c.PersianName).ToList();
+        WidgetCityBox.SelectedItem = WeatherService.FindCity(preferences.WidgetCity).PersianName;
+        WidgetPinModeBox.SelectedIndex = preferences.WidgetPinMode switch { "Normal" => 1, "TopMost" => 2, _ => 0 };
+        WidgetOpacitySlider.Value = Math.Round(Math.Clamp(preferences.WidgetOpacity, 0.2, 1.0) * 100.0);
+        WidgetOpacityText.Text = $"{(int)WidgetOpacitySlider.Value}%";
+        WidgetWeatherCheck.IsChecked = preferences.WidgetShowWeather;
+        WidgetHardwareCheck.IsChecked = preferences.WidgetShowHardware;
+        WidgetClockCheck.IsChecked = preferences.WidgetShowClock;
+        WidgetWallpaperInfoCheck.IsChecked = preferences.WidgetShowWallpaperInfo;
+        WidgetQuickActionsCheck.IsChecked = preferences.WidgetShowQuickActions;
+
         Loaded += MainWindow_Loaded;
         Closing += MainWindow_Closing;
         if (preferences.ShowDesktopWidget && App.ActiveWidget == null)
@@ -92,8 +105,28 @@ public partial class MainWindow : Window
         preferences.EnableGlobalHotkeys = HotkeysCheck.IsChecked == true;
         preferences.ShowDesktopWidget = DesktopWidgetCheck.IsChecked == true;
         preferences.SyncWindowsAccentColor = AccentColorCheck.IsChecked == true;
+
+        // Save widget customizations
+        preferences.WidgetPinMode = (WidgetPinModeBox.SelectedItem as ComboBoxItem)?.Tag.ToString() ?? "Desktop";
+        preferences.WidgetCity = WidgetCityBox.SelectedItem as string ?? "تهران";
+        preferences.WidgetOpacity = WidgetOpacitySlider.Value / 100.0;
+        preferences.WidgetShowWeather = WidgetWeatherCheck.IsChecked == true;
+        preferences.WidgetShowHardware = WidgetHardwareCheck.IsChecked == true;
+        preferences.WidgetShowClock = WidgetClockCheck.IsChecked == true;
+        preferences.WidgetShowWallpaperInfo = WidgetWallpaperInfoCheck.IsChecked == true;
+        preferences.WidgetShowQuickActions = WidgetQuickActionsCheck.IsChecked == true;
+
         Store.Save(preferences);
         RegisterHotkeys();
+        App.ApplyWidgetPreferences();
+    }
+
+    void WidgetOpacitySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (WidgetOpacityText != null)
+        {
+            WidgetOpacityText.Text = $"{(int)e.NewValue}%";
+        }
     }
 
     void LoadArchive(string? root = null)
@@ -475,7 +508,15 @@ public partial class MainWindow : Window
 
     void OpenDesktopWidget_Click(object sender, RoutedEventArgs e)
     {
-        App.ToggleWidget();
+        SavePreferences();
+        DesktopWidgetCheck.IsChecked = true;
+        preferences.ShowDesktopWidget = true;
+        Store.Save(preferences);
+        if (App.ActiveWidget == null || !App.ActiveWidget.IsVisible)
+        {
+            App.ToggleWidget();
+        }
+        App.ApplyWidgetPreferences();
         DesktopWidgetCheck.IsChecked = Store.Settings.ShowDesktopWidget;
     }
 

@@ -39,7 +39,7 @@
         <Setter Property="FontWeight" Value="Bold"/>
        </Trigger>
        <Trigger Property="IsEnabled" Value="False">
-        <Setter Property="Opacity" Value="0.4"/>
+        <Setter Property="Opacity" Value="0.45"/>
        </Trigger>
       </ControlTemplate.Triggers>
      </ControlTemplate>
@@ -271,13 +271,47 @@
       <WrapPanel><Button Content="ذخیره تنظیمات" Tag="&#xE74E;" Click="Save_Click"/><Button Content="به‌روزرسانی اکنون" Tag="&#xE72C;" Click="Update_Click" Style="{StaticResource Primary}"/><Button Content="فعال‌سازی / اصلاح زمان‌بندی" Tag="&#xE787;" Click="Schedule_Click"/><Button Content="حذف زمان‌بندی" Tag="&#xE74D;" Click="Unschedule_Click"/></WrapPanel><TextBlock Text="برنامه روزانه و هنگام ورود در نشست حساب کاربری شما اجرا می‌شود. پس از تغییر ساعت، زمان‌بندی را نیز اصلاح کنید." Style="{StaticResource Hint}" Margin="0,8,0,0"/>
      </StackPanel></Border>
      <Border Style="{StaticResource Card}"><StackPanel>
-      <TextBlock Text="ویژگی‌های هوشمند و شخصی‌سازی دسکتاپ" FontSize="18" FontWeight="Bold"/>
-      <TextBlock Text="امکانات نوین برای زیبایی دوچندان و دسترسی سریع به والپیپرها" Style="{StaticResource Hint}"/>
-      <CheckBox x:Name="HotkeysCheck" Content="فعال‌سازی کلیدهای میانبر سراسری ویندوز (Win+Alt+W تصویر بعدی، Win+Alt+S علاقه‌مندی)" Margin="0,4,0,8"/>
-      <CheckBox x:Name="DesktopWidgetCheck" Content="نمایش ویجت شیشه‌ای دسکتاپ (ساعت زنده، تقویم خورشیدی و نام تصویر)" Margin="0,4,0,8"/>
-      <CheckBox x:Name="AccentColorCheck" Content="هماهنگ‌سازی خودکار رنگ تم ویندوز (Accent Color) با رنگ تصویر روز" Margin="0,4,0,12"/>
-      <WrapPanel>
-       <Button Content="نمایش ویجت دسکتاپ" Tag="&#xE7F4;" Click="OpenDesktopWidget_Click"/>
+      <TextBlock Text="شخصی‌سازی و امکانات پیشرفته ویجت شیشه‌ای دسکتاپ" FontSize="18" FontWeight="Bold"/>
+      <TextBlock Text="شخصی‌سازی ماژول‌های ویجت مات آکریلیک: آب و هوا، مانیتور سخت‌افزار، تقویم، شفافیت و چسبیدن به دسکتاپ" Style="{StaticResource Hint}"/>
+      
+      <CheckBox x:Name="DesktopWidgetCheck" Content="نمایش ویجت شیشه‌ای دسکتاپ" Margin="0,2,0,8" FontWeight="SemiBold"/>
+      <CheckBox x:Name="HotkeysCheck" Content="فعال‌سازی کلیدهای میانبر سراسری ویندوز (Win+Alt+W تصویر بعدی، Win+Alt+S علاقه‌مندی)" Margin="0,2,0,8"/>
+      <CheckBox x:Name="AccentColorCheck" Content="هماهنگ‌سازی خودکار رنگ تم ویندوز (Accent Color) با رنگ تصویر روز" Margin="0,2,0,12"/>
+
+      <Grid Margin="0,0,0,12">
+       <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="14"/><ColumnDefinition/></Grid.ColumnDefinitions>
+       <StackPanel>
+        <TextBlock Text="نحوه قرارگیری ویجت روی صفحه (Pin Mode)" FontWeight="SemiBold" FontSize="12"/>
+        <ComboBox x:Name="WidgetPinModeBox" Margin="0,4,0,10">
+         <ComboBoxItem Content="🪟 چسبیده به پس‌زمینه دسکتاپ (زیر پنجره‌ها)" Tag="Desktop"/>
+         <ComboBoxItem Content="🔲 پنجره عادی (Normal Window)" Tag="Normal"/>
+         <ComboBoxItem Content="📌 همیشه روی همه پنجره‌ها (Always on Top)" Tag="TopMost"/>
+        </ComboBox>
+        
+        <TextBlock Text="شهر جهت دریافت وضعیت آب و هوا" FontWeight="SemiBold" FontSize="12"/>
+        <ComboBox x:Name="WidgetCityBox" Margin="0,4,0,0"/>
+       </StackPanel>
+       
+       <StackPanel Grid.Column="2">
+        <Grid>
+         <TextBlock Text="میزان شفافیت پس‌زمینه ویجت (Glass Opacity)" FontWeight="SemiBold" FontSize="12"/>
+         <TextBlock x:Name="WidgetOpacityText" Text="95%" HorizontalAlignment="Left" Foreground="#52D1B2" FontWeight="Bold" FontSize="12"/>
+        </Grid>
+        <Slider x:Name="WidgetOpacitySlider" Minimum="20" Maximum="100" Value="95" TickFrequency="5" IsSnapToTickEnabled="True" Margin="0,8,0,12" ValueChanged="WidgetOpacitySlider_ValueChanged"/>
+
+        <TextBlock Text="ماژول‌های فعال ویجت دسکتاپ" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4"/>
+        <WrapPanel>
+         <CheckBox x:Name="WidgetWeatherCheck" Content="🌤️ آب و هوا" Margin="0,0,10,4"/>
+         <CheckBox x:Name="WidgetHardwareCheck" Content="💻 مانیتور سخت‌افزار" Margin="0,0,10,4"/>
+         <CheckBox x:Name="WidgetClockCheck" Content="🕒 ساعت و تقویم" Margin="0,0,10,4"/>
+         <CheckBox x:Name="WidgetWallpaperInfoCheck" Content="🖼️ اطلاعات والپیپر" Margin="0,0,10,4"/>
+         <CheckBox x:Name="WidgetQuickActionsCheck" Content="⚡ دکمه‌های کنترل سریع" Margin="0,0,10,4"/>
+        </WrapPanel>
+       </StackPanel>
+      </Grid>
+
+      <WrapPanel Margin="0,6,0,0">
+       <Button Content="اعمال و نمایش ویجت" Tag="&#xE7F4;" Click="OpenDesktopWidget_Click" Style="{StaticResource Primary}"/>
        <Button Content="پنهان/نمایان‌سازی آیکون‌ها" Tag="&#xE7B5;" Click="ToggleDesktopIcons_Click"/>
        <Button Content="تولید کارت گرافیکی (Social)" Tag="&#xE72D;" Click="ShareCard_Click"/>
       </WrapPanel>
@@ -338,7 +372,7 @@
      <Border Style="{StaticResource Card}" Padding="30"><StackPanel><Image Source="Assets/SahandNama.png" Width="96" Height="96" HorizontalAlignment="Right" Margin="0,0,0,20" RenderOptions.BitmapScalingMode="HighQuality"/><TextBlock Text="Sahand Nama" FontSize="32" FontWeight="Bold" FlowDirection="LeftToRight" HorizontalAlignment="Right"/><TextBlock Text="{x:Static local:Brand.VersionLabel}" Foreground="#79E3C4" FontSize="16" Margin="0,10,0,20"/><TextBlock Text="{x:Static local:Brand.Credit}" FontSize="18"/><Button Content="irres.ir" Tag="&#xE774;" Click="Company_Click" HorizontalAlignment="Right" Margin="0,18,0,0"/></StackPanel></Border>
      <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="ویژگی‌ها و معماری نرم‌افزار" FontSize="19" FontWeight="Bold"/><TextBlock Text="• فونت فارسی اختصاصی Vazirmatn و آیکون‌های برداری داخلی&#xA;• نسخه ۶۴بیتی مستقل (Self-Contained) بدون وابستگی به نصب دات‌نت&#xA;• اتصال مستقیم به منابع معتبر Bing، ناسا، ویکی‌مدیا کمونز، Unsplash، زمین از فضا (USGS) و اسا (ESA/Hubble)&#xA;• پشتیبانی از مخزن اشتراکی سرور در شبکه محلی جهت کاهش مصرف اینترنت کلاینت‌ها&#xA;• سامانه هوشمند جلوگیری از دانلود تکراری و پاک‌سازی فایل‌های مشابه از دیسک&#xA;• عیب‌یابی و تعمیر خودکار زمان‌بندی Task Scheduler، کش و Spotlight ویندوز&#xA;• مدیریت دسکتاپ و لاک‌اسکرین به صورت کاملاً مستقل و قابل شخصی‌سازی" Style="{StaticResource Hint}"/><WrapPanel><Button Content="راهنمای فارسی" Tag="&#xE8A5;" Click="Help_Click" Style="{StaticResource Primary}"/><Button Content="پوشه داده‌های برنامه" Tag="&#xE8B7;" Click="OpenData_Click"/></WrapPanel></StackPanel></Border>
      <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="شفافیت منابع و کپی‌رایت" FontSize="18" FontWeight="Bold"/><TextBlock Text="تصاویر با نام منبع و اطلاعات اعتبار نمایش داده می‌شوند. فونت Vazirmatn تحت مجوز آزاد SIL Open Font License منتشر شده است." Style="{StaticResource Hint}"/></StackPanel></Border>
-    </StackPanel></ScrollViewer>
+     </StackPanel></ScrollViewer>
    </TabItem>
   </TabControl>
   <Grid Grid.Row="2" Margin="0,15,0,0"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions><ProgressBar x:Name="BusyBar" Height="3" Visibility="Collapsed" IsIndeterminate="True" Foreground="#60DDB8" Background="#142B36"/><TextBlock Grid.Row="1" x:Name="StatusText" Text="آماده؛ منظره بعدی را شما انتخاب می‌کنید." Foreground="#96B2C3" Margin="0,10,0,0" FontSize="12" TextTrimming="CharacterEllipsis" MaxHeight="48"/></Grid>

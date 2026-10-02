@@ -35,6 +35,14 @@ public sealed class Preferences
     public double WidgetTop { get; set; } = -1;
     public bool SyncWindowsAccentColor { get; set; }
     public bool AutoCleanDesktopIcons { get; set; }
+    public double WidgetOpacity { get; set; } = 0.95;
+    public string WidgetPinMode { get; set; } = "Desktop"; // "Desktop", "Normal", "TopMost"
+    public bool WidgetShowClock { get; set; } = true;
+    public bool WidgetShowWallpaperInfo { get; set; } = true;
+    public bool WidgetShowQuickActions { get; set; } = true;
+    public bool WidgetShowWeather { get; set; } = true;
+    public string WidgetCity { get; set; } = "تهران";
+    public bool WidgetShowHardware { get; set; } = true;
 }
 
 public sealed class Photo

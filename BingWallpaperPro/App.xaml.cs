@@ -293,6 +293,19 @@ public partial class App : Application
         });
     }
 
+    public static void ApplyWidgetPreferences()
+    {
+        var app = Current;
+        if (app == null) return;
+        app.Dispatcher.Invoke(() =>
+        {
+            if (ActiveWidget != null && ActiveWidget.IsLoaded && ActiveWidget.IsVisible)
+            {
+                ActiveWidget.ApplyPreferences();
+            }
+        });
+    }
+
     public static void ExitApplication()
     {
         IsExiting = true;
