@@ -129,8 +129,12 @@ public static class Diagnostics
         {
             var json = await WindowsIntegration.RunPowerShellAsync($$"""
                 Add-Type -AssemblyName System.Runtime.WindowsRuntime
-                $api=$false; $fallback=$false; $apiError=''
-                try { $null=[Windows.System.UserProfile.UserProfilePersonalizationSettings,Windows.System.UserProfile,ContentType=WindowsRuntime]; $api=[Windows.System.UserProfile.UserProfilePersonalizationSettings]::IsSupported(); $null=[Windows.System.UserProfile.LockScreen,Windows.System.UserProfile,ContentType=WindowsRuntime]; $fallback=$true } catch { $apiError=$_.Exception.Message }
+                try {
+                    $uType=[Type]::GetType('Windows.System.UserProfile.UserProfilePersonalizationSettings, Windows.System.UserProfile, ContentType=WindowsRuntime')
+                    $lType=[Type]::GetType('Windows.System.UserProfile.LockScreen, Windows.System.UserProfile, ContentType=WindowsRuntime')
+                    $api=if ($uType) { [bool]$uType.GetProperty('IsSupported').GetValue($null) } else { $false }
+                    $fallback=($null -ne $lType)
+                } catch { $apiError=$_.Exception.Message }
                 $task=Get-ScheduledTask -TaskName {{WindowsIntegration.QuotePS(WindowsIntegration.TaskName)}} -ErrorAction SilentlyContinue
                 $info=$null; $action=$null
                 if ($task) { $info=$task | Get-ScheduledTaskInfo; $action=$task.Actions | Select-Object -First 1 }

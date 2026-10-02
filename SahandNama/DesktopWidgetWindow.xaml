@@ -1,4 +1,4 @@
-﻿<Window x:Class="SahandNama.DesktopWidgetWindow"
+<Window x:Class="SahandNama.DesktopWidgetWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="سهند نما • ویجت شیشه‌ای دسکتاپ" SizeToContent="Height" Width="430"
@@ -211,11 +211,12 @@
    <MenuItem x:Name="MenuToggleActions" Header="⚡ نمایش دکمه‌های کنترل سریع" IsCheckable="True" Click="MenuToggleActions_Click"/>
    <Separator/>
    <MenuItem Header="🎨 میزان شفافیت پس‌زمینه (Opacity)">
-    <MenuItem Header="۱۰۰٪ (کاملاً مات)" Click="MenuOpacity_Click" Tag="1.0"/>
-    <MenuItem Header="۸۵٪ (مات متعادل)" Click="MenuOpacity_Click" Tag="0.85"/>
-    <MenuItem Header="۷۰٪ (شیشه‌ای ملایم)" Click="MenuOpacity_Click" Tag="0.70"/>
-    <MenuItem Header="۵۰٪ (شفاف شیشه‌ای)" Click="MenuOpacity_Click" Tag="0.50"/>
-    <MenuItem Header="۳۰٪ (بسیار شفاف)" Click="MenuOpacity_Click" Tag="0.30"/>
+    <MenuItem Header="۱۰۰٪ (کاملاً مات و تیره)" Click="MenuOpacity_Click" Tag="1.0"/>
+    <MenuItem Header="۸۰٪ (مات متعادل)" Click="MenuOpacity_Click" Tag="0.80"/>
+    <MenuItem Header="۶۰٪ (شیشه‌ای ملایم)" Click="MenuOpacity_Click" Tag="0.60"/>
+    <MenuItem Header="۴۰٪ (شفاف شیشه‌ای)" Click="MenuOpacity_Click" Tag="0.40"/>
+    <MenuItem Header="۲۰٪ (بسیار شفاف)" Click="MenuOpacity_Click" Tag="0.20"/>
+    <MenuItem Header="۰٪ (بدون کادر و پس‌زمینه — متن مستقیم روی دسکتاپ)" Click="MenuOpacity_Click" Tag="0.0"/>
    </MenuItem>
    <Separator/>
    <MenuItem Header="⚙️ تنظیمات پیشرفته در سهند نما…" Click="OpenApp_Click"/>

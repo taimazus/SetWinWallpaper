@@ -83,31 +83,55 @@ public static class WindowsIntegration
 
             # Strategy 1: WinRT UserProfilePersonalizationSettings / LockScreen API
             try {
-                Add-Type -AssemblyName System.Runtime.WindowsRuntime -ErrorAction Stop
-                $null=[Windows.Storage.StorageFile,Windows.Storage,ContentType=WindowsRuntime]
-                $null=[Windows.System.UserProfile.UserProfilePersonalizationSettings,Windows.System.UserProfile,ContentType=WindowsRuntime]
-                $null=[Windows.System.UserProfile.LockScreen,Windows.System.UserProfile,ContentType=WindowsRuntime]
-                $method=[System.WindowsRuntimeSystemExtensions].GetMethods() | Where-Object { $_.Name -eq 'AsTask' -and $_.IsGenericMethod -and $_.GetParameters().Count -eq 1 -and $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncOperation`1' } | Select-Object -First 1
-                function Await($op, $type) { $task=$method.MakeGenericMethod($type).Invoke($null,@($op)); $task.GetAwaiter().GetResult() }
-                $file=Await ([Windows.Storage.StorageFile]::GetFileFromPathAsync($fullPath)) ([Windows.Storage.StorageFile])
+                Add-Type -AssemblyName System.Runtime.WindowsRuntime -ErrorAction SilentlyContinue
+                $storageFileType = [Type]::GetType('Windows.Storage.StorageFile, Windows.Storage, ContentType=WindowsRuntime')
+                $userProfileType = [Type]::GetType('Windows.System.UserProfile.UserProfilePersonalizationSettings, Windows.System.UserProfile, ContentType=WindowsRuntime')
+                $lockScreenType = [Type]::GetType('Windows.System.UserProfile.LockScreen, Windows.System.UserProfile, ContentType=WindowsRuntime')
+                $extType = [System.WindowsRuntimeSystemExtensions]
+                
+                if ($storageFileType -and $extType) {
+                    $asTaskGeneric = $extType.GetMethods() | Where-Object { $_.Name -eq 'AsTask' -and $_.IsGenericMethod -and $_.GetParameters().Count -eq 1 -and $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncOperation`1' } | Select-Object -First 1
+                    $asTaskAction = $extType.GetMethods() | Where-Object { $_.Name -eq 'AsTask' -and !$_.IsGenericMethod -and $_.GetParameters().Count -eq 1 -and $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncAction' } | Select-Object -First 1
 
-                if ([Windows.System.UserProfile.UserProfilePersonalizationSettings]::IsSupported()) {
-                    try {
-                        $ok=Await ([Windows.System.UserProfile.UserProfilePersonalizationSettings]::Current.TrySetLockScreenImageAsync($file)) ([bool])
-                    } catch { $lastError = $_.Exception.Message }
-                }
-                if (!$ok) {
-                    $action=[Windows.System.UserProfile.LockScreen]::SetImageFileAsync($file)
-                    $actionMethod=[System.WindowsRuntimeSystemExtensions].GetMethods() | Where-Object { $_.Name -eq 'AsTask' -and !$_.IsGenericMethod -and $_.GetParameters().Count -eq 1 -and $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncAction' } | Select-Object -First 1
-                    $task=$actionMethod.Invoke($null,@($action))
-                    $null=$task.GetAwaiter().GetResult()
-                    $ok = $true
+                    $getFileAsyncMethod = $storageFileType.GetMethod('GetFileFromPathAsync', @([string]))
+                    if ($getFileAsyncMethod -and $asTaskGeneric) {
+                        $getFileOp = $getFileAsyncMethod.Invoke($null, @($fullPath))
+                        $getFileTask = $asTaskGeneric.MakeGenericMethod($storageFileType).Invoke($null, @($getFileOp))
+                        $file = $getFileTask.GetAwaiter().GetResult()
+
+                        if ($userProfileType) {
+                            $isSupportedProp = $userProfileType.GetProperty('IsSupported')
+                            $isSupported = if ($isSupportedProp) { [bool]$isSupportedProp.GetValue($null) } else { $false }
+                            if ($isSupported) {
+                                $currentProp = $userProfileType.GetProperty('Current')
+                                $currentInstance = if ($currentProp) { $currentProp.GetValue($null) } else { $null }
+                                $trySetMethod = $userProfileType.GetMethod('TrySetLockScreenImageAsync', @($storageFileType))
+                                if ($currentInstance -and $trySetMethod) {
+                                    try {
+                                        $trySetOp = $trySetMethod.Invoke($currentInstance, @($file))
+                                        $trySetTask = $asTaskGeneric.MakeGenericMethod([bool]).Invoke($null, @($trySetOp))
+                                        $ok = [bool]$trySetTask.GetAwaiter().GetResult()
+                                    } catch { $lastError = $_.Exception.Message }
+                                }
+                            }
+                        }
+
+                        if (!$ok -and $lockScreenType -and $asTaskAction) {
+                            $setImageFileMethod = $lockScreenType.GetMethod('SetImageFileAsync', @($storageFileType))
+                            if ($setImageFileMethod) {
+                                $actionOp = $setImageFileMethod.Invoke($null, @($file))
+                                $actionTask = $asTaskAction.Invoke($null, @($actionOp))
+                                $actionTask.GetAwaiter().GetResult()
+                                $ok = $true
+                            }
+                        }
+                    }
                 }
             } catch {
                 $lastError = $_.Exception.Message
             }
 
-            # Strategy 2: Direct Registry & LockScreen cache fallback (when WinRT manifest/XML fails)
+            # Strategy 2: Direct Registry & LockScreen cache fallback
             if (!$ok) {
                 try {
                     $userKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Lock Screen'

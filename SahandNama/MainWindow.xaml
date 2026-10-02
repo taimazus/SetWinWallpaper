@@ -1,4 +1,4 @@
-﻿<Window x:Class="SahandNama.MainWindow"
+<Window x:Class="SahandNama.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:SahandNama"
@@ -303,7 +303,7 @@
            <TextBlock x:Name="WidgetOpacityText" Text="95%" Foreground="#52D1B2" FontWeight="Bold" FontSize="12" FontFamily="Segoe UI, Tahoma"/>
           </Border>
          </Grid>
-         <Slider x:Name="WidgetOpacitySlider" Minimum="20" Maximum="100" Value="95" TickFrequency="5" IsSnapToTickEnabled="True" Margin="0,6,0,12" ValueChanged="WidgetOpacitySlider_ValueChanged"/>
+         <Slider x:Name="WidgetOpacitySlider" Minimum="0" Maximum="100" Value="95" TickFrequency="5" IsSnapToTickEnabled="True" Margin="0,6,0,12" ValueChanged="WidgetOpacitySlider_ValueChanged"/>
 
         <TextBlock Text="ماژول‌های فعال ویجت دسکتاپ" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4"/>
         <WrapPanel>

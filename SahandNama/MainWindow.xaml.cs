@@ -46,8 +46,8 @@ public partial class MainWindow : Window
         WidgetCityBox.ItemsSource = WeatherService.Cities.Select(c => c.PersianName).ToList();
         WidgetCityBox.SelectedItem = WeatherService.FindCity(preferences.WidgetCity).PersianName;
         WidgetPinModeBox.SelectedIndex = preferences.WidgetPinMode switch { "Normal" => 1, "TopMost" => 2, _ => 0 };
-        WidgetOpacitySlider.Value = Math.Round(Math.Clamp(preferences.WidgetOpacity, 0.2, 1.0) * 100.0);
-        WidgetOpacityText.Text = $"{(int)WidgetOpacitySlider.Value}%";
+        WidgetOpacitySlider.Value = Math.Round(Math.Clamp(preferences.WidgetOpacity, 0.0, 1.0) * 100.0);
+        WidgetOpacityText.Text = (int)WidgetOpacitySlider.Value == 0 ? "۰٪ (بدون کادر)" : $"{(int)WidgetOpacitySlider.Value}%";
         WidgetWeatherCheck.IsChecked = preferences.WidgetShowWeather;
         WidgetHardwareCheck.IsChecked = preferences.WidgetShowHardware;
         WidgetClockCheck.IsChecked = preferences.WidgetShowClock;
@@ -125,7 +125,8 @@ public partial class MainWindow : Window
     {
         if (WidgetOpacityText != null)
         {
-            WidgetOpacityText.Text = $"{(int)e.NewValue}%";
+            var val = (int)e.NewValue;
+            WidgetOpacityText.Text = val == 0 ? "۰٪ (بدون کادر)" : $"{val}%";
         }
     }
 

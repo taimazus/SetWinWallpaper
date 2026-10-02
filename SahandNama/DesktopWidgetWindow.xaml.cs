@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Threading;
 
 namespace SahandNama;
@@ -104,8 +105,26 @@ public partial class DesktopWidgetWindow : Window
         {
             var hwnd = new WindowInteropHelper(this).Handle;
             if (hwnd == IntPtr.Zero) return;
-            var op = Math.Clamp(preferences.WidgetOpacity, 0.15, 1.0);
-            byte alpha = (byte)Math.Clamp((int)(op * 120), 15, 200); // Tint alpha
+            var op = Math.Clamp(preferences.WidgetOpacity, 0.0, 1.0);
+            if (op <= 0.05)
+            {
+                // Disable DWM acrylic blur for 0% opacity - completely crystal transparent background
+                var disableAccent = new AccentPolicy { AccentState = 0 }; // ACCENT_DISABLED
+                var structSize = Marshal.SizeOf(disableAccent);
+                var ptr = Marshal.AllocHGlobal(structSize);
+                Marshal.StructureToPtr(disableAccent, ptr, false);
+                var disableData = new WindowCompositionAttributeData
+                {
+                    Attribute = 19,
+                    SizeOfData = structSize,
+                    Data = ptr
+                };
+                SetWindowCompositionAttribute(hwnd, ref disableData);
+                Marshal.FreeHGlobal(ptr);
+                return;
+            }
+
+            byte alpha = (byte)Math.Clamp((int)(op * 120), 10, 200); // Tint alpha
             int gradientColor = unchecked((int)((alpha << 24) | 0x00201408)); // ABGR
             var accent = new AccentPolicy
             {
@@ -136,14 +155,54 @@ public partial class DesktopWidgetWindow : Window
         preferences = Store.Settings;
 
         // 1. Background-only Opacity (Foreground texts, clock and buttons remain 100% crisp & solid)
-        var op = Math.Clamp(preferences.WidgetOpacity, 0.15, 1.0);
+        var op = Math.Clamp(preferences.WidgetOpacity, 0.0, 1.0);
         GlassRootBorder.Opacity = 1.0;
 
-        byte bgAlpha = (byte)Math.Clamp((int)(op * 255), 20, 255);
-        byte borderAlpha = (byte)Math.Clamp((int)(op * 180 + 35), 35, 240);
+        if (op <= 0.05)
+        {
+            // 0% Opacity: Pure floating text/controls directly on desktop wallpaper with zero container or box outline
+            GlassRootBorder.Background = Brushes.Transparent;
+            GlassRootBorder.BorderBrush = Brushes.Transparent;
+            GlassRootBorder.BorderThickness = new Thickness(0);
+            GlassRootBorder.Effect = null;
 
-        GlassRootBorder.Background = new SolidColorBrush(Color.FromArgb(bgAlpha, 0x0B, 0x1A, 0x28));
-        GlassRootBorder.BorderBrush = new SolidColorBrush(Color.FromArgb(borderAlpha, 0x4D, 0x7B, 0x99));
+            WeatherChip.Background = Brushes.Transparent;
+            WeatherChip.BorderBrush = Brushes.Transparent;
+            WeatherChip.BorderThickness = new Thickness(0);
+
+            HardwareChip.Background = Brushes.Transparent;
+            HardwareChip.BorderBrush = Brushes.Transparent;
+            HardwareChip.BorderThickness = new Thickness(0);
+
+            WallpaperPanel.Background = Brushes.Transparent;
+            WallpaperPanel.BorderBrush = Brushes.Transparent;
+            WallpaperPanel.BorderThickness = new Thickness(0);
+        }
+        else
+        {
+            GlassRootBorder.BorderThickness = new Thickness(1.2);
+            GlassRootBorder.Effect = new DropShadowEffect { Color = Colors.Black, BlurRadius = 24, ShadowDepth = 4, Opacity = Math.Clamp(op * 0.7, 0.2, 0.6) };
+
+            byte bgAlpha = (byte)Math.Clamp((int)(op * 255), 10, 255);
+            byte borderAlpha = (byte)Math.Clamp((int)(op * 180 + 35), 20, 240);
+            byte chipBgAlpha = (byte)Math.Clamp((int)(op * 38), 6, 75);
+            byte chipBorderAlpha = (byte)Math.Clamp((int)(op * 51), 10, 100);
+
+            GlassRootBorder.Background = new SolidColorBrush(Color.FromArgb(bgAlpha, 0x0B, 0x1A, 0x28));
+            GlassRootBorder.BorderBrush = new SolidColorBrush(Color.FromArgb(borderAlpha, 0x4D, 0x7B, 0x99));
+
+            WeatherChip.Background = new SolidColorBrush(Color.FromArgb(chipBgAlpha, 0x00, 0x20, 0x33));
+            WeatherChip.BorderBrush = new SolidColorBrush(Color.FromArgb(chipBorderAlpha, 0x4A, 0x80, 0xA3));
+            WeatherChip.BorderThickness = new Thickness(1);
+
+            HardwareChip.Background = new SolidColorBrush(Color.FromArgb(chipBgAlpha, 0x00, 0x20, 0x33));
+            HardwareChip.BorderBrush = new SolidColorBrush(Color.FromArgb(chipBorderAlpha, 0x4A, 0x80, 0xA3));
+            HardwareChip.BorderThickness = new Thickness(1);
+
+            WallpaperPanel.Background = new SolidColorBrush(Color.FromArgb(chipBgAlpha, 0x00, 0x00, 0x00));
+            WallpaperPanel.BorderBrush = new SolidColorBrush(Color.FromArgb(chipBorderAlpha, 0x40, 0x6B, 0x87));
+            WallpaperPanel.BorderThickness = new Thickness(1);
+        }
 
         EnableAcrylicBlur();
 
