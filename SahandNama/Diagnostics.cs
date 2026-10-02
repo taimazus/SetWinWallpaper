@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -322,7 +322,7 @@ public static class Diagnostics
         try
         {
             var exe = Environment.ProcessPath;
-            if (exe != null && exe.EndsWith("BingWallpaperPro.exe", StringComparison.OrdinalIgnoreCase))
+            if (exe != null && (exe.EndsWith("SahandNama.exe", StringComparison.OrdinalIgnoreCase) || exe.EndsWith("BingWallpaperPro.exe", StringComparison.OrdinalIgnoreCase)))
             {
                 var time = Store.Read(Path.Combine(root, "settings.json"), new Preferences()).DailyTime;
                 await WindowsIntegration.InstallScheduleAsync(time);

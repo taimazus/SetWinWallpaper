@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -141,8 +141,11 @@ public static class WindowsIntegration
     public static (string Executable, string Arguments) GetUpdateCommandLine()
     {
         var baseDir = AppContext.BaseDirectory;
-        var exePath = Path.Combine(baseDir, "BingWallpaperPro.exe");
+        var exePath = Path.Combine(baseDir, "SahandNama.exe");
         if (File.Exists(exePath)) return (Path.GetFullPath(exePath), "--update");
+
+        var legacyExe = Path.Combine(baseDir, "BingWallpaperPro.exe");
+        if (File.Exists(legacyExe)) return (Path.GetFullPath(legacyExe), "--update");
 
         var processPath = Environment.ProcessPath;
         if (!string.IsNullOrWhiteSpace(processPath) && File.Exists(processPath))
@@ -154,7 +157,7 @@ public static class WindowsIntegration
             }
         }
 
-        var dllPath = Path.Combine(baseDir, "BingWallpaperPro.dll");
+        var dllPath = Path.Combine(baseDir, "SahandNama.dll");
         if (File.Exists(dllPath))
         {
             var dotnetPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet", "dotnet.exe");
@@ -162,7 +165,15 @@ public static class WindowsIntegration
             return (dotnetPath, $"exec \"{Path.GetFullPath(dllPath)}\" --update");
         }
 
-        return (Path.GetFullPath(processPath ?? "BingWallpaperPro.exe"), "--update");
+        var legacyDll = Path.Combine(baseDir, "BingWallpaperPro.dll");
+        if (File.Exists(legacyDll))
+        {
+            var dotnetPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet", "dotnet.exe");
+            if (!File.Exists(dotnetPath)) dotnetPath = "dotnet.exe";
+            return (dotnetPath, $"exec \"{Path.GetFullPath(legacyDll)}\" --update");
+        }
+
+        return (Path.GetFullPath(processPath ?? "SahandNama.exe"), "--update");
     }
 
     public static async Task<string> RunElevatedPowerShellAsync(string script, int timeoutSeconds = 60)

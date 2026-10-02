@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
 using System.Windows;
@@ -40,7 +40,7 @@ public static class AppDialog
             FontFamily = owner.FontFamily, FontSize = 14, Background = new SolidColorBrush(Color.FromRgb(12, 26, 38)),
             Foreground = Brushes.White, ShowInTaskbar = false, Icon = owner.Icon
         };
-        dialog.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("/BingWallpaperPro;component/Theme.xaml", UriKind.Relative) });
+        dialog.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("pack://application:,,,/SahandNama;component/Theme.xaml", UriKind.Absolute) });
         var panel = new StackPanel { Margin = new Thickness(26) };
         panel.Children.Add(new TextBlock { Text = title, FontSize = 23, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 14) });
         panel.Children.Add(new TextBox { Text = message, IsReadOnly = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, MaxHeight = Math.Min(400, SystemParameters.WorkArea.Height - 240), BorderThickness = new Thickness(0) });

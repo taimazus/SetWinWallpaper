@@ -1,4 +1,4 @@
-﻿using SahandNama;
+using SahandNama;
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
@@ -232,6 +232,11 @@ internal static class Program
 
             // Test Multi-Monitor detection
             Check(WindowsIntegration.GetMonitorCount() >= 1, "Windows multi-monitor enumeration returns valid monitor count");
+
+            // Test Theme dictionary resource resolution
+            var themeUri = new Uri("pack://application:,,,/SahandNama;component/Theme.xaml", UriKind.Absolute);
+            var themeStream = Application.GetResourceStream(themeUri);
+            Check(themeStream != null && themeStream.Stream.Length > 100, "SahandNama Theme.xaml resource dictionary resolves correctly");
 
             // Test Dominant Color Extractor
             var samplePath = Path.Combine(root, "ui-preview.png");
