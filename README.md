@@ -1,12 +1,12 @@
 <div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
 
-# سهند نما | Sahand Nama (نسخه 1.6.0)
+# سهند نما | Sahand Nama (نسخه 1.7.0)
 
 **سامانه جامع، هوشمند و سازمانی مدیریت و به‌روزرسانی تصاویر پس‌زمینه و صفحه قفل ویندوز**  
 *طراحی و توسعه توسط شرکت راهکار الکترونیک سهند — [https://irres.ir](https://irres.ir)*
 
 [![GitHub Release](https://img.shields.io/github/v/release/taimazus/SetWinWallpaper?color=52d1b2&label=Latest%20Release)](https://github.com/taimazus/SetWinWallpaper/releases/latest)
-[![Tests](https://img.shields.io/badge/Tests-64%20Passed-52d1b2.svg)](docs/ARCHITECTURE.md)
+[![Tests](https://img.shields.io/badge/Tests-71%20Passed-52d1b2.svg)](docs/ARCHITECTURE.md)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20%7C%20Server-blue.svg)](docs/ENTERPRISE_DEPLOYMENT.md)
 [![Architecture](https://img.shields.io/badge/Architecture-x64%20Standalone-orange.svg)](https://github.com/taimazus/SetWinWallpaper/releases/latest)
 [![License](https://img.shields.io/badge/Font-SIL%20OFL%20Vazirmatn-brightgreen.svg)](BingWallpaperPro/Assets/Fonts/OFL.txt)
@@ -19,8 +19,8 @@
 
 | نوع فایل | لینک دانلود مستقیم از گیت‌هاب | حجم تقریبی | مناسب برای |
 | :--- | :--- | :--- | :--- |
-| 🚀 **فایل اجرایی مستقل (EXE)** | [**دانلود SahandNama-v1.6.0-win-x64.exe**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.6.0/SahandNama-v1.6.0-win-x64.exe) | ~۱۴۰ مگابایت | اجرای فوری با یک کلیک بدون استخراج |
-| 📦 **بسته پرتابل فشرده (ZIP)** | [**دانلود SahandNama-v1.6.0-win-x64.zip**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.6.0/SahandNama-v1.6.0-win-x64.zip) | ~۶۱ مگابایت | پکیج کامل شامل اسکریپت‌های PowerShell و راهنما |
+| 🚀 **فایل اجرایی مستقل (EXE)** | [**دانلود SahandNama-v1.7.0-win-x64.exe**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.7.0/SahandNama-v1.7.0-win-x64.exe) | ~۱۴۰ مگابایت | اجرای فوری با یک کلیک بدون استخراج |
+| 📦 **بسته پرتابل فشرده (ZIP)** | [**دانلود SahandNama-v1.7.0-win-x64.zip**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.7.0/SahandNama-v1.7.0-win-x64.zip) | ~۶۱ مگابایت | پکیج کامل شامل اسکریپت‌های PowerShell و راهنما |
 | 🏷️ **صفحه انتشار نسخه‌ها** | [**مشاهده تمام Releaseها در گیت‌هاب**](https://github.com/taimazus/SetWinWallpaper/releases) | — | تاریخچه تغییرات و دسترسی به تمام نسخه‌ها |
 
 ---
@@ -81,28 +81,36 @@ graph LR
 
 ---
 
-## ✨ امکانات برجسته نسخه 1.6.0
+## ✨ امکانات برجسته نسخه 1.7.0
 
-1. ⌨️ **کلیدهای میانبر سراسری ویندوز (Global Hotkeys):**
+1. 🪟 **ویجت دسکتاپ شیشه‌ای مات واقعی (True Acrylic Frosted Glass):**
+   - افکت بلوری و شیشه‌ای عمیق مات بر پایه API بومی `SetWindowCompositionAttribute` و شتاب‌یافته با GPU.
+   - ساعت زنده دیجیتال، تقویم خورشیدی هجری شمسی، نام منظره، سنجاق (📌)، تعویض آنی والپیپر (🎲)، نشان‌کردن (⭐) و استخراج رنگ (🎨).
+2. 🔔 **سینی کنار ساعت ویندوز و خروج دوگانه (System Tray & Dual Exit):**
+   - دکمه `✕` برنامه را نمی‌بندد، بلکه پنجره را به سینی ویندوز فرستاده و ویجت و زمان‌بندی را زنده نگه می‌دارد.
+   - منوی راست‌کلیک کامل فارسی در کنار ساعت با دکمه **«🚪 خروج کامل از برنامه»**.
+3. 🌄 **۵ منبع جدید و خیره‌کننده ۴K:**
+   - والپیپرهای برگزیده Wallhaven 4K/8K، آثار موزه هنر شیکاگو، شگفتی‌های نشنال جئوگرافیک، هنر سایبرپانک و معماری مدرن ۴K.
+4. 🎛️ **انتخاب مستقل متد برای دسکتاپ و لاک‌اسکرین:**
+   - امکان تنظیم همزمان حالت روزانه برای دسکتاپ و رندوم برای صفحه قفل به صورت کاملاً تفکیک‌شده.
+5. ⌨️ **کلیدهای میانبر سراسری ویندوز (Global Hotkeys):**
    - کلید `Win + Alt + W`: دریافت و اعمال فوری والپیپر بعدی بدون نیاز به باز کردن پنجره برنامه.
    - کلید `Win + Alt + S`: افزودن سریع تصویر فعال به فهرست علاقه‌مندی‌ها.
-2. 🕒 **ویجت شیشه‌ای دسکتاپ (Glassmorphism Desktop Widget):**
-   - نمایش ساعت دیجیتال زنده، تقویم و تاریخ روز هجری خورشیدی (شمسی)، نام منظره و دکمه‌های کنترل سریع روی دسکتاپ با طراحی مات و مدرن.
-3. 🏛️ **کالکشن اختصاصی «ایران زیبا» (Iran Nature & Heritage):**
-   - دسترسی به تصاویر باکیفیت از طبیعت شگفت‌انگیز، کوهستان‌ها و میراث باستانی ایران (دماوند، سهند، تخت جمشید، کویر لوت، ماسوله، پل خواجو، باداب سورت، دره ستارگان قشم و جنگل‌های هیرکانی).
-4. 🖥️ **پشتیبانی از چندین مانیتور (Multi-Monitor Customization):**
+6. 🏛️ **کالکشن اختصاصی «ایران زیبا» (Iran Nature & Heritage):**
+   - دسترسی به تصاویر باکیفیت از طبیعت شگفت‌انگیز و میراث باستانی ایران.
+7. 🖥️ **پشتیبانی از چندین مانیتور (Multi-Monitor Customization):**
    - امکان اعمال تصاویر روی تمام مانیتورهای متصل به سیستم از طریق رابط پیشرفته Win32 `IDesktopWallpaper`.
-5. 🎨 **هماهنگ‌سازی خودکار رنگ تم ویندوز (Accent Color Sync):**
+8. 🎨 **هماهنگ‌سازی خودکار رنگ تم ویندوز (Accent Color Sync):**
    - استخراج هوشمند رنگ غالب تصویر روز و تنظیم خودکار Accent Color ویندوز متناسب با منظره.
-6. 📤 **تولید کارت گرافیکی اشتراک‌گذاری (Social Share Card Generator):**
-   - ساخت کارت گرافیکی باکیفیت و آماده انتشار در اینستاگرام و تلگرام همراه با تاریخ شمسی، عنوان تصویر، منبع و برند سهند نما با یک کلیک.
-7. 🧹 **حالت دسکتاپ تمیز (Clean Desktop Icons):**
-   - قابلیت پنهان/نمایان‌سازی سریع آیکون‌های دسکتاپ برای لذت بردن از والپیپر به عنوان یک قاب عکس دیجیتال زنده.
-8. ⏰ **سامانه زمان‌بندی هوشمند چندرویدادی (Multi-Trigger Scheduler):**
-   - اجرای مستقل از Culture در ساعت مقرر (`Daily`) و هنگام ورود کاربر (`AtLogOn`) با قابلیت `StartWhenAvailable`.
-9. 🏢 **مخزن مرکزی سرور (Enterprise Server Hub):**
-   - دانلود متمرکز تمام منابع روزانه در سرور و تغذیه کلاینت‌ها از مسیر شبکه `\\Server\Wallpapers` بدون مصرف اینترنت.
-10. 🛠️ **مرکز عیب‌یابی و خودترمیمی خودکار:**
+9. 📤 **تولید کارت گرافیکی اشتراک‌گذاری (Social Share Card Generator):**
+   - ساخت کارت گرافیکی باکیفیت و آماده انتشار در شبکه‌های اجتماعی همراه با تاریخ شمسی و برند سهند نما.
+10. 🧹 **حالت دسکتاپ تمیز (Clean Desktop Icons):**
+    - قابلیت پنهان/نمایان‌سازی سریع آیکون‌های دسکتاپ برای لذت بردن از والپیپر به عنوان قاب عکس دیجیتال.
+11. ⏰ **سامانه زمان‌بندی هوشمند چندرویدادی (Multi-Trigger Scheduler):**
+    - اجرای مستقل از Culture در ساعت مقرر (`Daily`) و هنگام ورود کاربر (`AtLogOn`) با قابلیت `StartWhenAvailable`.
+12. 🏢 **مخزن مرکزی سرور (Enterprise Server Hub):**
+    - دانلود متمرکز تمام منابع روزانه در سرور و تغذیه کلاینت‌ها از مسیر شبکه `\\Server\Wallpapers` بدون مصرف اینترنت.
+13. 🛠️ **مرکز عیب‌یابی و خودترمیمی خودکار:**
     - بررسی جامع رجیستری، سرویس‌ها، تسک‌ها، کش و بازنشانی کامل Windows Spotlight با یک کلیک.
 
 ---
@@ -110,7 +118,7 @@ graph LR
 ## 🛠️ کامپایل و اجرای آزمون‌ها
 
 ```powershell
-# اجرای ۶۳ آزمون فنی و اعتبارسنجی
+# اجرای ۷۱ آزمون فنی و اعتبارسنجی
 dotnet run --project BingWallpaperPro.Tests\BingWallpaperPro.Tests.csproj
 
 # ساخت و انتشار خروجی نهایی مستقل ۶۴بیتی

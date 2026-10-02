@@ -3,7 +3,7 @@
 # مستندات منابع داده، APIها و الگوریتم یکتاسازی (Sources & API Documentation)
 
 **نرم‌افزار سهند نما (Sahand Nama)**  
-**نسخه:** 1.6.0  
+**نسخه:** 1.7.0  
 **توسعه‌دهنده:** شرکت راهکار الکترونیک سهند ([https://irres.ir](https://irres.ir))
 
 ---
@@ -17,6 +17,11 @@
 | `Bing` | تصویر روز مایکروسافت بینگ | JSON API | `www.bing.com` | UHD (4K) |
 | `BingGlobal` | گلچین بین‌المللی بینگ (همه مناطق) | Multi-JSON | `www.bing.com` | UHD (4K) |
 | `IranNature` | ایران زیبا (طبیعت و آثار باستانی) | Curated CDN | `upload.wikimedia.org` | UHD (1920x1080+) |
+| `Wallhaven` | والپیپرهای برگزیده ۴K و ۸K | Direct CDN | `w.wallhaven.cc` | 4K / 8K UHD |
+| `MuseumArt` | شاهکارهای هنر کلاسیک (موزه شیکاگو) | IIIF / REST | `www.artic.edu` | High-Res Art |
+| `NatGeoNature` | طبیعت و حیات‌وحش نشنال جئوگرافیک | Direct CDN | `images.unsplash.com` | 4K UHD |
+| `CyberpunkArt` | شهر آینده و سایبرپانک (۴K) | Direct CDN | `images.unsplash.com` | 4K UHD |
+| `Architecture4K` | شاهکارهای معماری مدرن جهان | Direct CDN | `images.unsplash.com` | 4K UHD |
 | `UnsplashNature` | عکس‌های برگزیده طبیعت Unsplash | REST / Direct | `picsum.photos`, `images.unsplash.com` | 4K (3840x2160) |
 | `WikimediaPotd` | تصویر برگزیده روز ویکی‌مدیا | MediaWiki Action API | `commons.wikimedia.org`, `upload.wikimedia.org` | Full Original |
 | `UsgsEarthArt` | شگفتی‌های زمین از فضا (USGS) | RSS / XML Feed | `eros.usgs.gov`, `landsat.usgs.gov` | High-Res Satellite |

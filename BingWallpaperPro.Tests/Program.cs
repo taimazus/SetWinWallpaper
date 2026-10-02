@@ -192,7 +192,7 @@ internal static class Program
             Check(new Typeface(window.FontFamily, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal).TryGetGlyphTypeface(out var embeddedFont) && embeddedFont.FontUri.ToString().Contains("Vazirmatn", StringComparison.OrdinalIgnoreCase), "Vazirmatn resolves from embedded font resource");
             var (resolvedExe, resolvedArgs) = WindowsIntegration.GetUpdateCommandLine();
             Check(!string.IsNullOrWhiteSpace(resolvedExe) && resolvedArgs.Contains("--update"), "GetUpdateCommandLine resolves valid executable and arguments");
-            Check(window.FlowDirection == FlowDirection.RightToLeft && Brand.Version == "1.6.0" && window.Icon != null, "RTL, release version 1.6.0 and application icon");
+            Check(window.FlowDirection == FlowDirection.RightToLeft && Brand.Version == "1.7.0" && window.Icon != null, "RTL, release version 1.7.0 and application icon");
 
             // Test Persian Date & Calendar
             var testDate = new DateTime(2026, 9, 29);
