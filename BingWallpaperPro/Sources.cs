@@ -393,7 +393,7 @@ public sealed class SourceCatalog
     public static List<Photo> ParseNasaFeed(byte[] bytes)
     {
         using var input = new MemoryStream(bytes);
-        using var reader = XmlReader.Create(input, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null, MaxCharactersInDocument = 25_000_000 });
+        using var reader = XmlReader.Create(input, new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore, XmlResolver = null, MaxCharactersInDocument = 25_000_000 });
         var xml = XDocument.Load(reader); var result = new List<Photo>();
         foreach (var item in xml.Descendants("item"))
         {
@@ -432,7 +432,7 @@ public sealed class SourceCatalog
     public static List<Photo> ParseWikimediaFeed(byte[] bytes, string sourceName = "WikimediaPotd")
     {
         using var input = new MemoryStream(bytes);
-        using var reader = XmlReader.Create(input, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null, MaxCharactersInDocument = 25_000_000 });
+        using var reader = XmlReader.Create(input, new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore, XmlResolver = null, MaxCharactersInDocument = 25_000_000 });
         var xml = XDocument.Load(reader); var result = new List<Photo>();
         var thumbRegex = new Regex(@"https://(?:thumb|upload)\.wikimedia\.org/wikipedia/commons/(?:thumb/)?([0-9a-f]/[0-9a-f]{2})/([^/""\s\?]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
@@ -537,7 +537,7 @@ public sealed class SourceCatalog
     public static List<Photo> ParseEsaFeed(byte[] bytes)
     {
         using var input = new MemoryStream(bytes);
-        using var reader = XmlReader.Create(input, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null, MaxCharactersInDocument = 25_000_000 });
+        using var reader = XmlReader.Create(input, new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore, XmlResolver = null, MaxCharactersInDocument = 25_000_000 });
         var xml = XDocument.Load(reader); var result = new List<Photo>();
         foreach (var item in xml.Descendants("item"))
         {
@@ -591,7 +591,7 @@ public sealed class SourceCatalog
     public static List<Photo> ParseUsgsFeed(byte[] bytes)
     {
         using var input = new MemoryStream(bytes);
-        using var reader = XmlReader.Create(input, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null, MaxCharactersInDocument = 25_000_000 });
+        using var reader = XmlReader.Create(input, new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore, XmlResolver = null, MaxCharactersInDocument = 25_000_000 });
         var xml = XDocument.Load(reader);
         var result = new List<Photo>();
         foreach (var item in xml.Descendants("item"))

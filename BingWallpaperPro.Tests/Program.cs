@@ -81,7 +81,7 @@ internal static class Program
                 """);
             var parsedFeed = SourceCatalog.ParseNasaFeed(feed);
             Check(parsedFeed.Count == 1 && parsedFeed[0].Date == "20260923" && parsedFeed[0].SourcePage.Contains("image-detail"), "NASA feed filters video/oversize and preserves date/source page");
-            Reject(() => SourceCatalog.ParseNasaFeed(System.Text.Encoding.UTF8.GetBytes("<!DOCTYPE rss [<!ENTITY x SYSTEM 'file:///C:/Windows/win.ini'>]><rss>&x;</rss>")), "NASA feed rejects external entities");
+            Reject(() => SourceCatalog.ParseNasaFeed(System.Text.Encoding.UTF8.GetBytes("<!DOCTYPE rss [<!ENTITY x SYSTEM 'file:///C:/Windows/win.ini'>]><rss><channel><item><title>&x;</title></item></channel></rss>")), "NASA feed rejects external entities");
 
             // Wikimedia Commons POTD Feed parsing
             var wikiFeed = System.Text.Encoding.UTF8.GetBytes("""
