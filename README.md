@@ -1,5 +1,9 @@
 <div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
 
+<p align="center">
+  <img src="docs/assets/banner.png" alt="Sahand Nama Header Banner — سهند نما" width="100%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); margin-bottom: 20px;" />
+</p>
+
 # سهند نما | Sahand Nama (نسخه 1.8.0)
 
 **سامانه جامع، هوشمند و سازمانی مدیریت و به‌روزرسانی تصاویر پس‌زمینه و صفحه قفل ویندوز همراه با ویجت دسکتاپ شیشه‌ای، آب‌وهوا و پایش سیستم**  

@@ -1,5 +1,9 @@
 <div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
 
+<p align="center">
+  <img src="../../docs/assets/banner.png" alt="Sahand Nama Header Banner — سهند نما" width="100%" style="border-radius: 12px; margin-bottom: 20px;" />
+</p>
+
 # دانشنامه و راهنمای جامع سهند نما (Sahand Nama Wiki)
 
 به دانشنامه رسمی نرم‌افزار **سهند نما (Sahand Nama)** خوش آمدید.  
