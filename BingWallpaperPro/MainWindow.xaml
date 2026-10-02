@@ -292,12 +292,18 @@
         <ComboBox x:Name="WidgetCityBox" Margin="0,4,0,0"/>
        </StackPanel>
        
-       <StackPanel Grid.Column="2">
-        <Grid>
-         <TextBlock Text="میزان شفافیت پس‌زمینه ویجت (Glass Opacity)" FontWeight="SemiBold" FontSize="12"/>
-         <TextBlock x:Name="WidgetOpacityText" Text="95%" HorizontalAlignment="Left" Foreground="#52D1B2" FontWeight="Bold" FontSize="12"/>
-        </Grid>
-        <Slider x:Name="WidgetOpacitySlider" Minimum="20" Maximum="100" Value="95" TickFrequency="5" IsSnapToTickEnabled="True" Margin="0,8,0,12" ValueChanged="WidgetOpacitySlider_ValueChanged"/>
+        <StackPanel Grid.Column="2">
+         <Grid Margin="0,0,0,4">
+          <Grid.ColumnDefinitions>
+           <ColumnDefinition Width="*"/>
+           <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Text="میزان شفافیت پس‌زمینه ویجت" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
+          <Border Grid.Column="1" Background="#261A473E" BorderBrush="#45B69C" BorderThickness="1" CornerRadius="6" Padding="8,2" VerticalAlignment="Center" Margin="8,0,0,0">
+           <TextBlock x:Name="WidgetOpacityText" Text="95%" Foreground="#52D1B2" FontWeight="Bold" FontSize="12" FontFamily="Segoe UI, Tahoma"/>
+          </Border>
+         </Grid>
+         <Slider x:Name="WidgetOpacitySlider" Minimum="20" Maximum="100" Value="95" TickFrequency="5" IsSnapToTickEnabled="True" Margin="0,6,0,12" ValueChanged="WidgetOpacitySlider_ValueChanged"/>
 
         <TextBlock Text="ماژول‌های فعال ویجت دسکتاپ" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4"/>
         <WrapPanel>
