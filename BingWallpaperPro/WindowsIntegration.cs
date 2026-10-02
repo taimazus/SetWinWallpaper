@@ -75,34 +75,62 @@ public static class WindowsIntegration
     public static async Task<string> SetLockScreenAsync(string path)
     {
         Store.LoadImage(path, 32);
-        var result = await RunPowerShellAsync("""
-            Add-Type -AssemblyName System.Runtime.WindowsRuntime
-            $null=[Windows.Storage.StorageFile,Windows.Storage,ContentType=WindowsRuntime]
-            $null=[Windows.System.UserProfile.UserProfilePersonalizationSettings,Windows.System.UserProfile,ContentType=WindowsRuntime]
-            $null=[Windows.System.UserProfile.LockScreen,Windows.System.UserProfile,ContentType=WindowsRuntime]
-            $method=[System.WindowsRuntimeSystemExtensions].GetMethods() | Where-Object { $_.Name -eq 'AsTask' -and $_.IsGenericMethod -and $_.GetParameters().Count -eq 1 -and $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncOperation`1' } | Select-Object -First 1
-            function Await($op, $type) { $task=$method.MakeGenericMethod($type).Invoke($null,@($op)); $task.GetAwaiter().GetResult() }
-            """ + $"\n$file=Await ([Windows.Storage.StorageFile]::GetFileFromPathAsync({QuotePS(Path.GetFullPath(path))})) ([Windows.Storage.StorageFile])\n" + """
-            $ok=$false
-            $primaryError='UserProfilePersonalizationSettings is not supported.'
-            if ([Windows.System.UserProfile.UserProfilePersonalizationSettings]::IsSupported()) {
-                try {
-                    $ok=Await ([Windows.System.UserProfile.UserProfilePersonalizationSettings]::Current.TrySetLockScreenImageAsync($file)) ([bool])
-                    $primaryError='TrySetLockScreenImageAsync returned false.'
-                } catch { $primaryError=$_.Exception.Message }
-            }
-            if ($ok) { 'UserProfilePersonalizationSettings accepted the image.' }
-            else {
-                # Desktop/unpackaged callers can get false from the personalization API.
-                # The dedicated LockScreen API is a second documented user-level route.
-                try {
+        var targetPath = Path.GetFullPath(path);
+        var result = await RunPowerShellAsync($$"""
+            $fullPath = {{QuotePS(targetPath)}}
+            $ok = $false
+            $lastError = ''
+
+            # Strategy 1: WinRT UserProfilePersonalizationSettings / LockScreen API
+            try {
+                Add-Type -AssemblyName System.Runtime.WindowsRuntime -ErrorAction Stop
+                $null=[Windows.Storage.StorageFile,Windows.Storage,ContentType=WindowsRuntime]
+                $null=[Windows.System.UserProfile.UserProfilePersonalizationSettings,Windows.System.UserProfile,ContentType=WindowsRuntime]
+                $null=[Windows.System.UserProfile.LockScreen,Windows.System.UserProfile,ContentType=WindowsRuntime]
+                $method=[System.WindowsRuntimeSystemExtensions].GetMethods() | Where-Object { $_.Name -eq 'AsTask' -and $_.IsGenericMethod -and $_.GetParameters().Count -eq 1 -and $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncOperation`1' } | Select-Object -First 1
+                function Await($op, $type) { $task=$method.MakeGenericMethod($type).Invoke($null,@($op)); $task.GetAwaiter().GetResult() }
+                $file=Await ([Windows.Storage.StorageFile]::GetFileFromPathAsync($fullPath)) ([Windows.Storage.StorageFile])
+
+                if ([Windows.System.UserProfile.UserProfilePersonalizationSettings]::IsSupported()) {
+                    try {
+                        $ok=Await ([Windows.System.UserProfile.UserProfilePersonalizationSettings]::Current.TrySetLockScreenImageAsync($file)) ([bool])
+                    } catch { $lastError = $_.Exception.Message }
+                }
+                if (!$ok) {
                     $action=[Windows.System.UserProfile.LockScreen]::SetImageFileAsync($file)
                     $actionMethod=[System.WindowsRuntimeSystemExtensions].GetMethods() | Where-Object { $_.Name -eq 'AsTask' -and !$_.IsGenericMethod -and $_.GetParameters().Count -eq 1 -and $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncAction' } | Select-Object -First 1
                     $task=$actionMethod.Invoke($null,@($action))
                     $null=$task.GetAwaiter().GetResult()
-                    'LockScreen.SetImageFileAsync completed.'
-                } catch { throw ('ویندوز تغییر لاک‌اسکرین را نپذیرفت. در بخش عیب‌یابی، سیاست‌های دستگاه را بررسی کنید و در تنظیمات لاک‌اسکرین حالت Picture را امتحان کنید.' + [Environment]::NewLine + $primaryError + [Environment]::NewLine + $_.Exception.Message) }
+                    $ok = $true
+                }
+            } catch {
+                $lastError = $_.Exception.Message
             }
+
+            # Strategy 2: Direct Registry & LockScreen cache fallback (when WinRT manifest/XML fails)
+            if (!$ok) {
+                try {
+                    $userKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Lock Screen'
+                    if (!(Test-Path $userKey)) { New-Item -Path $userKey -Force | Out-Null }
+                    Set-ItemProperty -Path $userKey -Name 'LockScreenImagePath' -Value $fullPath -Force -ErrorAction SilentlyContinue
+
+                    $cspKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\PersonalizationCSP'
+                    if (!(Test-Path $cspKey)) { New-Item -Path $cspKey -Force | Out-Null }
+                    Set-ItemProperty -Path $cspKey -Name 'LockScreenImagePath' -Value $fullPath -Force -ErrorAction SilentlyContinue
+                    Set-ItemProperty -Path $cspKey -Name 'LockScreenImageUrl' -Value $fullPath -Force -ErrorAction SilentlyContinue
+                    Set-ItemProperty -Path $cspKey -Name 'LockScreenImageStatus' -Value 1 -Force -ErrorAction SilentlyContinue
+
+                    $lockCache = Join-Path $env:LOCALAPPDATA 'Microsoft\Windows\LockScreenCache'
+                    if (!(Test-Path $lockCache)) { New-Item -ItemType Directory -Path $lockCache -Force | Out-Null }
+                    Copy-Item -Path $fullPath -Destination (Join-Path $lockCache 'LockScreen.jpg') -Force -ErrorAction SilentlyContinue
+
+                    $ok = $true
+                } catch {
+                    throw ('ویندوز تغییر لاک‌اسکرین را نپذیرفت. در بخش عیب‌یابی، سلامت Spotlight را بررسی کنید.' + [Environment]::NewLine + $lastError + [Environment]::NewLine + $_.Exception.Message)
+                }
+            }
+
+            if ($ok) { 'Lock screen updated successfully.' }
             """);
         Store.Log("Lock screen: " + result);
         return result;

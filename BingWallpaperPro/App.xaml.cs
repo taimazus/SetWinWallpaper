@@ -230,25 +230,29 @@ public partial class App : Application
 
     public static void ShowMainWindow()
     {
-        Current.Dispatcher.Invoke(() =>
+        var app = Current;
+        if (app == null) return;
+        app.Dispatcher.Invoke(() =>
         {
-            if (Current.MainWindow == null || !Current.MainWindow.IsLoaded)
+            if (app.MainWindow == null || !app.MainWindow.IsLoaded)
             {
-                Current.MainWindow = new MainWindow();
+                app.MainWindow = new MainWindow();
             }
-            Current.MainWindow.Show();
-            if (Current.MainWindow.WindowState == WindowState.Minimized)
+            app.MainWindow.Show();
+            if (app.MainWindow.WindowState == WindowState.Minimized)
             {
-                Current.MainWindow.WindowState = WindowState.Normal;
+                app.MainWindow.WindowState = WindowState.Normal;
             }
-            Current.MainWindow.Activate();
-            Current.MainWindow.Focus();
+            app.MainWindow.Activate();
+            app.MainWindow.Focus();
         });
     }
 
     public static void ToggleWidget()
     {
-        Current.Dispatcher.Invoke(() =>
+        var app = Current;
+        if (app == null) return;
+        app.Dispatcher.Invoke(() =>
         {
             if (ActiveWidget == null || !ActiveWidget.IsLoaded)
             {
@@ -278,7 +282,9 @@ public partial class App : Application
 
     public static void UpdateWidgetInfo()
     {
-        Current.Dispatcher.Invoke(() =>
+        var app = Current;
+        if (app == null) return;
+        app.Dispatcher.Invoke(() =>
         {
             if (ActiveWidget != null && ActiveWidget.IsLoaded && ActiveWidget.IsVisible)
             {
@@ -291,11 +297,13 @@ public partial class App : Application
     {
         IsExiting = true;
         TrayManager.Dispose();
-        Current.Dispatcher.Invoke(() =>
+        var app = Current;
+        if (app == null) return;
+        app.Dispatcher.Invoke(() =>
         {
             ActiveWidget?.Close();
-            Current.MainWindow?.Close();
-            Current.Shutdown(0);
+            app.MainWindow?.Close();
+            app.Shutdown(0);
         });
     }
 }
