@@ -34,6 +34,20 @@ internal static class Program
             Check(Store.Read(Path.Combine(root, "missing.json"), new Preferences()).Desktop, "Fresh installation defaults");
             Check(!Directory.EnumerateFiles(root, "*.tmp").Any(), "No abandoned atomic write files");
 
+            // Verify AcquireLockAsync coordinates safely during contention
+            var lockTestFile = Path.Combine(root, "test.lock");
+            Task<bool> secondTask;
+            using (var firstGate = Store.AcquireLockAsync(lockTestFile, 2).GetAwaiter().GetResult())
+            {
+                secondTask = Task.Run(async () =>
+                {
+                    await using var secondGate = await Store.AcquireLockAsync(lockTestFile, 3);
+                    return secondGate != null;
+                });
+                Thread.Sleep(300);
+            }
+            Check(secondTask.GetAwaiter().GetResult(), "AcquireLockAsync recovers from contention after release");
+
             var imageFile = Path.Combine(root, "sample.png");
             var bitmap = BitmapSource.Create(2, 2, 96, 96, PixelFormats.Bgra32, null, new byte[16], 8);
             var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));

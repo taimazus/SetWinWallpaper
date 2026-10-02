@@ -22,10 +22,10 @@ SetWinWallpaper/
 │   ├── Assets/                      # فونت وزیزمتن، آیکون و لوگو
 │   ├── Scripts/                     # اسکریپت‌های PowerShell
 │   ├── Brand.cs                     # مشخصات شرکت و متغیرهای برندینگ
-│   ├── Core.cs                      # موتور داده، تنظیمات و WallpaperEngine
+│   ├── Core.cs                      # موتور داده، تنظیمات، قفل امن و WallpaperEngine
 │   ├── Diagnostics.cs               # موتور عیب‌یابی و خودترمیمی
 │   ├── DownloadService.cs           # سرویس ویندوز SCM جهت دانلود متمرکز
-│   ├── Presentation.cs              # مبدل‌های UI و کش حافظه‌ای تصاویر
+│   ├── Presentation.cs              # مبدل‌های UI، استخراج رنگ و تولید کارت
 │   ├── Sources.cs                   # کاتالوگ منابع، دانلود، فید و هشینگ
 │   ├── WindowsIntegration.cs        # تعاملات Win32، زمان‌بندی و بازنشانی Spotlight
 │   ├── MainWindow.xaml              # ساختار گرافیکی و تم راست‌به‌چپ

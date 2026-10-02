@@ -14,17 +14,21 @@
 
 ```mermaid
 graph TD
-    UI["رابط کاربری مدرن WPF<br/>(MainWindow & Theme)"] --> Cache["کش سریع حافظه‌ای تصاویر بندانگشتی<br/>(Concurrent In-Memory Cache)"]
+    UI["رابط کاربری مدرن WPF<br/>(MainWindow, Theme & Glass Widget)"] --> Cache["کش سریع حافظه‌ای تصاویر بندانگشتی<br/>(Concurrent In-Memory Cache)"]
     UI --> Controller["کنترلر مرکزی و موتور پس‌زمینه<br/>(WallpaperEngine)"]
     
     subgraph Core Engine ["موتور مرکزی (Core Engine v1.6.0)"]
         Controller --> Prefs["مدیریت تنظیمات و ذخیره‌سازی اتمیک<br/>(Preferences & Store)"]
+        Controller --> LockCoord["مدیریت قفل هم‌زمانی با تلاش مجدد<br/>(Store.AcquireLockAsync)"]
         Controller --> Catalog["کاتالوگ و بارگذاری منابع<br/>(SourceCatalog & SourceHttp)"]
         Controller --> Dedup["سامانه یکتا‌سازی هش SHA-256<br/>(Deduplication Engine)"]
+        Controller --> ColorSync["استخراج پالت و تطبیق رنگ تم<br/>(Dominant Color & Accent Sync)"]
+        Controller --> SocialCard["سازنده کارت گرافیکی شبکه‌های اجتماعی<br/>(CardGenerator DrawingVisual)"]
     end
 
     subgraph Data Sources ["منابع تصاویر (Data Sources)"]
         Catalog --> Bing["Bing Daily & Bing Global"]
+        Catalog --> Iran["ایران زیبا (IranNature)"]
         Catalog --> NASA["NASA APOD & Library"]
         Catalog --> Hubble["ESA / Hubble & Webb"]
         Catalog --> Unsplash["Unsplash & Picsum 4K"]
@@ -34,10 +38,11 @@ graph TD
     end
 
     subgraph Windows Interop ["تعامل با سیستم‌عامل (Windows Integration)"]
-        Controller --> WinAPI["تغییر والپیپر دسکتاپ<br/>(SystemParametersInfo Win32)"]
+        Controller --> WinAPI["تغییر والپیپر دسکتاپ و مانیتورهای چندگانه<br/>(SystemParametersInfo & IDesktopWallpaper COM)"]
         Controller --> LockAPI["سیاست لاک‌اسکرین ویندوز<br/>(PersonalizationCSP & WinRT/PowerShell)"]
         Controller --> TaskSched["زمان‌بندی هوشمند چندرویدادی<br/>(Windows Task Scheduler - Daily + Logon)"]
         Controller --> WinService["سرویس ویندوز هماهنگ با SCM<br/>(BingWallpaperProFeed Service)"]
+        Controller --> Hotkeys["کلیدهای میانبر سراسری ویندوز<br/>(RegisterHotKey Win32)"]
         Controller --> SpotRepair["تعمیر عمیق Spotlight<br/>(ContentDeliveryManager & AppX)"]
     end
 ```
@@ -144,14 +149,15 @@ flowchart TD
 
 ## ۵. ماتریس آزمون‌های اعتبارسنجی خودکار (Automated Verification Matrix)
 
-تمام ۵۷ تست پروژه به صورت مداوم وضعیت زیر را ارزیابی می‌کنند:
+تمام ۶۴ تست پروژه به صورت مداوم وضعیت زیر را ارزیابی می‌کنند:
 
 1. **امنیت شبکه و ضد نفوذ:** رد کردن تمام URLهای غیرمجاز، پروتکل‌های ناامن، پورت‌های غیررسمی و تلاش‌های SSRF.
-2. **عملیات اتمیک فایل:** تضمین عدم رها شدن فایل‌های `.tmp` و حفظ پایداری فایل کانفیگ در قطعی ناگهانی برق.
+2. **عملیات اتمیک فایل و هماهنگی قفل‌ها:** تضمین عدم رها شدن فایل‌های `.tmp`، بازیافت خطای هم‌زمانی و تلاش مجدد با `AcquireLockAsync`.
 3. **صحت دکودینگ تصویر و عدم قفل ماندن فایل:** دکود مستقیم، آزاد شدن فوری Handle فایل و کش در حافظه رم.
 4. **تطبیق فیدهای بین‌المللی:** پارس کردن فیدهای NASA APOD, Wikimedia POTD, ESA Hubble, Picsum/Unsplash, USGS.
-5. **مسیریابی هوشمند و تفکیک دسکتاپ و لاک‌اسکرین:** پشتیبانی از حالت‌های مستقل، همزمان و تفکیک مناطق جغرافیایی.
+5. **مسیریابی هوشمند و تفکیک دسکتاپ و لاک‌اسکرین:** پشتیبانی از حالت‌های مستقل، همزمان، تفکیک مناطق جغرافیایی و کالکشن ایران زیبا.
 6. **محیط کاملاً آفلاین کلاینت:** آزمون بدون اینترنت و واکشی مستقیم از Share شبکه.
 7. **طراحی بصری و فونت فارسی:** تایید بارگذاری قلم فارسی Vazirmatn، جهت‌بندی RTL و آیکون اختصاصی سهند نما.
+8. **ویجت دسکتاپ و کارت اجتماعی:** استخراج پالت رنگ تم ویندوز، فرمت تاریخ هجری خورشیدی و تولید کارت شبکه اجتماعی.
 
 </div>

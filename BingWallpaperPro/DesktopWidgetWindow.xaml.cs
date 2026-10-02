@@ -124,11 +124,13 @@ public partial class DesktopWidgetWindow : Window
     void OpenApp_Click(object sender, RoutedEventArgs e)
     {
         var main = Application.Current.MainWindow;
-        if (main != null)
+        if (main == null || !main.IsLoaded)
         {
-            main.Show();
-            main.WindowState = WindowState.Normal;
-            main.Activate();
+            main = new MainWindow();
+            Application.Current.MainWindow = main;
         }
+        main.Show();
+        main.WindowState = WindowState.Normal;
+        main.Activate();
     }
 }

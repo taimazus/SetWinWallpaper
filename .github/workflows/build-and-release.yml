@@ -34,8 +34,9 @@ jobs:
       - name: Create Portable Zip Packages
         shell: pwsh
         run: |
-          Compress-Archive -Path "output/standalone/*" -DestinationPath "output/SahandNama-v1.6.0-win-x64.zip" -Force
-          Copy-Item "output/standalone/BingWallpaperPro.exe" "output/SahandNama-v1.6.0-win-x64.exe" -Force
+          $ver = if ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME } else { "v1.6.0" }
+          Compress-Archive -Path "output/standalone/*" -DestinationPath "output/SahandNama-${ver}-win-x64.zip" -Force
+          Copy-Item "output/standalone/BingWallpaperPro.exe" "output/SahandNama-${ver}-win-x64.exe" -Force
 
       - name: Upload Artifacts to Workflow
         uses: actions/upload-artifact@v4
@@ -48,4 +49,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: pwsh
         run: |
-          gh release create v1.6.0 "output/SahandNama-v1.6.0-win-x64.exe" "output/SahandNama-v1.6.0-win-x64.zip" --title "Sahand Nama v1.6.0 — نسخه جدید با ویجت دسکتاپ، کلیدهای میانبر و چند مانیتور" --notes "انتشار رسمی نسخه ۱.۶.۰ سهند نما شامل ویجت شیشه‌ای دسکتاپ (ساعت و تقویم شمسی)، کلیدهای میانبر سراسری Win+Alt+W، کالکشن ایران زیبا، پشتیبانی از چند مانیتور، استخراج رنگ تم و کارت شبکه‌های اجتماعی." --latest || gh release upload v1.6.0 "output/SahandNama-v1.6.0-win-x64.exe" "output/SahandNama-v1.6.0-win-x64.zip" --clobber
+          $ver = if ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME } else { "v1.6.0" }
+          gh release create $ver "output/SahandNama-${ver}-win-x64.exe" "output/SahandNama-${ver}-win-x64.zip" --title "Sahand Nama $ver" --notes "انتشار رسمی نرم‌افزار سهند نما" --latest || gh release upload $ver "output/SahandNama-${ver}-win-x64.exe" "output/SahandNama-${ver}-win-x64.zip" --clobber

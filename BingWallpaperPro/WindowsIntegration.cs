@@ -538,7 +538,7 @@ public static class WindowsIntegration
         if (!Directory.Exists(assets)) throw new InvalidOperationException("کش تصاویر Spotlight پیدا نشد.");
         var photos = new List<Photo>();
         Directory.CreateDirectory(archiveRoot);
-        using var gate = new FileStream(Path.Combine(archiveRoot, "feed.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        using var gate = Store.AcquireLockAsync(Path.Combine(archiveRoot, "feed.lock"), 10).GetAwaiter().GetResult();
         var destination = Path.Combine(archiveRoot, "Images"); Directory.CreateDirectory(destination);
         foreach (var file in Directory.EnumerateFiles(assets))
         {

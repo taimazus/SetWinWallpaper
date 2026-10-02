@@ -7,8 +7,8 @@ namespace BingWallpaperPro;
 public static class DownloadService
 {
     public const string Name = "BingWallpaperProFeed";
-    static readonly ManualResetEventSlim Stopped = new(false);
-    static readonly CancellationTokenSource Cancellation = new();
+    static ManualResetEventSlim Stopped = new(false);
+    static CancellationTokenSource Cancellation = new();
     static readonly ServiceMain MainCallback = ServiceEntry;
     static readonly Handler HandlerCallback = Control;
     static IntPtr handle;
@@ -51,6 +51,12 @@ public static class DownloadService
     {
         handle = RegisterServiceCtrlHandler(Name, HandlerCallback);
         if (handle == IntPtr.Zero) return;
+        Stopped.Reset();
+        if (Cancellation.IsCancellationRequested)
+        {
+            try { Cancellation.Dispose(); } catch { }
+            Cancellation = new CancellationTokenSource();
+        }
         Report(4);
         Store.Log("Download service started successfully.", Store.SharedRoot);
 

@@ -79,6 +79,17 @@ public static class Store
         }
         catch { /* Logging must not crash a background process. */ }
     }
+    public static async Task<FileStream> AcquireLockAsync(string path, int timeoutSeconds = 10, CancellationToken token = default)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        var start = DateTime.UtcNow;
+        while (true)
+        {
+            try { return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
+            catch (IOException) when (DateTime.UtcNow - start < TimeSpan.FromSeconds(timeoutSeconds))
+            { await Task.Delay(200, token); }
+        }
+    }
     public static BitmapImage LoadImage(string path, int width = 1600)
     {
         using var stream = File.OpenRead(path);
@@ -113,7 +124,7 @@ public sealed class BingClient
 
         try
         {
-            await using var gate = new FileStream(Path.Combine(root, "feed.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            await using var gate = await Store.AcquireLockAsync(Path.Combine(root, "feed.lock"), 10, token);
             using var response = await Http.GetAsync(TrustedUri($"/HPImageArchive.aspx?format=js&idx=0&n=8&mkt={market}"), token);
             response.EnsureSuccessStatusCode();
             using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(token));
@@ -202,7 +213,7 @@ public sealed class WallpaperEngine
     public async Task UpdateAsync()
     {
         Directory.CreateDirectory(Store.Root);
-        await using var gate = new FileStream(Path.Combine(Store.Root, "update.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        await using var gate = await Store.AcquireLockAsync(Path.Combine(Store.Root, "update.lock"), 10);
         var settings = Store.Settings;
         if (!settings.Desktop && !settings.LockScreen) throw new InvalidOperationException("حداقل یک مقصد را انتخاب کنید.");
         var catalog = new SourceCatalog();

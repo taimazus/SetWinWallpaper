@@ -146,7 +146,7 @@ public sealed class SourceCatalog
         if (request.Id == "SharedNetwork") return await FetchSharedNetworkAsync(request.NetworkShare, token);
 
         Directory.CreateDirectory(root);
-        await using var gate = new FileStream(Path.Combine(root, "feed.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        await using var gate = await Store.AcquireLockAsync(Path.Combine(root, "feed.lock"), 10, token);
         List<Photo> photos;
         if (request.Id == "Folder") photos = await Task.Run(() => ImportFolder(request.Folder, token), token);
         else
@@ -333,7 +333,8 @@ public sealed class SourceCatalog
                 if (!File.Exists(sourceFile)) continue;
 
                 var localTarget = Path.Combine(localImgDir, Path.GetFileName(sourceFile));
-                if (!File.Exists(localTarget) || new FileInfo(localTarget).Length != new FileInfo(sourceFile).Length)
+                var srcInfo = new FileInfo(sourceFile);
+                if (!File.Exists(localTarget) || new FileInfo(localTarget).Length != srcInfo.Length || new FileInfo(localTarget).LastWriteTimeUtc != srcInfo.LastWriteTimeUtc)
                 {
                     await Task.Run(() => File.Copy(sourceFile, localTarget, true), token);
                 }
