@@ -2,7 +2,7 @@
 
 # معماری فنی و دیاگرام سیستم — سهند نما (Sahand Nama Architecture)
 
-**نسخه:** 1.7.0  
+**نسخه:** 1.8.0  
 **توسعه‌دهنده:** شرکت راهکار الکترونیک سهند ([https://irres.ir](https://irres.ir))  
 **فناوری:** .NET 10.0 (C# 13), WPF (Windows Presentation Foundation), Win32 Native P/Invoke, DWM Acrylic Blur, PowerShell Native Bridge, SCM Windows Service Dispatcher.
 
@@ -23,7 +23,7 @@ graph TD
     
     TRY["مدیریت سینی ویندوز<br/>(TrayManager Shell_NotifyIcon)"] --> AppCtrl["چرخه حیات برنامه و خروج دوگانه<br/>(App.xaml.cs Lifecycle)"]
 
-    subgraph Core Engine ["موتور مرکزی (Core Engine v1.7.0)"]
+    subgraph Core Engine ["موتور مرکزی (Core Engine v1.8.0)"]
         Controller --> Prefs["مدیریت تنظیمات و ذخیره‌سازی اتمیک<br/>(Preferences & Store)"]
         Controller --> LockCoord["مدیریت قفل هم‌زمانی با تلاش مجدد<br/>(Store.AcquireLockAsync)"]
         Controller --> Catalog["کاتالوگ و بارگذاری منابع<br/>(SourceCatalog & SourceHttp)"]

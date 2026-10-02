@@ -1,6 +1,6 @@
 <div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
 
-# سهند نما | Sahand Nama (نسخه 1.7.0)
+# سهند نما | Sahand Nama (نسخه 1.8.0)
 
 **سامانه جامع، هوشمند و سازمانی مدیریت و به‌روزرسانی تصاویر پس‌زمینه و صفحه قفل ویندوز همراه با ویجت دسکتاپ شیشه‌ای، آب‌وهوا و پایش سیستم**  
 *طراحی و توسعه توسط شرکت راهکار الکترونیک سهند — [https://irres.ir](https://irres.ir)*
@@ -19,8 +19,8 @@
 
 | نوع فایل | لینک دانلود مستقیم از گیت‌هاب | حجم تقریبی | مناسب برای |
 | :--- | :--- | :--- | :--- |
-| 🚀 **فایل اجرایی مستقل (EXE)** | [**دانلود SahandNama-v1.7.0-win-x64.exe**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.7.0/SahandNama-v1.7.0-win-x64.exe) | ~۱۴۰ مگابایت | اجرای فوری با یک کلیک بدون نیاز به نصب |
-| 📦 **بسته پرتابل فشرده (ZIP)** | [**دانلود SahandNama-v1.7.0-win-x64.zip**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.7.0/SahandNama-v1.7.0-win-x64.zip) | ~۶۱ مگابایت | پکیج کامل شامل اسکریپت‌های PowerShell و راهنما |
+| 🚀 **فایل اجرایی مستقل (EXE)** | [**دانلود SahandNama-v1.8.0-win-x64.exe**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.8.0/SahandNama-v1.8.0-win-x64.exe) | ~۱۴۰ مگابایت | اجرای فوری با یک کلیک بدون نیاز به نصب |
+| 📦 **بسته پرتابل فشرده (ZIP)** | [**دانلود SahandNama-v1.8.0-win-x64.zip**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.8.0/SahandNama-v1.8.0-win-x64.zip) | ~۶۱ مگابایت | پکیج کامل شامل اسکریپت‌های PowerShell و راهنما |
 | 🏷️ **صفحه انتشار نسخه‌ها** | [**مشاهده تمام Releaseها در گیت‌هاب**](https://github.com/taimazus/SetWinWallpaper/releases) | — | تاریخچه تغییرات و دسترسی به تمام نسخه‌ها |
 
 ---
@@ -43,7 +43,7 @@ graph LR
         E["USGS Earth as Art"]
     end
     
-    subgraph Engine ["هاب مرکزی سهند نما v1.7.0"]
+    subgraph Engine ["هاب مرکزی سهند نما v1.8.0"]
         Core["موتور دریافت، کش سریع، استخراج پالت رنگی و کارت گرافیکی"]
     end
     
@@ -85,11 +85,11 @@ graph LR
 
 ---
 
-## ✨ امکانات برجسته نسخه 1.7.0
+## ✨ امکانات برجسته نسخه 1.8.0
 
-1. 🪟 **ویجت دسکتاپ شیشه‌ای مات واقعی (True Acrylic Frosted Glass):**
+1. 🪟 **ویجت دسکتاپ شیشه‌ای مات و شناور بدون قاب (0-100% Floating Acrylic Glass):**
    - افکت بلوری و شیشه‌ای عمیق مات بر پایه API بومی `SetWindowCompositionAttribute` و شتاب‌یافته با GPU.
-   - شفافیت مستقل پس‌زمینه (Background-only Opacity) بدون محوشدن متون ساعت و دکمه‌ها.
+   - تنظیم دقیق میزان شفافیت پس‌زمینه از ۰٪ (شناور کامل و مستقیم روی والپیپر دسکتاپ بدون باکس و کادر) تا ۱۰۰٪ (شیشه مات غلیظ).
    - ساعت دیجیتال دقیق، تاریخ کامل هجری خورشیدی (شمسی) و میلادی.
    - وضعیت زنده آب‌وهوا با آیکون و دمای دقیق شهرهای ایران از Open-Meteo.
    - پایش زنده مصرف پردازنده (CPU)، حافظه RAM و باتری لپ‌تاپ.

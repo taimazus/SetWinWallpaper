@@ -34,7 +34,7 @@ jobs:
       - name: Create Portable Zip Packages
         shell: pwsh
         run: |
-          $ver = if ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME } else { "v1.7.0" }
+          $ver = if ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME } else { "v1.8.0" }
           Compress-Archive -Path "output/standalone/*" -DestinationPath "output/SahandNama-${ver}-win-x64.zip" -Force
           Copy-Item "output/standalone/SahandNama.exe" "output/SahandNama-${ver}-win-x64.exe" -Force
 
@@ -49,5 +49,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: pwsh
         run: |
-          $ver = if ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME } else { "v1.7.0" }
+          $ver = if ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME } else { "v1.8.0" }
           gh release create $ver "output/SahandNama-${ver}-win-x64.exe" "output/SahandNama-${ver}-win-x64.zip" --title "Sahand Nama $ver" --notes "انتشار رسمی نرم‌افزار سهند نما" --latest || gh release upload $ver "output/SahandNama-${ver}-win-x64.exe" "output/SahandNama-${ver}-win-x64.zip" --clobber
