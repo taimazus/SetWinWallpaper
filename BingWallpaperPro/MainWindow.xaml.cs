@@ -32,7 +32,8 @@ public partial class MainWindow : Window
         LockFolderBox.Text = string.IsNullOrWhiteSpace(preferences.LockFolder) ? preferences.LockNetworkSharePath : preferences.LockFolder;
         MarketBox.SelectedItem = preferences.Market; LockMarketBox.SelectedItem = preferences.LockMarket;
         ResolutionBox.SelectedItem = preferences.Resolution; FitBox.SelectedItem = preferences.Fit;
-        ModeBox.SelectedIndex = preferences.Mode switch { "Previous" => 1, "Regions" => 2, "Random" => 3, _ => 0 };
+        DesktopModeBox.SelectedIndex = (preferences.DesktopMode == "Random" || preferences.Mode == "Random") ? 1 : 0;
+        LockModeBox.SelectedIndex = preferences.LockMode switch { "Daily" => 1, "Random" => 2, "Previous" => 3, _ => (preferences.Mode == "Previous" ? 3 : (preferences.Mode == "Regions" ? 1 : (preferences.Mode == "Random" ? 2 : 0))) };
         DesktopCheck.IsChecked = preferences.Desktop; LockCheck.IsChecked = preferences.LockScreen;
         TimeBox.Text = preferences.DailyTime;
         QuickSourceBox.ItemsSource = SourceCatalog.Options; QuickSourceBox.SelectedIndex = 0;
@@ -77,7 +78,15 @@ public partial class MainWindow : Window
         preferences.LockMarket = LockMarketBox.SelectedItem as string ?? throw new InvalidOperationException("منطقه دوم را انتخاب کنید.");
         preferences.Resolution = ResolutionBox.SelectedItem as string ?? "UHD";
         preferences.Fit = FitBox.SelectedItem as string ?? "Fill";
-        preferences.Mode = (ModeBox.SelectedItem as ComboBoxItem)?.Tag.ToString() ?? "Same";
+        preferences.DesktopMode = (DesktopModeBox.SelectedItem as ComboBoxItem)?.Tag.ToString() ?? "Daily";
+        preferences.LockMode = (LockModeBox.SelectedItem as ComboBoxItem)?.Tag.ToString() ?? "Follow";
+        preferences.Mode = preferences.LockMode switch
+        {
+            "Previous" => "Previous",
+            "Daily" => "Regions",
+            "Random" => "Random",
+            _ => preferences.DesktopMode == "Random" ? "Random" : "Same"
+        };
         preferences.Desktop = DesktopCheck.IsChecked == true; preferences.LockScreen = LockCheck.IsChecked == true;
         preferences.DailyTime = TimeBox.Text;
         preferences.IsServerMode = ServerModeCheck.IsChecked == true;
@@ -207,8 +216,9 @@ public partial class MainWindow : Window
 
     void UpdateSourceControls()
     {
-        if (LockFolderBox == null || ModeBox == null) return;
-        var independent = (ModeBox.SelectedItem as ComboBoxItem)?.Tag?.ToString() == "Regions";
+        if (LockFolderBox == null || DesktopModeBox == null || LockModeBox == null) return;
+        var lockModeTag = (LockModeBox.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? preferences.LockMode;
+        var independent = lockModeTag is "Daily" or "Random";
         LockSourceBox.IsEnabled = independent;
         MarketBox.IsEnabled = DesktopSourceBox.SelectedValue as string == "Bing";
         LockMarketBox.IsEnabled = independent && LockSourceBox.SelectedValue as string == "Bing";
@@ -229,7 +239,7 @@ public partial class MainWindow : Window
     {
         var page = Selected.SourcePage;
         if (!Uri.TryCreate(page, UriKind.Absolute, out var uri) || uri.Scheme != "https" || !uri.IsDefaultPort || uri.UserInfo.Length > 0 ||
-            uri.Host is not ("www.bing.com" or "www.nasa.gov" or "images.nasa.gov" or "commons.wikimedia.org" or "esahubble.org" or "www.eso.org" or "unsplash.com" or "eros.usgs.gov"))
+            uri.Host is not ("www.bing.com" or "www.nasa.gov" or "images.nasa.gov" or "commons.wikimedia.org" or "esahubble.org" or "www.eso.org" or "unsplash.com" or "eros.usgs.gov" or "wallhaven.cc" or "www.artic.edu" or "artic.edu" or "fa.wikipedia.org" or "en.wikipedia.org"))
             throw new InvalidOperationException("صفحه اصلی قابل اعتماد برای این تصویر موجود نیست.");
         WindowsIntegration.Open(uri.AbsoluteUri); return Task.CompletedTask;
     }, "صفحه اصلی تصویر باز شد.");

@@ -72,6 +72,8 @@ internal static class Program
             Check(SourceHttp.Validate("https://cdn.esahubble.org/archives/images/screen/test.jpg").Host == "cdn.esahubble.org", "ESA Hubble host allowed");
             Check(SourceHttp.Validate("https://picsum.photos/id/10/3840/2160.jpg").Host == "picsum.photos", "Picsum/Unsplash host allowed");
             Check(SourceHttp.Validate("https://eros.usgs.gov/earth-as-art/test.jpg").Host == "eros.usgs.gov", "USGS host allowed");
+            Check(SourceHttp.Validate("https://w.wallhaven.cc/full/test.jpg").Host == "w.wallhaven.cc", "Wallhaven host allowed");
+            Check(SourceHttp.Validate("https://www.artic.edu/iiif/2/test/full/1680,/0/default.jpg").Host == "www.artic.edu", "Art Institute host allowed");
 
             // NASA Feed parsing
             var feed = System.Text.Encoding.UTF8.GetBytes("""
@@ -107,6 +109,16 @@ internal static class Program
             var parsedUsgs = SourceCatalog.ParseUsgsFeed(usgsXml);
             Check(parsedUsgs.Count == 1 && parsedUsgs[0].Title.Contains("Erg Iguidi") && parsedUsgs[0].Source == "UsgsEarthArt", "USGS Earth as Art parser extracts satellite landscape");
 
+            // Wallhaven JSON parsing
+            var whJson = System.Text.Encoding.UTF8.GetBytes("""{"data":[{"id":"wh101","path":"https://w.wallhaven.cc/full/wh101.jpg","category":"general","resolution":"3840x2160","created_at":"2026-09-01 12:00:00"}]}""");
+            var parsedWh = SourceCatalog.ParseWallhaven(whJson);
+            Check(parsedWh.Count == 1 && parsedWh[0].Url.Contains("wallhaven.cc") && parsedWh[0].Title.Contains("3840x2160"), "Wallhaven parser extracts 4K wallpapers");
+
+            // Museum Art JSON parsing
+            var artJson = System.Text.Encoding.UTF8.GetBytes("""{"data":[{"id":12345,"title":"Starry Night","artist_title":"Vincent van Gogh","date_display":"1889","image_id":"art-uuid-1"}]}""");
+            var parsedArt = SourceCatalog.ParseMuseumArt(artJson);
+            Check(parsedArt.Count == 1 && parsedArt[0].Url.Contains("artic.edu") && parsedArt[0].Title.Contains("Starry Night"), "Museum Art parser extracts classic masterpieces");
+
             var oldSettings = Path.Combine(root, "legacy-settings.json"); File.WriteAllText(oldSettings, "{\"Market\":\"de-DE\",\"Mode\":\"Regions\"}");
             var migrated = Store.Read(oldSettings, new Preferences());
             Check(migrated.DesktopSource == "Bing" && migrated.LockSource == "Bing" && migrated.Mode == "Regions", "Existing configurations keep Bing and regional mode");
@@ -115,6 +127,9 @@ internal static class Program
             Check(PhotoSelection.Request(independent, true).Id == "EsaHubble" && PhotoSelection.Request(independent, false).Id == "WikimediaPotd", "Independent destination source routing with new sources");
             independent.Mode = "Same";
             Check(PhotoSelection.Request(independent, true) == PhotoSelection.Request(independent, false), "Same mode shares effective source");
+
+            var indepModes = new Preferences { DesktopMode = "Random", LockMode = "Daily", LockSource = "Wallhaven" };
+            Check(PhotoSelection.Request(indepModes, true).Id == "Wallhaven" && PhotoSelection.Request(indepModes, false).Id == "Bing", "Independent LockMode and DesktopMode routing");
 
             var candidates = new[] { new Photo { Id = "a" }, new Photo { Id = "b" } };
             var day = new DateOnly(2026, 9, 24);

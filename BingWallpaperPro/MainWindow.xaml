@@ -231,10 +231,41 @@
     <TabItem.Header><StackPanel Orientation="Horizontal"><TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" Margin="0,0,12,0" VerticalAlignment="Center" FontSize="18"/><TextBlock Text="منابع و برنامه‌ریزی"/></StackPanel></TabItem.Header>
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel TextElement.Foreground="#E2EDF4" Margin="0,0,8,0">
      <TextBlock Text="هر نمایشگر، یک انتخاب" Style="{StaticResource Title}"/><TextBlock Text="منبع تصویر و برنامه روزانه را مطابق سلیقه خود تنظیم کنید." Style="{StaticResource Hint}"/>
-     <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="روش انتخاب تصویر" FontSize="16" FontWeight="Bold"/><ComboBox x:Name="ModeBox" SelectionChanged="SourceSelectionChanged"><ComboBoxItem Content="تصویر یکسان از منبع دسکتاپ" Tag="Same"/><ComboBoxItem Content="لاک‌اسکرین: تصویر قبلی در منبع دسکتاپ" Tag="Previous"/><ComboBoxItem Content="انتخاب مستقل منبع و منطقه برای هر مقصد" Tag="Regions"/><ComboBoxItem Content="انتخاب تصادفی از میان تصاویر منبع (Random)" Tag="Random"/></ComboBox><TextBlock Text="در حالت مستقل، می‌توانید برای دسکتاپ و لاک‌اسکرین دو منبع کاملاً جداگانه مشخص کنید." Style="{StaticResource Hint}" Margin="0"/></StackPanel></Border>
      <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="14"/><ColumnDefinition/></Grid.ColumnDefinitions>
-      <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="دسکتاپ" FontSize="18" FontWeight="Bold"/><CheckBox x:Name="DesktopCheck" Content="به‌روزرسانی دسکتاپ فعال باشد"/><TextBlock Text="منبع تصاویر دسکتاپ"/><ComboBox x:Name="DesktopSourceBox" DisplayMemberPath="Name" SelectedValuePath="Id" SelectionChanged="SourceSelectionChanged"/><TextBlock Text="منطقه Bing"/><ComboBox x:Name="MarketBox" FlowDirection="LeftToRight"/><TextBlock Text="پوشه شخصی یا مخزن سرور (UNC Share)"/><TextBox x:Name="DesktopFolderBox" FlowDirection="LeftToRight"/><Button Content="انتخاب مسیر…" Tag="&#xE8B7;" Click="DesktopFolder_Click" HorizontalAlignment="Right"/></StackPanel></Border>
-      <Border Grid.Column="2" Style="{StaticResource Card}"><StackPanel><TextBlock Text="لاک‌اسکرین" FontSize="18" FontWeight="Bold"/><CheckBox x:Name="LockCheck" Content="به‌روزرسانی لاک‌اسکرین فعال باشد"/><TextBlock Text="منبع تصاویر لاک‌اسکرین (در حالت مستقل)"/><ComboBox x:Name="LockSourceBox" DisplayMemberPath="Name" SelectedValuePath="Id" SelectionChanged="SourceSelectionChanged"/><TextBlock Text="منطقه Bing"/><ComboBox x:Name="LockMarketBox" FlowDirection="LeftToRight"/><TextBlock Text="پوشه شخصی یا مخزن سرور (UNC Share)"/><TextBox x:Name="LockFolderBox" FlowDirection="LeftToRight"/><Button Content="انتخاب مسیر…" Tag="&#xE8B7;" Click="LockFolder_Click" HorizontalAlignment="Right"/></StackPanel></Border>
+      <Border Style="{StaticResource Card}"><StackPanel>
+       <TextBlock Text="پس‌زمینه دسکتاپ" FontSize="18" FontWeight="Bold"/>
+       <CheckBox x:Name="DesktopCheck" Content="به‌روزرسانی پس‌زمینه دسکتاپ فعال باشد" Margin="0,0,0,6"/>
+       <TextBlock Text="روش انتخاب تصویر دسکتاپ"/>
+       <ComboBox x:Name="DesktopModeBox" SelectionChanged="SourceSelectionChanged">
+        <ComboBoxItem Content="گردش خودکار روزانه بر اساس تاریخ (Daily)" Tag="Daily"/>
+        <ComboBoxItem Content="انتخاب تصادفی از میان تصاویر منبع (Random)" Tag="Random"/>
+       </ComboBox>
+       <TextBlock Text="منبع تصاویر دسکتاپ"/>
+       <ComboBox x:Name="DesktopSourceBox" DisplayMemberPath="Name" SelectedValuePath="Id" SelectionChanged="SourceSelectionChanged"/>
+       <TextBlock Text="منطقه Bing"/>
+       <ComboBox x:Name="MarketBox" FlowDirection="LeftToRight"/>
+       <TextBlock Text="پوشه شخصی یا مخزن سرور (UNC Share)"/>
+       <TextBox x:Name="DesktopFolderBox" FlowDirection="LeftToRight"/>
+       <Button Content="انتخاب مسیر…" Tag="&#xE8B7;" Click="DesktopFolder_Click" HorizontalAlignment="Right"/>
+      </StackPanel></Border>
+      <Border Grid.Column="2" Style="{StaticResource Card}"><StackPanel>
+       <TextBlock Text="صفحه قفل (Lock Screen)" FontSize="18" FontWeight="Bold"/>
+       <CheckBox x:Name="LockCheck" Content="به‌روزرسانی تصویر صفحه قفل فعال باشد" Margin="0,0,0,6"/>
+       <TextBlock Text="روش انتخاب تصویر صفحه قفل"/>
+       <ComboBox x:Name="LockModeBox" SelectionChanged="SourceSelectionChanged">
+        <ComboBoxItem Content="پیروی خودکار از تصویر و منبع دسکتاپ" Tag="Follow"/>
+        <ComboBoxItem Content="گردش خودکار روزانه مستقل (Daily)" Tag="Daily"/>
+        <ComboBoxItem Content="انتخاب تصادفی مستقل از منبع (Random)" Tag="Random"/>
+        <ComboBoxItem Content="تصویر روز قبل در منبع دسکتاپ (Previous)" Tag="Previous"/>
+       </ComboBox>
+       <TextBlock Text="منبع تصاویر صفحه قفل (در حالت مستقل)"/>
+       <ComboBox x:Name="LockSourceBox" DisplayMemberPath="Name" SelectedValuePath="Id" SelectionChanged="SourceSelectionChanged"/>
+       <TextBlock Text="منطقه Bing"/>
+       <ComboBox x:Name="LockMarketBox" FlowDirection="LeftToRight"/>
+       <TextBlock Text="پوشه شخصی یا مخزن سرور (UNC Share)"/>
+       <TextBox x:Name="LockFolderBox" FlowDirection="LeftToRight"/>
+       <Button Content="انتخاب مسیر…" Tag="&#xE8B7;" Click="LockFolder_Click" HorizontalAlignment="Right"/>
+      </StackPanel></Border>
      </Grid>
      <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="زمان‌بندی و نمایش" FontSize="18" FontWeight="Bold" Margin="0,0,0,14"/><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="14"/><ColumnDefinition/><ColumnDefinition Width="14"/><ColumnDefinition/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="کیفیت Bing"/><ComboBox x:Name="ResolutionBox" FlowDirection="LeftToRight"/></StackPanel><StackPanel Grid.Column="2"><TextBlock Text="چیدمان تصویر دسکتاپ"/><ComboBox x:Name="FitBox" FlowDirection="LeftToRight"/></StackPanel><StackPanel Grid.Column="4"><TextBlock Text="ساعت محلی (نمونه 09:00)"/><TextBox x:Name="TimeBox" FlowDirection="LeftToRight"/></StackPanel></Grid>
       <WrapPanel><Button Content="ذخیره تنظیمات" Tag="&#xE74E;" Click="Save_Click"/><Button Content="به‌روزرسانی اکنون" Tag="&#xE72C;" Click="Update_Click" Style="{StaticResource Primary}"/><Button Content="فعال‌سازی / اصلاح زمان‌بندی" Tag="&#xE787;" Click="Schedule_Click"/><Button Content="حذف زمان‌بندی" Tag="&#xE74D;" Click="Unschedule_Click"/></WrapPanel><TextBlock Text="برنامه روزانه و هنگام ورود در نشست حساب کاربری شما اجرا می‌شود. پس از تغییر ساعت، زمان‌بندی را نیز اصلاح کنید." Style="{StaticResource Hint}" Margin="0,8,0,0"/>

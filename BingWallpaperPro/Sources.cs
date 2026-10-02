@@ -19,7 +19,7 @@ public static class PhotoSelection
     public static SourceRequest Request(Preferences settings, bool lockScreen)
     {
         if (settings.Mode is not ("Same" or "Previous" or "Regions" or "Random")) throw new InvalidDataException("حالت انتخاب تصویر ناشناخته است.");
-        var independent = lockScreen && settings.Mode == "Regions";
+        var independent = lockScreen && (settings.LockMode is "Daily" or "Random" || settings.Mode == "Regions");
         return new SourceRequest(
             independent ? settings.LockSource : settings.DesktopSource,
             independent ? settings.LockMarket : settings.Market,
@@ -36,7 +36,8 @@ public static class PhotoSelection
             return photos[Random.Shared.Next(photos.Count)];
         }
         // Daily feeds use newest-first. Collections rotate deterministically each local calendar day.
-        var index = source is "Bing" or "NasaDaily" or "WikimediaPotd" or "EsaHubble" ? 0 : Math.Abs(day.DayNumber) % photos.Count;
+        var isDailyFeed = source is "Bing" or "NasaDaily" or "WikimediaPotd" or "EsaHubble" or "Wallhaven" or "MuseumArt" or "NatGeoNature" or "CyberpunkArt" or "Architecture4K";
+        var index = isDailyFeed ? 0 : Math.Abs(day.DayNumber) % photos.Count;
         return photos[(index + (previous ? 1 : 0)) % photos.Count];
     }
 }
@@ -52,11 +53,13 @@ public static partial class SourceHttp
             throw new InvalidDataException("نشانی منبع در فهرست میزبان‌های مجاز HTTPS نیست.");
 
         var host = uri.Host.ToLowerInvariant();
-        var isAllowed = host is "www.bing.com" or "www.nasa.gov" or "images-api.nasa.gov" or "images-assets.nasa.gov"
+        var isAllowed = host is "www.bing.com" or "www.nasa.gov" or "images-api.nasa.gov" or "images-assets.nasa.gov" or "images.nasa.gov"
             or "commons.wikimedia.org" or "upload.wikimedia.org" or "thumb.wikimedia.org"
             or "esahubble.org" or "cdn.esahubble.org" or "www.eso.org" or "cdn.eso.org"
             or "picsum.photos" or "fastly.picsum.photos" or "images.unsplash.com"
-            or "eros.usgs.gov" or "landsat.usgs.gov" or "pubs.usgs.gov" or "earthexplorer.usgs.gov";
+            or "eros.usgs.gov" or "landsat.usgs.gov" or "pubs.usgs.gov" or "earthexplorer.usgs.gov"
+            or "wallhaven.cc" or "w.wallhaven.cc" or "th.wallhaven.cc"
+            or "api.artic.edu" or "www.artic.edu" or "artic.edu";
 
         if (!isAllowed)
             throw new InvalidDataException("میزبان منبع مجاز نیست: " + uri.Host);
@@ -109,10 +112,15 @@ public sealed class SourceCatalog
     [
         new("Bing", "Microsoft Bing — تصویر روز"),
         new("BingGlobal", "گلچین بین‌المللی بینگ (تمام قاره‌ها و کشورها)"),
+        new("Wallhaven", "Wallhaven — والپیپرهای برگزیده 4K/8K (طبیعت، فانتزی، دیجیتال)"),
         new("IranNature", "ایران زیبا — طبیعت، کوهستان‌ها و میراث باستانی ایران"),
+        new("MuseumArt", "موزه‌های جهان — شاهکارهای نقاشی و هنر کلاسیک (Art Institute)"),
+        new("NatGeoNature", "حیات‌وحش و طبیعت شگفت‌انگیز — عکاسی برتر بین‌المللی"),
         new("UnsplashNature", "Unsplash & Picsum — عکاسی طبیعت و مناظر 4K"),
         new("WikimediaPotd", "Wikimedia Commons — تصویر منتخب روز"),
         new("Spotlight", "Microsoft Spotlight — کش محلی"),
+        new("CyberpunkArt", "هنر دیجیتال، سایبرپانک و فانتزی 4K"),
+        new("Architecture4K", "معماری مدرن و چشم‌اندازهای شهری 4K"),
         new("UsgsEarthArt", "USGS Earth as Art — شگفتی‌های زمین از فضا"),
         new("NasaDaily", "NASA — تصویر نجومی روز (APOD)"),
         new("NasaLibrary", "NASA — کتابخانه تصاویر فضا"),
@@ -128,6 +136,11 @@ public sealed class SourceCatalog
     public const string EsaHubbleFeed = "https://esahubble.org/images/potw/feed/";
     public const string PicsumFeed = "https://picsum.photos/v2/list?page=1&limit=30";
     public const string UsgsFeed = "https://eros.usgs.gov/earth-as-art/feed";
+    public const string WallhavenTopFeed = "https://wallhaven.cc/api/v1/search?sorting=toplist&topRange=1M&purity=100&resolutions=3840x2160,2560x1440,1920x1080";
+    public const string WallhavenCyberFeed = "https://wallhaven.cc/api/v1/search?q=cyberpunk&sorting=toplist&topRange=1M&purity=100&resolutions=3840x2160,2560x1440,1920x1080";
+    public const string WallhavenArchFeed = "https://wallhaven.cc/api/v1/search?q=architecture&sorting=toplist&topRange=1M&purity=100&resolutions=3840x2160,2560x1440,1920x1080";
+    public const string MuseumArtFeed = "https://api.artic.edu/api/v1/artworks/search?query[term][is_public_domain]=true&limit=25&fields=id,title,artist_title,date_display,image_id";
+    public const string FeaturedNatureFeed = "https://commons.wikimedia.org/w/api.php?action=featuredfeed&feed=featured&feedformat=rss";
 
     readonly string root;
     public SourceCatalog(string? root = null) => this.root = root ?? Store.Root;
@@ -163,6 +176,11 @@ public sealed class SourceCatalog
                 "EsaHubble" => EsaHubbleFeed,
                 "UnsplashNature" => PicsumFeed,
                 "UsgsEarthArt" => UsgsFeed,
+                "Wallhaven" => WallhavenTopFeed,
+                "CyberpunkArt" => WallhavenCyberFeed,
+                "Architecture4K" => WallhavenArchFeed,
+                "MuseumArt" => MuseumArtFeed,
+                "NatGeoNature" => FeaturedNatureFeed,
                 _ => throw new ArgumentException("منبع آنلاین ناشناخته: " + request.Id)
             };
 
@@ -177,6 +195,9 @@ public sealed class SourceCatalog
                 "EsaHubble" => ParseEsaFeed(bytes),
                 "UnsplashNature" => ParsePicsum(bytes),
                 "UsgsEarthArt" => ParseUsgsFeed(bytes),
+                "Wallhaven" or "CyberpunkArt" or "Architecture4K" => ParseWallhaven(bytes, request.Id),
+                "MuseumArt" => ParseMuseumArt(bytes),
+                "NatGeoNature" => ParseWikimediaFeed(bytes, "NatGeoNature"),
                 _ => []
             };
 
@@ -408,7 +429,7 @@ public sealed class SourceCatalog
         return result;
     }
 
-    public static List<Photo> ParseWikimediaFeed(byte[] bytes)
+    public static List<Photo> ParseWikimediaFeed(byte[] bytes, string sourceName = "WikimediaPotd")
     {
         using var input = new MemoryStream(bytes);
         using var reader = XmlReader.Create(input, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null, MaxCharactersInDocument = 25_000_000 });
@@ -426,7 +447,7 @@ public sealed class SourceCatalog
             var fullUrl = $"https://upload.wikimedia.org/wikipedia/commons/{hash}/{fileName}";
             SourceHttp.Validate(fullUrl);
 
-            var titleRaw = item.Element("title")?.Value ?? "Wikimedia Commons POTD";
+            var titleRaw = item.Element("title")?.Value ?? (sourceName == "NatGeoNature" ? "شگفتی‌های طبیعت و حیات‌وحش" : "Wikimedia Commons POTD");
             var date = DateTimeOffset.TryParse(item.Element("pubDate")?.Value, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed) ? parsed.ToString("yyyyMMdd") : "";
 
             // Extract description plain text
@@ -436,15 +457,81 @@ public sealed class SourceCatalog
 
             result.Add(new Photo
             {
-                Source = "WikimediaPotd",
+                Source = sourceName,
                 Title = WebUtility.HtmlDecode(titleRaw),
                 Url = fullUrl,
                 Date = date,
-                SourcePage = item.Element("link")?.Value ?? "https://commons.wikimedia.org/wiki/Commons:Picture_of_the_day",
-                Copyright = string.IsNullOrWhiteSpace(descClean) ? "Wikimedia Commons Picture of the Day (CC / Public Domain)" : $"Wikimedia POTD: {descClean} — CC / Public Domain"
+                SourcePage = item.Element("link")?.Value ?? "https://commons.wikimedia.org/wiki/Commons:Featured_pictures",
+                Copyright = string.IsNullOrWhiteSpace(descClean) ? "برگزیده عکاسی بین‌المللی (CC / Public Domain)" : $"{descClean} — CC / Public Domain"
             });
         }
         return result.OrderByDescending(p => p.Date).ToList();
+    }
+
+    public static List<Photo> ParseWallhaven(byte[] bytes, string sourceName = "Wallhaven")
+    {
+        using var json = JsonDocument.Parse(bytes); var result = new List<Photo>();
+        if (json.RootElement.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in data.EnumerateArray())
+            {
+                var path = item.TryGetProperty("path", out var p) ? p.GetString() : null;
+                if (string.IsNullOrWhiteSpace(path)) continue;
+                SourceHttp.Validate(path);
+                var id = item.TryGetProperty("id", out var idProp) ? idProp.GetString() ?? "" : "";
+                var category = item.TryGetProperty("category", out var catProp) ? catProp.GetString() ?? "Wallhaven" : "Wallhaven";
+                var res = item.TryGetProperty("resolution", out var resProp) ? resProp.GetString() ?? "4K" : "4K";
+                var page = item.TryGetProperty("url", out var u) ? u.GetString() ?? "https://wallhaven.cc" : "https://wallhaven.cc";
+                var date = item.TryGetProperty("created_at", out var cr) && DateTimeOffset.TryParse(cr.GetString(), out var dt) ? dt.ToString("yyyyMMdd") : "";
+                var title = sourceName switch
+                {
+                    "CyberpunkArt" => $"هنر دیجیتال و سایبرپانک ({res})",
+                    "Architecture4K" => $"معماری و منظره شهری ({res})",
+                    _ => $"والپیپر برگزیده Wallhaven ({res} · {category})"
+                };
+                result.Add(new Photo
+                {
+                    Source = sourceName,
+                    Id = sourceName + "-" + id,
+                    Url = path,
+                    Title = title,
+                    SourcePage = page,
+                    Date = date,
+                    Copyright = $"Wallhaven Community · {res}"
+                });
+            }
+        }
+        return result;
+    }
+
+    public static List<Photo> ParseMuseumArt(byte[] bytes)
+    {
+        using var json = JsonDocument.Parse(bytes); var result = new List<Photo>();
+        if (json.RootElement.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in data.EnumerateArray())
+            {
+                var imageId = item.TryGetProperty("image_id", out var imgId) ? imgId.GetString() : null;
+                if (string.IsNullOrWhiteSpace(imageId)) continue;
+                var url = $"https://www.artic.edu/iiif/2/{imageId}/full/1680,/0/default.jpg";
+                SourceHttp.Validate(url);
+                var id = item.TryGetProperty("id", out var idProp) ? idProp.GetInt32().ToString() : imageId;
+                var title = item.TryGetProperty("title", out var t) ? t.GetString() ?? "شاهکار هنری" : "شاهکار هنری";
+                var artist = item.TryGetProperty("artist_title", out var a) ? a.GetString() ?? "هنرمند نامشخص" : "هنرمند نامشخص";
+                var period = item.TryGetProperty("date_display", out var d) ? d.GetString() ?? "" : "";
+                result.Add(new Photo
+                {
+                    Source = "MuseumArt",
+                    Id = "MuseumArt-" + id,
+                    Url = url,
+                    Title = $"{title} — اثر {artist}",
+                    SourcePage = $"https://www.artic.edu/artworks/{id}",
+                    Date = DateTime.Now.ToString("yyyyMMdd"),
+                    Copyright = $"موزه هنر شیکاگو (Art Institute) · {artist} ({period}) — Public Domain"
+                });
+            }
+        }
+        return result;
     }
 
     public static List<Photo> ParseEsaFeed(byte[] bytes)

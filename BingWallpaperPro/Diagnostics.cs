@@ -185,6 +185,8 @@ public static class Diagnostics
             if (!SourceCatalog.Options.Any(s => s.Id == source)) problems.Add("منبع ناشناخته: " + source);
         if (!BingClient.Markets.Contains(settings.Market) || !BingClient.Markets.Contains(settings.LockMarket)) problems.Add("منطقه Bing نامعتبر است.");
         if (!BingClient.Resolutions.Contains(settings.Resolution)) problems.Add("کیفیت تصویر نامعتبر است.");
+        if (settings.DesktopMode is not ("Daily" or "Random")) problems.Add("روش انتخاب دسکتاپ نامعتبر است.");
+        if (settings.LockMode is not ("Follow" or "Daily" or "Random" or "Previous")) problems.Add("روش انتخاب لاک‌اسکرین نامعتبر است.");
         if (settings.Mode is not ("Same" or "Previous" or "Regions" or "Random")) problems.Add("حالت انتخاب تصویر نامعتبر است.");
         return problems;
     }
@@ -208,6 +210,17 @@ public static class Diagnostics
                 if (!BingClient.Markets.Contains(repaired.Market)) repaired.Market = "en-US";
                 if (!BingClient.Markets.Contains(repaired.LockMarket)) repaired.LockMarket = "en-GB";
                 if (!BingClient.Resolutions.Contains(repaired.Resolution)) repaired.Resolution = "UHD";
+                if (repaired.DesktopMode is not ("Daily" or "Random")) repaired.DesktopMode = repaired.Mode == "Random" ? "Random" : "Daily";
+                if (repaired.LockMode is not ("Follow" or "Daily" or "Random" or "Previous"))
+                {
+                    repaired.LockMode = repaired.Mode switch
+                    {
+                        "Previous" => "Previous",
+                        "Regions" => "Daily",
+                        "Random" => "Random",
+                        _ => "Follow"
+                    };
+                }
                 if (repaired.Mode is not ("Same" or "Previous" or "Regions" or "Random")) repaired.Mode = "Same";
             }
         }

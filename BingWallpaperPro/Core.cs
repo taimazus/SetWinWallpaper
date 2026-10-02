@@ -18,6 +18,8 @@ public sealed class Preferences
     public string LockNetworkSharePath { get; set; } = "";
     public string Market { get; set; } = "en-US";
     public string LockMarket { get; set; } = "en-GB";
+    public string DesktopMode { get; set; } = "Daily";
+    public string LockMode { get; set; } = "Follow";
     public string Mode { get; set; } = "Same";
     public string Resolution { get; set; } = "UHD";
     public string Fit { get; set; } = "Fill";
@@ -224,7 +226,11 @@ public sealed class WallpaperEngine
             var request = PhotoSelection.Request(settings, lockScreen);
             if (!fetched.TryGetValue(request, out var fetch)) fetched[request] = fetch = catalog.FetchAsync(request);
             var photos = await fetch;
-            return PhotoSelection.Select(photos, request.Id, lockScreen && settings.Mode == "Previous", day, settings.Mode == "Random");
+            var isRandom = lockScreen
+                ? (settings.LockMode == "Random" || (settings.LockMode == "Follow" && (settings.DesktopMode == "Random" || settings.Mode == "Random")) || settings.Mode == "Random")
+                : (settings.DesktopMode == "Random" || settings.Mode == "Random");
+            var isPrevious = lockScreen && (settings.LockMode == "Previous" || (settings.LockMode == "Follow" && settings.Mode == "Previous") || settings.Mode == "Previous");
+            return PhotoSelection.Select(photos, request.Id, isPrevious, day, isRandom);
         }
         var messages = new List<string>();
         var failed = false;
