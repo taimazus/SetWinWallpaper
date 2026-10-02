@@ -1,8 +1,8 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 
-namespace BingWallpaperPro;
+namespace SahandNama;
 
 public static class DesktopPinning
 {

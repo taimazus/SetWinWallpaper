@@ -1,14 +1,14 @@
-<Window x:Class="BingWallpaperPro.MainWindow"
+﻿<Window x:Class="SahandNama.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:BingWallpaperPro"
+        xmlns:local="clr-namespace:SahandNama"
         Title="سهند نما" Height="820" Width="1180" MinHeight="700" MinWidth="980"
         WindowStartupLocation="CenterScreen" Background="#0A141D" TextElement.Foreground="#E8F1F5"
         FlowDirection="RightToLeft"
-        FontFamily="pack://application:,,,/BingWallpaperPro;component/Assets/Fonts/#Vazirmatn"
+        FontFamily="pack://application:,,,/SahandNama;component/Assets/Fonts/#Vazirmatn"
         Icon="Assets/SahandNama.png">
  <Window.Resources>
-  <FontFamily x:Key="VazirmatnFont">pack://application:,,,/BingWallpaperPro;component/Assets/Fonts/#Vazirmatn</FontFamily>
+  <FontFamily x:Key="VazirmatnFont">pack://application:,,,/SahandNama;component/Assets/Fonts/#Vazirmatn</FontFamily>
   <local:ThumbnailConverter x:Key="Thumbnail"/>
   <Style TargetType="TextBlock"><Setter Property="FontFamily" Value="{StaticResource VazirmatnFont}"/><Setter Property="FontSize" Value="13"/></Style>
   <Style TargetType="TextBox"><Setter Property="FontFamily" Value="{StaticResource VazirmatnFont}"/><Setter Property="FontSize" Value="13"/><Setter Property="Background" Value="#132634"/><Setter Property="Foreground" Value="#F2F7FA"/><Setter Property="BorderBrush" Value="#253E4E"/><Setter Property="BorderThickness" Value="1"/><Setter Property="Padding" Value="10,7"/><Setter Property="Margin" Value="0,4,0,10"/><Setter Property="VerticalContentAlignment" Value="Center"/></Style>

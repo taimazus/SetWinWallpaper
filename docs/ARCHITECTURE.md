@@ -1,4 +1,4 @@
-<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+﻿<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
 
 # معماری فنی و دیاگرام سیستم — سهند نما (Sahand Nama Architecture)
 
@@ -41,7 +41,7 @@ graph TD
         Controller --> WinAPI["تغییر والپیپر دسکتاپ و مانیتورهای چندگانه<br/>(SystemParametersInfo & IDesktopWallpaper COM)"]
         Controller --> LockAPI["سیاست لاک‌اسکرین ویندوز<br/>(PersonalizationCSP & WinRT/PowerShell)"]
         Controller --> TaskSched["زمان‌بندی هوشمند چندرویدادی<br/>(Windows Task Scheduler - Daily + Logon)"]
-        Controller --> WinService["سرویس ویندوز هماهنگ با SCM<br/>(BingWallpaperProFeed Service)"]
+        Controller --> WinService["سرویس ویندوز هماهنگ با SCM<br/>(SahandNamaFeed Service)"]
         Controller --> Hotkeys["کلیدهای میانبر سراسری ویندوز<br/>(RegisterHotKey Win32)"]
         Controller --> SpotRepair["تعمیر عمیق Spotlight<br/>(ContentDeliveryManager & AppX)"]
     end
@@ -62,7 +62,7 @@ stateDiagram-v2
         Idle --> TriggerDaily : ساعت معین روزانه (HH:mm)
         Idle --> TriggerWake : روشن شدن سیستم بعد از ساعت مقرر (StartWhenAvailable)
         
-        TriggerAtLogon --> ExecUpdate : فراخوانی BingWallpaperPro.exe --update
+        TriggerAtLogon --> ExecUpdate : فراخوانی SahandNama.exe --update
         TriggerDaily --> ExecUpdate
         TriggerWake --> ExecUpdate
 
@@ -75,10 +75,10 @@ stateDiagram-v2
     }
 
     state "سرویس سرور (Windows Service - SCM)" as SCMService {
-        Idle --> ServiceStart : شروع سرویس BingWallpaperProFeed
+        Idle --> ServiceStart : شروع سرویس SahandNamaFeed
         ServiceStart --> ServiceLoop : آغاز حلقه همگام‌سازی ناهمگام (Non-blocking)
         ServiceLoop --> SyncAll : دانلود همگانی منابع (SyncAllOnlineSourcesAsync)
-        SyncAll --> StoreShared : ذخیره در مخزن شبکه (ProgramData\BingWallpaperPro\Feed)
+        SyncAll --> StoreShared : ذخیره در مخزن شبکه (ProgramData\SahandNama\Feed)
         StoreShared --> SleepInterval : انتظار ۱۲ ساعته (یا ۱۰ دقیقه در صورت قطعی شبکه)
         SleepInterval --> ServiceLoop
     }
@@ -127,7 +127,7 @@ flowchart TD
     CheckSys --> Test2[بررسی اتصال منابع آنلاین و DNS]
     CheckSys --> Test3[بررسی کلیدهای رجیستری و گروپ پالیسی]
     CheckSys --> Test4[بررسی وضعیت Task Scheduler، دسترسی‌ها و فرآیند اجرایی]
-    CheckSys --> Test5[بررسی وضعیت سرویس ویندوز BingWallpaperProFeed]
+    CheckSys --> Test5[بررسی وضعیت سرویس ویندوز SahandNamaFeed]
     CheckSys --> Test6[بررسی کش و پکیج‌های Spotlight]
     CheckSys --> Test7[بررسی فایل‌های تکراری و صفر بایتی با هش SHA-256]
 

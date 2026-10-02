@@ -1,4 +1,4 @@
-<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+﻿<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
 
 # سهند نما | Sahand Nama (نسخه 1.7.0)
 
@@ -9,7 +9,7 @@
 [![Tests](https://img.shields.io/badge/Tests-71%20Passed-52d1b2.svg)](docs/ARCHITECTURE.md)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20%7C%20Server-blue.svg)](docs/ENTERPRISE_DEPLOYMENT.md)
 [![Architecture](https://img.shields.io/badge/Architecture-x64%20Standalone-orange.svg)](https://github.com/taimazus/SetWinWallpaper/releases/latest)
-[![License](https://img.shields.io/badge/Font-SIL%20OFL%20Vazirmatn-brightgreen.svg)](BingWallpaperPro/Assets/Fonts/OFL.txt)
+[![License](https://img.shields.io/badge/Font-SIL%20OFL%20Vazirmatn-brightgreen.svg)](SahandNama/Assets/Fonts/OFL.txt)
 
 ---
 
@@ -71,7 +71,7 @@ graph LR
 
 | مستند | شرح و موضوع |
 | :--- | :--- |
-| 📖 **[راهنمای جامع کاربری HTML (Guide.fa.html)](BingWallpaperPro/Guide.fa.html)** | راهنمای تعاملی، تصویری و کامل کاربر با طراحی شکیل Dark Mode |
+| 📖 **[راهنمای جامع کاربری HTML (Guide.fa.html)](SahandNama/Guide.fa.html)** | راهنمای تعاملی، تصویری و کامل کاربر با طراحی شکیل Dark Mode |
 | 📐 **[معماری و دیاگرام‌ها (docs/ARCHITECTURE.md)](docs/ARCHITECTURE.md)** | تحلیل معماری، الگوهای طراحی، دیاگرام‌های توالی و جریان داده‌ها |
 | 🏢 **[استقرار سازمانی (docs/ENTERPRISE_DEPLOYMENT.md)](docs/ENTERPRISE_DEPLOYMENT.md)** | راهنمای هاب سرور، اشتراک شبکه (UNC Share)، تنظیمات GPO و کاهش پهنای باند |
 | 🔍 **[عیب‌یابی Spotlight (docs/SPOTLIGHT_TROUBLESHOOTING.md)](docs/SPOTLIGHT_TROUBLESHOOTING.md)** | بررسی علل خرابی، پاک‌سازی کش و بازنشانی بسته‌های ContentDeliveryManager |
@@ -119,10 +119,10 @@ graph LR
 
 ```powershell
 # اجرای ۷۱ آزمون فنی و اعتبارسنجی
-dotnet run --project BingWallpaperPro.Tests\BingWallpaperPro.Tests.csproj
+dotnet run --project SahandNama.Tests\SahandNama.Tests.csproj
 
 # ساخت و انتشار خروجی نهایی مستقل ۶۴بیتی
-dotnet publish BingWallpaperPro\BingWallpaperPro.csproj -c Release -r win-x64 --self-contained true -o artifacts\standalone
+dotnet publish SahandNama\SahandNama.csproj -c Release -r win-x64 --self-contained true -o artifacts\standalone
 ```
 
 </div>

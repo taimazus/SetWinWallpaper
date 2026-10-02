@@ -6,5 +6,5 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-  <ItemGroup><ProjectReference Include="../BingWallpaperPro/BingWallpaperPro.csproj" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="../SahandNama/SahandNama.csproj" /></ItemGroup>
 </Project>

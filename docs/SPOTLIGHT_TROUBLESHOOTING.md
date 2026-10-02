@@ -1,4 +1,4 @@
-<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+﻿<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
 
 # راهنمای جامع عیب‌یابی و رفع خودکار ایرادات ویندوز Spotlight و صفحه قفل
 
@@ -30,7 +30,7 @@ graph TD
 
 ## ۲. راهکار ۵ مرحله‌ای و هوشمند خودترمیمی سهند نما
 
-نرم‌افزار سهند نما در متد [WindowsIntegration.ResetSpotlightAsync](file:///f:/Projects/SetWinWallpaper/BingWallpaperPro/WindowsIntegration.cs#L283) یک فرآیند تعمیر بنیادین و خودکار را اجرا می‌کند:
+نرم‌افزار سهند نما در متد [WindowsIntegration.ResetSpotlightAsync](file:///f:/Projects/SetWinWallpaper/SahandNama/WindowsIntegration.cs#L283) یک فرآیند تعمیر بنیادین و خودکار را اجرا می‌کند:
 
 ```mermaid
 flowchart TD

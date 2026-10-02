@@ -1,4 +1,4 @@
-<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+﻿<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
 
 # راهنمای استقرار در شبکه و سرورهای سازمانی (Enterprise Deployment Guide)
 
@@ -36,7 +36,7 @@ flowchart LR
 روی دکمه **«ایجاد و فعال‌سازی Share در ویندوز»** کلیک کنید تا پوشه به صورت خودکار با دسترسی استاندارد Read-Only در شبکه به اشتراک گذاشته شود، یا از دستور PowerShell زیر با دسترسی مدیر استفاده نمایید:
 
 ```powershell
-New-SmbShare -Name "Wallpapers" -Path "$env:LOCALAPPDATA\BingWallpaperPro" -ReadAccess "Everyone"
+New-SmbShare -Name "Wallpapers" -Path "$env:LOCALAPPDATA\SahandNama" -ReadAccess "Everyone"
 ```
 
 ### گام سوم: آدرس UNC برای کلاینت‌ها
@@ -49,19 +49,19 @@ New-SmbShare -Name "Wallpapers" -Path "$env:LOCALAPPDATA\BingWallpaperPro" -Read
 
 ## ۳. تنظیم کلاینت‌ها از طریق Group Policy (GPO) یا اسکریپت ورود
 
-جهت استقرار خودکار روی تمام کلاینت‌های دامین اکتیو دایرکتوری (Active Directory)، می‌توانید فایل اجرایی مستقل `BingWallpaperPro.exe` را در یک مسیر مشترک قرار داده و از طریق اسکریپت لاگین یا زمان‌بندی گروهی فراخوانی نمایید:
+جهت استقرار خودکار روی تمام کلاینت‌های دامین اکتیو دایرکتوری (Active Directory)، می‌توانید فایل اجرایی مستقل `SahandNama.exe` را در یک مسیر مشترک قرار داده و از طریق اسکریپت لاگین یا زمان‌بندی گروهی فراخوانی نمایید:
 
 ### دستور اجرای بی‌صدا (Silent Automation):
 ```cmd
-"\\SERVER-NAME\Wallpapers\BingWallpaperPro.exe" --update
+"\\SERVER-NAME\Wallpapers\SahandNama.exe" --update
 ```
 
 ### ثبت زمان‌بندی روزانه خودکار روی کلاینت‌ها:
 ```cmd
-"\\SERVER-NAME\Wallpapers\BingWallpaperPro.exe" --install-schedule 08:30
+"\\SERVER-NAME\Wallpapers\SahandNama.exe" --install-schedule 08:30
 ```
 
-### نمونه الگوی فایل تنظیمات کلاینت (`%LOCALAPPDATA%\BingWallpaperPro\settings.json`):
+### نمونه الگوی فایل تنظیمات کلاینت (`%LOCALAPPDATA%\SahandNama\settings.json`):
 ```json
 {
   "Mode": "Same",

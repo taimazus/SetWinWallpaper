@@ -1,9 +1,9 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 
-namespace BingWallpaperPro;
+namespace SahandNama;
 
 public sealed class WeatherInfo
 {

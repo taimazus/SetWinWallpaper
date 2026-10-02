@@ -1,4 +1,4 @@
-#Requires -RunAs
+﻿#Requires -RunAs
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $Host.UI.RawUI.WindowTitle = "پاکسازی کامل تسک‌ها و فایل‌های قدیمی Bing Wallpaper"
 
@@ -38,7 +38,7 @@ if (Test-Path $legacyDir) {
 Write-Host ""
 Write-Host "========================================================" -ForegroundColor Green
 Write-Host "[موفقیت] فرآیند پاکسازی تکمیل شد." -ForegroundColor Green
-Write-Host "تسک فعال فعلی سیستم: BingWallpaperPro-Daily" -ForegroundColor Yellow
+Write-Host "تسک فعال فعلی سیستم: SahandNama-Daily" -ForegroundColor Yellow
 Write-Host "========================================================" -ForegroundColor Green
 Write-Host ""
 Read-Host "برای بستن پنجره، کلید Enter را فشار دهید..."

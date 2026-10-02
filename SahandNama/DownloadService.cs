@@ -1,7 +1,7 @@
-using System.IO;
+﻿using System.IO;
 using System.Runtime.InteropServices;
 
-namespace BingWallpaperPro;
+namespace SahandNama;
 
 // SCM service: download only. User wallpaper changes belong in the interactive scheduled task.
 public static class DownloadService

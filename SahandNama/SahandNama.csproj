@@ -9,6 +9,8 @@
     <Version>1.7.0</Version>
     <AssemblyVersion>1.7.0.0</AssemblyVersion>
     <FileVersion>1.7.0.0</FileVersion>
+    <AssemblyName>SahandNama</AssemblyName>
+    <RootNamespace>SahandNama</RootNamespace>
     <Product>Sahand Nama | سهند نما</Product>
     <Company>شرکت راهکار الکترونیک سهند</Company>
     <Copyright>شرکت راهکار الکترونیک سهند — https://irres.ir</Copyright>

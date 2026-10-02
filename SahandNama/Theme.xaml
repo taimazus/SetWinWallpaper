@@ -1,5 +1,5 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
- <FontFamily x:Key="AppFont">pack://application:,,,/BingWallpaperPro;component/Assets/Fonts/#Vazirmatn</FontFamily>
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <FontFamily x:Key="AppFont">pack://application:,,,/SahandNama;component/Assets/Fonts/#Vazirmatn</FontFamily>
  <SolidColorBrush x:Key="Muted" Color="#92A9BA"/>
  <Style TargetType="TextBlock"><Setter Property="FontFamily" Value="{StaticResource AppFont}"/><Setter Property="TextWrapping" Value="Wrap"/></Style>
  <Style x:Key="Title" TargetType="TextBlock"><Setter Property="FontSize" Value="25"/><Setter Property="FontWeight" Value="Bold"/><Setter Property="Foreground" Value="#F0F7FC"/><Setter Property="Margin" Value="0,0,0,4"/></Style>

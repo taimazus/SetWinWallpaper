@@ -1,6 +1,6 @@
-using System.Reflection;
+﻿using System.Reflection;
 
-namespace BingWallpaperPro;
+namespace SahandNama;
 
 public static class Brand
 {

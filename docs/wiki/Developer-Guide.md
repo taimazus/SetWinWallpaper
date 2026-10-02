@@ -1,4 +1,4 @@
-<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+﻿<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
 
 # راهنمای توسعه‌دهندگان (Developer Guide)
 
@@ -18,7 +18,7 @@
 
 ```
 SetWinWallpaper/
-├── BingWallpaperPro/                # پروژه اصلی WPF (.NET 10)
+├── SahandNama/                # پروژه اصلی WPF (.NET 10)
 │   ├── Assets/                      # فونت وزیزمتن، آیکون و لوگو
 │   ├── Scripts/                     # اسکریپت‌های PowerShell
 │   ├── Brand.cs                     # مشخصات شرکت و متغیرهای برندینگ
@@ -30,7 +30,7 @@ SetWinWallpaper/
 │   ├── WindowsIntegration.cs        # تعاملات Win32، زمان‌بندی و بازنشانی Spotlight
 │   ├── MainWindow.xaml              # ساختار گرافیکی و تم راست‌به‌چپ
 │   └── Guide.fa.html                # راهنمای تعاملی کاربر به زبان فارسی
-├── BingWallpaperPro.Tests/          # مجموعه ۶۴ آزمون واحد و یکپارچه‌سازی
+├── SahandNama.Tests/          # مجموعه ۶۴ آزمون واحد و یکپارچه‌سازی
 ├── docs/                            # مستندات معماری و استقرار سازمانی
 ├── wiki/                            # دانشنامه و راهنماهای پروژه
 └── artifacts/                       # خروجی‌های کامپایل و فایل زیپ انتشار
@@ -43,7 +43,7 @@ SetWinWallpaper/
 پروژه دارای **۶۴ تست جامع** جهت اطمینان از صحت اعتبارسنجی URLها، امنیت شبکه، عدم تزریق اسکریپت در PowerShell، هشینگ SHA-256، دانلود امن، بازنشانی Spotlight، کش در حافظه، خواندن فونت، هماهنگی قفل‌ها با تلاش مجدد و عدم کرش در شرایط خطا است:
 
 ```powershell
-dotnet run --project BingWallpaperPro.Tests\BingWallpaperPro.Tests.csproj
+dotnet run --project SahandNama.Tests\SahandNama.Tests.csproj
 ```
 
 **خروجی مورد انتظار:**
@@ -58,7 +58,7 @@ dotnet run --project BingWallpaperPro.Tests\BingWallpaperPro.Tests.csproj
 برای تولید فایل اجرایی ۶۴ بیتی مستقل و کامپکت بدون نیاز به نصب دات‌نت:
 
 ```powershell
-dotnet publish BingWallpaperPro\BingWallpaperPro.csproj -c Release -r win-x64 --self-contained true -o artifacts\standalone
+dotnet publish SahandNama\SahandNama.csproj -c Release -r win-x64 --self-contained true -o artifacts\standalone
 ```
 
 ---
@@ -66,9 +66,9 @@ dotnet publish BingWallpaperPro\BingWallpaperPro.csproj -c Release -r win-x64 --
 ## ۵. راهنمای افزودن منبع آنلاین جدید (Adding a New Source)
 
 برای افزودن یک گالری تصویر جدید:
-1. شناسه و نام منبع را در آرایه `SourceCatalog.Options` در [Sources.cs](file:///f:/Projects/SetWinWallpaper/BingWallpaperPro/Sources.cs) تعریف کنید.
+1. شناسه و نام منبع را در آرایه `SourceCatalog.Options` در [Sources.cs](file:///f:/Projects/SetWinWallpaper/SahandNama/Sources.cs) تعریف کنید.
 2. هاست دامنه منبع را در متد `SourceHttp.Validate` اضافه کنید (سیاست Allowlist سخت‌گیرانه).
 3. متد پارسر متناسب (JSON یا RSS/XML) را پیاده‌سازی کرده و در `FetchAsync` فراخوانی نمایید.
-4. تست اعتبارسنجی منبع جدید را در [BingWallpaperPro.Tests/Program.cs](file:///f:/Projects/SetWinWallpaper/BingWallpaperPro.Tests/Program.cs) اضافه کنید.
+4. تست اعتبارسنجی منبع جدید را در [SahandNama.Tests/Program.cs](file:///f:/Projects/SetWinWallpaper/SahandNama.Tests/Program.cs) اضافه کنید.
 
 </div>

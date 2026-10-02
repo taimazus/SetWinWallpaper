@@ -1,11 +1,11 @@
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Json;
 
-namespace BingWallpaperPro;
+namespace SahandNama;
 
 public sealed record DiagnosticFinding(string Status, string Area, string Detail, string Remedy = "");
 

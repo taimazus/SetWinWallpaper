@@ -1,11 +1,11 @@
-using System.IO;
+﻿using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
 
-namespace BingWallpaperPro;
+namespace SahandNama;
 
 public static class TrayManager
 {
@@ -75,7 +75,7 @@ public static class TrayManager
         {
             if (iconHandle == IntPtr.Zero)
             {
-                var stream = Application.GetResourceStream(new Uri("pack://application:,,,/BingWallpaperPro;component/Assets/SahandNama.ico"))?.Stream;
+                var stream = Application.GetResourceStream(new Uri("pack://application:,,,/SahandNama;component/Assets/SahandNama.ico"))?.Stream;
                 if (stream != null)
                 {
                     using var icon = new System.Drawing.Icon(stream, 32, 32);

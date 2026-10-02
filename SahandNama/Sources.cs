@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace BingWallpaperPro;
+namespace SahandNama;
 
 public sealed record SourceOption(string Id, string Name);
 public sealed record SourceRequest(string Id, string Market, string Resolution, string Folder, string NetworkShare = "");

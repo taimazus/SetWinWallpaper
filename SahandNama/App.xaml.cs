@@ -1,7 +1,7 @@
-using System.Windows;
+﻿using System.Windows;
 using Application = System.Windows.Application;
 
-namespace BingWallpaperPro;
+namespace SahandNama;
 
 public partial class App : Application
 {

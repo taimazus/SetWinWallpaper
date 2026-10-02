@@ -1,6 +1,6 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
-namespace BingWallpaperPro;
+namespace SahandNama;
 
 public sealed class HardwareInfo
 {

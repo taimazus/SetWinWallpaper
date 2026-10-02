@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Windows.Media.Imaging;
 
-namespace BingWallpaperPro;
+namespace SahandNama;
 
 public sealed class Preferences
 {
