@@ -1,3 +1,5 @@
+<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+
 # گزارش ممیزی جامع سازمانی و رفع نقص‌ها (Enterprise Audit & Remediation Report)
 
 **پروژه**: سهند نما (Sahand Nama / SahandNama)  
@@ -65,3 +67,6 @@
   - مانیتورینگ سیستم و حافظه RAM
   - یکپارچه‌سازی رابط کاربری و بارگذاری تم‌های استایل شیشه‌ای
   - تفکیک منابع و دامنه‌های مجاز شبکه
+
+</div>
+
