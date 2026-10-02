@@ -1,4 +1,4 @@
-﻿<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
 
 # راهنمای مدیران سیستم و شبکه (System Administrator Guide)
 
@@ -24,7 +24,7 @@ flowchart TD
 2. به تب **منابع و برنامه‌ریزی** رفته و تیک **«فعال‌سازی حالت مخزن سرور شبکه»** را فعال کنید.
 3. با کلیک روی دکمه **«ایجاد و فعال‌سازی Share در ویندوز»** یا اجرای دستور زیر با دسترسی مدیر، پوشه به صورت SMB به اشتراک گذاشته می‌شود:
    ```powershell
-   New-SmbShare -Name "Wallpapers" -Path "$env:LOCALAPPDATA\SahandNama" -ReadAccess "Everyone"
+   New-SmbShare -Name "Wallpapers" -Path "$env:LOCALAPPDATA\BingWallpaperPro" -ReadAccess "Everyone"
    ```
 4. با زدن دکمه **«همگام‌سازی تمامی گالری‌ها اکنون»** یا سویچ `--sync-all`، تمامی فیدها به صورت یکجا دریافت و آماده توزیع می‌شوند.
 
@@ -44,7 +44,7 @@ flowchart TD
 "\\Server\Wallpapers\SahandNama.exe" --install-schedule 08:30
 ```
 
-### الگوی فایل تنظیمات کلاینت (`%LOCALAPPDATA%\SahandNama\settings.json`):
+### الگوی فایل تنظیمات کلاینت (`%LOCALAPPDATA%\BingWallpaperPro\settings.json`):
 ```json
 {
   "Mode": "Same",
@@ -66,6 +66,6 @@ flowchart TD
 ```cmd
 SahandNama.exe --install-service
 ```
-این سرویس با نام `SahandNamaFeed` و با اکانت امن `NT AUTHORITY\LocalService` اجرا شده و فایل‌ها را در مسیر عمومی `%ALLUSERSPROFILE%\SahandNama\Feed\` ذخیره می‌کند.
+این سرویس با نام `BingWallpaperProFeed` اجرا شده و فایل‌ها را در مسیر عمومی `%ALLUSERSPROFILE%\BingWallpaperPro\Feed\` ذخیره می‌کند.
 
 </div>

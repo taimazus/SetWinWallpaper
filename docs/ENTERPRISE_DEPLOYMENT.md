@@ -1,9 +1,9 @@
-﻿<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
 
 # راهنمای استقرار در شبکه و سرورهای سازمانی (Enterprise Deployment Guide)
 
 **نرم‌افزار سهند نما (Sahand Nama)**  
-**نسخه:** 1.6.0  
+**نسخه:** 1.7.0  
 **شرکت سازنده:** راهکار الکترونیک سهند ([https://irres.ir](https://irres.ir))
 
 ---
@@ -36,7 +36,7 @@ flowchart LR
 روی دکمه **«ایجاد و فعال‌سازی Share در ویندوز»** کلیک کنید تا پوشه به صورت خودکار با دسترسی استاندارد Read-Only در شبکه به اشتراک گذاشته شود، یا از دستور PowerShell زیر با دسترسی مدیر استفاده نمایید:
 
 ```powershell
-New-SmbShare -Name "Wallpapers" -Path "$env:LOCALAPPDATA\SahandNama" -ReadAccess "Everyone"
+New-SmbShare -Name "Wallpapers" -Path "$env:LOCALAPPDATA\BingWallpaperPro" -ReadAccess "Everyone"
 ```
 
 ### گام سوم: آدرس UNC برای کلاینت‌ها
@@ -61,7 +61,7 @@ New-SmbShare -Name "Wallpapers" -Path "$env:LOCALAPPDATA\SahandNama" -ReadAccess
 "\\SERVER-NAME\Wallpapers\SahandNama.exe" --install-schedule 08:30
 ```
 
-### نمونه الگوی فایل تنظیمات کلاینت (`%LOCALAPPDATA%\SahandNama\settings.json`):
+### نمونه الگوی فایل تنظیمات کلاینت (`%LOCALAPPDATA%\BingWallpaperPro\settings.json`):
 ```json
 {
   "Mode": "Same",

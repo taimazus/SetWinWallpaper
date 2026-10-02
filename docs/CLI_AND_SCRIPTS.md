@@ -1,9 +1,9 @@
-﻿<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
 
 # راهنمای خط فرمان، اسکریپت‌ها و اتوماسیون (CLI & Automation Guide)
 
 **نرم‌افزار سهند نما (Sahand Nama)**  
-**نسخه:** 1.6.0  
+**نسخه:** 1.7.0  
 **توسعه‌دهنده:** شرکت راهکار الکترونیک سهند ([https://irres.ir](https://irres.ir))
 
 ---
@@ -14,18 +14,18 @@
 
 | پارامتر خط فرمان | عملکرد |
 | :--- | :--- |
-| `SahandNama.exe` | اجرای عادی با رابط کاربری گرافیکی (GUI) مدرن WPF |
+| `SahandNama.exe` | اجرای عادی با رابط کاربری گرافیکی (GUI) مدرن WPF و سینی ویندوز |
 | `SahandNama.exe --update` / `--update-quiet` | به‌روزرسانی سریع والپیپر و لاک‌اسکرین در پس‌زمینه بدون باز شدن پنجره |
 | `SahandNama.exe --sync-all` | دانلود و همگام‌سازی تمامی گالری‌های آنلاین برای حالت مخزن سرور |
 | `SahandNama.exe --install-schedule [HH:mm]` | ثبت یا به‌روزرسانی تسک زمان‌بندی روزانه کاربر جاری و زمان ورود |
 | `SahandNama.exe --remove-schedule` | حذف تسک زمان‌بندی کاربر جاری از Task Scheduler ویندوز |
-| `SahandNama.exe --install-service` | نصب و ثبت سرویس ویندوز `SahandNamaFeed` با دسترسی مدیر |
-| `SahandNama.exe --remove-service` | حذف سرویس ویندوز `SahandNamaFeed` از سیستم |
+| `SahandNama.exe --install-service` | نصب و ثبت سرویس ویندوز `BingWallpaperProFeed` با دسترسی مدیر |
+| `SahandNama.exe --remove-service` | حذف سرویس ویندوز `BingWallpaperProFeed` از سیستم |
 | `SahandNama.exe --start-service` | راه‌اندازی (Start) سرویس ویندوز |
 | `SahandNama.exe --stop-service` | متوقف‌سازی (Stop) سرویس ویندوز |
 | `SahandNama.exe --diagnose` | اجرای آزمون سلامت سیستم و ذخیره گزارش در فایل لاگ |
 | `SahandNama.exe --repair` | اجرای فرآیند کامل Auto-Repair (تنظیمات، رجیستری، زمان‌بندی و Spotlight) |
-| `SahandNama.exe --widget` | اجرای مستقیم ویجت شیشه‌ای ساعت و تقویم خورشیدی دسکتاپ |
+| `SahandNama.exe --widget` | اجرای مستقیم ویجت شیشه‌ای دسکتاپ (ساعت، تقویم، آب‌وهوا و سخت‌افزار) |
 | `SahandNama.exe --toggle-icons` | پنهان/نمایان‌سازی فوری آیکون‌های دسکتاپ ویندوز |
 
 ---
@@ -38,7 +38,7 @@
 
 ---
 
-## ۲. اسکریپت‌های همراه نرم‌افزار
+## ۳. اسکریپت‌های همراه نرم‌افزار
 
 در پوشه `Scripts` همراه نرم‌افزار، اسکریپت‌های مدیریتی PowerShell قرار دارند:
 
@@ -54,25 +54,25 @@
 
 ### ۲. پیکربندی زمان‌بندی Task Scheduler
 برنامه به طور خودکار تسکی با مشخصات زیر در ویندوز ایجاد می‌کند:
-- **نام تسک:** `SahandNama-Daily-{UserSID}`
+- **نام تسک:** `BingWallpaperPro-Daily-{UserSID}`
 - **محرک‌ها (Triggers):**
   1. روزانه در ساعت تعیین‌شده کاربر (مثلاً `09:00`) با فرمت مستقل از تقویم محلی
   2. هنگام ورود به حساب کاربری (At Log on)
   3. اجرای فوری پس از روشن شدن سیستم در صورت خاموش بودن در ساعت مقرر (`StartWhenAvailable`)
 - **اقدام (Action):** فراخوانی `SahandNama.exe --update`
-- **شرایط اجرا:** اجرا در نشست تعاملی کاربر جاری با حفظ دسترسی بدون نیاز به پاپ‌آپ کنسول
+- **شرایط اجرا:** اجرا در نشست تعاملی کاربر جاری با دسترسی استاندارد بدون نیاز به پاپ‌آپ کنسول
 
 ---
 
-## ۳. متغیرها و مسیرهای ذخیره‌سازی فایل‌ها
+## ۴. متغیرها و مسیرهای ذخیره‌سازی فایل‌ها
 
 | عنوان پوشه | مسیر پیش‌فرض در ویندوز |
 | :--- | :--- |
-| تنظیمات و آرشیو | `%LOCALAPPDATA%\SahandNama\` |
-| تصاویر دانلود شده | `%LOCALAPPDATA%\SahandNama\Images\` |
-| نسخه‌های پشتیبان | `%LOCALAPPDATA%\SahandNama\Backups\` |
-| فایل گزارش فعالیت | `%LOCALAPPDATA%\SahandNama\activity.log` |
-| آخرین وضعیت اجرا | `%LOCALAPPDATA%\SahandNama\last-run.json` |
-| آرشیو سرویس مشترک | `%ALLUSERSPROFILE%\SahandNama\Feed\` |
+| تنظیمات و آرشیو | `%LOCALAPPDATA%\BingWallpaperPro\` |
+| تصاویر دانلود شده | `%LOCALAPPDATA%\BingWallpaperPro\Images\` |
+| نسخه‌های پشتیبان | `%LOCALAPPDATA%\BingWallpaperPro\Backups\` |
+| فایل گزارش فعالیت | `%LOCALAPPDATA%\BingWallpaperPro\activity.log` |
+| کارت‌های اجتماعی تولیدشده | `%LOCALAPPDATA%\BingWallpaperPro\Cards\` |
+| آرشیو سرویس مشترک | `%ALLUSERSPROFILE%\BingWallpaperPro\Feed\` |
 
 </div>

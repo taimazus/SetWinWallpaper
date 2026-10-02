@@ -1,9 +1,9 @@
-﻿<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
 
 # راهنمای جامع عیب‌یابی و رفع خودکار ایرادات ویندوز Spotlight و صفحه قفل
 
 **نرم‌افزار سهند نما (Sahand Nama)**  
-**نسخه:** 1.6.0  
+**نسخه:** 1.7.0  
 **توسعه‌دهنده:** شرکت راهکار الکترونیک سهند ([https://irres.ir](https://irres.ir))
 
 ---

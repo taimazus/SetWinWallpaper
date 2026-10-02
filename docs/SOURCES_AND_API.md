@@ -1,4 +1,4 @@
-﻿<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
 
 # مستندات منابع داده، APIها و الگوریتم یکتاسازی (Sources & API Documentation)
 
@@ -17,10 +17,10 @@
 | `Bing` | تصویر روز مایکروسافت بینگ | JSON API | `www.bing.com` | UHD (4K) |
 | `BingGlobal` | گلچین بین‌المللی بینگ (همه مناطق) | Multi-JSON | `www.bing.com` | UHD (4K) |
 | `IranNature` | ایران زیبا (طبیعت و آثار باستانی) | Curated CDN | `upload.wikimedia.org` | UHD (1920x1080+) |
-| `Wallhaven` | والپیپرهای برگزیده ۴K و ۸K | Direct CDN | `w.wallhaven.cc` | 4K / 8K UHD |
-| `MuseumArt` | شاهکارهای هنر کلاسیک (موزه شیکاگو) | IIIF / REST | `www.artic.edu` | High-Res Art |
+| `Wallhaven` | والپیپرهای برگزیده ۴K و ۸K | Direct CDN | `w.wallhaven.cc`, `th.wallhaven.cc` | 4K / 8K UHD |
+| `MuseumArt` | شاهکارهای هنر کلاسیک (موزه شیکاگو) | IIIF / REST | `www.artic.edu`, `api.artic.edu` | High-Res Art |
 | `NatGeoNature` | طبیعت و حیات‌وحش نشنال جئوگرافیک | Direct CDN | `images.unsplash.com` | 4K UHD |
-| `CyberpunkArt` | شهر آینده و سایبرپانک (۴K) | Direct CDN | `images.unsplash.com` | 4K UHD |
+| `CyberpunkArt` | شهر آینده و هنر سایبرپانک (۴K) | Direct CDN | `images.unsplash.com` | 4K UHD |
 | `Architecture4K` | شاهکارهای معماری مدرن جهان | Direct CDN | `images.unsplash.com` | 4K UHD |
 | `UnsplashNature` | عکس‌های برگزیده طبیعت Unsplash | REST / Direct | `picsum.photos`, `images.unsplash.com` | 4K (3840x2160) |
 | `WikimediaPotd` | تصویر برگزیده روز ویکی‌مدیا | MediaWiki Action API | `commons.wikimedia.org`, `upload.wikimedia.org` | Full Original |
@@ -35,14 +35,29 @@
 
 ---
 
-## ۲. دیاگرام جریان دریافت و اعتبارسنجی امنیتی شبکه
+## ۲. مستندات وب‌سرویس وضعیت آب‌وهوا (Open-Meteo Integration)
+
+نرم‌افزار برای نمایش وضعیت لحظه‌ای آب‌وهوا در ویجت دسکتاپ از وب‌سرویس عمومی و رایگان **Open-Meteo** استفاده می‌کند:
+- **نقطه نهایی (Endpoint):**
+  ```
+  https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=auto
+  ```
+- **ویژگی‌های معماری:**
+  - بدون نیاز به ثبت‌نام یا API Key اختصاصی.
+  - نگاشت مختصات جغرافیایی بیش از ۳۵ کلان‌شهر و مرکز استان ایران (تهران، تبریز، مشهد، اصفهان، شیراز، اهواز، رشت، کیش و...).
+  - سیستم کش هوشمند محلی به مدت ۱۵ دقیقه جهت کاهش بار شبکه.
+  - تبدیل خودکار WMO Weather Codes به برچسب‌های فارسی و ایموجی‌های هواشناسی (صاف و آفتابی ☀️، نیمه ابری ⛅، مه 🌫️، بارانی 🌧️، رعد و برق ⛈️، برف ❄️).
+
+---
+
+## ۳. دیاگرام جریان دریافت و اعتبارسنجی امنیتی شبکه
 
 ```mermaid
 flowchart TD
-    Req[درخواست دریافت تصویر از منبع] --> SecCheck{اعتبارسنجی امنیتی آدرس<br/>Allowed Host Check}
+    Req[درخواست دریافت تصویر از منبع] --> SecCheck{اعتبارسنجی امنیتی آدرس<br/>SourceHttp.Validate}
     
-    SecCheck -- آدرس نامعتبر یا غیرمجاز --> Err[رد درخواست و لاگ امنیتی]
-    SecCheck -- آدرس معتبر و مجاز --> HttpStream[ارتباط HTTPS امن و استریم فایل]
+    SecCheck -- پروتکل ناامن یا هاست غیرمجاز --> Err[رد درخواست و لاگ امنیتی]
+    SecCheck -- آدرس HTTPS و هاست مجاز --> HttpStream[ارتباط HTTPS امن و استریم فایل]
     
     HttpStream --> SizeCheck{بررسی حجم فایل<br/>حداکثر ۱۵۰ مگابایت}
     SizeCheck -- بیش از حد مجاز --> Err2[قطع دانلود جهت جلوگیری از سرریز حافظه]
@@ -55,7 +70,7 @@ flowchart TD
 
 ---
 
-## ۳. الگوریتم یکتاسازی محتوا و پاک‌سازی فایل‌های تکراری (SHA-256 Deduplication)
+## ۴. الگوریتم یکتاسازی محتوا و پاک‌سازی فایل‌های تکراری (SHA-256 Deduplication)
 
 برای اطمینان از اینکه هیچ تصویر تکراری حتی با نام فایل یا URL متفاوت دوباره بر روی دیسک ذخیره نشود:
 
@@ -65,7 +80,7 @@ flowchart TD
 
 ---
 
-## ۴. ساختار متادیتای تصاویر (`archive.json`)
+## ۵. ساختار متادیتای تصاویر (`archive.json`)
 
 ```json
 [
@@ -73,12 +88,12 @@ flowchart TD
     "Id": "9b1a5e78c9a3",
     "Source": "Bing",
     "SourcePage": "https://www.bing.com/...",
-    "Title": "دریاچه زمردین در میان کوه‌های آلپ",
-    "Copyright": "© John Doe / Bing",
-    "Date": "20260929",
-    "Url": "https://www.bing.com/th?id=...",
-    "Market": "en-US",
-    "FilePath": "C:\\Users\\...\\AppData\\Local\\SahandNama\\Images\\9b1a5e78c9a3.jpg"
+    "Title": "دامنه‌های کوهستان سهند و دره باستانی کندوان",
+    "Copyright": "طبیعت آذربایجان شرقی • رشته‌کوه سهند",
+    "Date": "20261002",
+    "Url": "https://upload.wikimedia.org/...",
+    "Market": "fa-IR",
+    "FilePath": "C:\\Users\\...\\AppData\\Local\\BingWallpaperPro\\Images\\9b1a5e78c9a3.jpg"
   }
 ]
 ```

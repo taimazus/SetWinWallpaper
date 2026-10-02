@@ -1,23 +1,29 @@
-﻿<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
 
 # معماری فنی و دیاگرام سیستم — سهند نما (Sahand Nama Architecture)
 
-**نسخه:** 1.6.0  
+**نسخه:** 1.7.0  
 **توسعه‌دهنده:** شرکت راهکار الکترونیک سهند ([https://irres.ir](https://irres.ir))  
-**فناوری:** .NET 10.0 (C# 13), WPF (Windows Presentation Foundation), PowerShell Native Bridge, Win32 Native Interop, SCM Service Dispatcher.
+**فناوری:** .NET 10.0 (C# 13), WPF (Windows Presentation Foundation), Win32 Native P/Invoke, DWM Acrylic Blur, PowerShell Native Bridge, SCM Windows Service Dispatcher.
 
 ---
 
 ## ۱. نمای کلی معماری (High-Level Architecture)
 
-نرم‌افزار سهند نما بر پایه الگوی معماری ماژولار با حداقل وابستگی جانبی (Zero Third-Party Dependency) طراحی شده است. تمام عملیات شبکه، تجزیه داده‌ها، بهینه‌سازی تصاویر و تعامل با ویندوز از طریق کامپوننت‌های بهینه‌سازی‌شده درون برنامه انجام می‌شود.
+نرم‌افزار سهند نما بر پایه الگوی معماری ماژولار با حداقل وابستگی جانبی (Zero Third-Party Dependency) طراحی شده است. تمام عملیات شبکه، تجزیه داده‌ها، بهینه‌سازی تصاویر، ویجت شیشه‌ای و تعامل با ویندوز از طریق کامپوننت‌های بهینه‌سازی‌شده درون برنامه انجام می‌شود.
 
 ```mermaid
 graph TD
-    UI["رابط کاربری مدرن WPF<br/>(MainWindow, Theme & Glass Widget)"] --> Cache["کش سریع حافظه‌ای تصاویر بندانگشتی<br/>(Concurrent In-Memory Cache)"]
+    UI["رابط کاربری مدرن WPF<br/>(MainWindow & Theme.xaml)"] --> Cache["کش سریع حافظه‌ای تصاویر بندانگشتی<br/>(ThumbnailConverter Concurrent Cache)"]
     UI --> Controller["کنترلر مرکزی و موتور پس‌زمینه<br/>(WallpaperEngine)"]
     
-    subgraph Core Engine ["موتور مرکزی (Core Engine v1.6.0)"]
+    WID["ویجت شیشه‌ای دسکتاپ<br/>(DesktopWidgetWindow Acrylic Blur)"] --> WService["سرویس زنده آب‌وهوا<br/>(WeatherService Open-Meteo)"]
+    WID --> HMonitor["پایشگر سخت‌افزار سیستم<br/>(HardwareMonitor CPU/RAM/Battery)"]
+    WID --> DPin["الصاق به شل دسکتاپ<br/>(DesktopPinning WorkerW)"]
+    
+    TRY["مدیریت سینی ویندوز<br/>(TrayManager Shell_NotifyIcon)"] --> AppCtrl["چرخه حیات برنامه و خروج دوگانه<br/>(App.xaml.cs Lifecycle)"]
+
+    subgraph Core Engine ["موتور مرکزی (Core Engine v1.7.0)"]
         Controller --> Prefs["مدیریت تنظیمات و ذخیره‌سازی اتمیک<br/>(Preferences & Store)"]
         Controller --> LockCoord["مدیریت قفل هم‌زمانی با تلاش مجدد<br/>(Store.AcquireLockAsync)"]
         Controller --> Catalog["کاتالوگ و بارگذاری منابع<br/>(SourceCatalog & SourceHttp)"]
@@ -26,9 +32,12 @@ graph TD
         Controller --> SocialCard["سازنده کارت گرافیکی شبکه‌های اجتماعی<br/>(CardGenerator DrawingVisual)"]
     end
 
-    subgraph Data Sources ["منابع تصاویر (Data Sources)"]
+    subgraph Data Sources ["منابع تصاویر و داده‌ها (Data Sources)"]
         Catalog --> Bing["Bing Daily & Bing Global"]
         Catalog --> Iran["ایران زیبا (IranNature)"]
+        Catalog --> Wallhaven["Wallhaven 4K/8K Wallpapers"]
+        Catalog --> Museum["Art Institute of Chicago"]
+        Catalog --> NatGeo["NatGeo Nature & Cyberpunk"]
         Catalog --> NASA["NASA APOD & Library"]
         Catalog --> Hubble["ESA / Hubble & Webb"]
         Catalog --> Unsplash["Unsplash & Picsum 4K"]
@@ -38,20 +47,59 @@ graph TD
     end
 
     subgraph Windows Interop ["تعامل با سیستم‌عامل (Windows Integration)"]
-        Controller --> WinAPI["تغییر والپیپر دسکتاپ و مانیتورهای چندگانه<br/>(SystemParametersInfo & IDesktopWallpaper COM)"]
+        Controller --> WinAPI["تغییر والپیپر دسکتاپ و چند مانیتور<br/>(SystemParametersInfo & IDesktopWallpaper)"]
         Controller --> LockAPI["سیاست لاک‌اسکرین ویندوز<br/>(PersonalizationCSP & WinRT/PowerShell)"]
         Controller --> TaskSched["زمان‌بندی هوشمند چندرویدادی<br/>(Windows Task Scheduler - Daily + Logon)"]
-        Controller --> WinService["سرویس ویندوز هماهنگ با SCM<br/>(SahandNamaFeed Service)"]
+        Controller --> WinService["سرویس ویندوز هماهنگ با SCM<br/>(BingWallpaperProFeed Service)"]
         Controller --> Hotkeys["کلیدهای میانبر سراسری ویندوز<br/>(RegisterHotKey Win32)"]
+        Controller --> DwmBlur["ترکیب بلور اکریلیک دسکتاپ<br/>(SetWindowCompositionAttribute)"]
         Controller --> SpotRepair["تعمیر عمیق Spotlight<br/>(ContentDeliveryManager & AppX)"]
     end
 ```
 
 ---
 
-## ۲. چرخه حیات و معماری سرویس و زمان‌بندی (Service & Scheduling Lifecycle)
+## ۲. چرخه حیات ویجت شیشه‌ای و سینی سیستم (Desktop Widget & System Tray Lifecycle)
 
-در نسخه 1.6.0، سیستم زمان‌بندی و سرویس ویندوز کاملاً مستقل از Culture و دسترسی شبکه طراحی شده است:
+```mermaid
+sequenceDiagram
+    autonumber
+    participant User as کاربر / ویندوز
+    participant Main as پنجره اصلی (MainWindow)
+    participant App as هسته برنامه (App.xaml.cs)
+    participant Tray as سینی ویندوز (TrayManager)
+    participant Widget as ویجت دسکتاپ (DesktopWidgetWindow)
+    participant Win32 as توابع سیستمی Win32 / DWM
+
+    User->>Main: بستن پنجره با دکمه [✕]
+    Main->>App: لغو بسته شدن کامل (Cancel Close Event)
+    Main->>Main: پنهان‌سازی پنجره (Hide Window)
+    Main->>Tray: نمایش بالون راهنما در سینی ویندوز
+    Note over App,Tray: برنامه در سینی فعال می‌ماند
+
+    App->>Widget: تداوم نمایش ویجت روی دسکتاپ
+    Widget->>Win32: اعمال بلور شیشه‌ای (EnableAcrylicBlur)
+    Widget->>Win32: الصاق به پنجره دسکتاپ (WorkerW Pinning)
+
+    User->>Tray: راست‌کلیک روی آیکون سینی ویندوز
+    Tray-->>User: نمایش منوی فارسی (تغییر والپیپر، آب‌وهوا، ویجت، خروج کامل)
+    
+    alt انتخاب «نمایش پنجره اصلی»
+        User->>Tray: کلیک روی نمایش پنجره
+        Tray->>App: ShowMainWindow()
+        App->>Main: Show & Activate Window
+    else انتخاب «خروج کامل از برنامه»
+        User->>Tray: کلیک روی خروج کامل
+        Tray->>App: ExitApplication()
+        App->>Tray: حذف آیکون (Shell_NotifyIcon NIM_DELETE)
+        App->>Win32: آزادسازی کلیدهای میانبر (UnregisterHotKey)
+        App->>App: خاتمه تمام فرآیندها
+    end
+```
+
+---
+
+## ۳. چرخه حیات زمان‌بندی و سرویس ویندوز (Service & Scheduling Lifecycle)
 
 ```mermaid
 stateDiagram-v2
@@ -71,14 +119,14 @@ stateDiagram-v2
         CheckNetwork --> FallbackOffline : آفلاین بودن (استفاده از آرشیو محلی/کش)
         FetchOnline --> ApplyWallpaper : اعمال روی دسکتاپ/لاک‌اسکرین
         FallbackOffline --> ApplyWallpaper
-        ApplyWallpaper --> LogResult : ثبت در last-run.json و activity.log
+        ApplyWallpaper --> LogResult : ثبت در activity.log و last-run.json
     }
 
     state "سرویس سرور (Windows Service - SCM)" as SCMService {
-        Idle --> ServiceStart : شروع سرویس SahandNamaFeed
+        Idle --> ServiceStart : شروع سرویس BingWallpaperProFeed
         ServiceStart --> ServiceLoop : آغاز حلقه همگام‌سازی ناهمگام (Non-blocking)
         ServiceLoop --> SyncAll : دانلود همگانی منابع (SyncAllOnlineSourcesAsync)
-        SyncAll --> StoreShared : ذخیره در مخزن شبکه (ProgramData\SahandNama\Feed)
+        SyncAll --> StoreShared : ذخیره در مخزن شبکه (ProgramData\BingWallpaperPro\Feed)
         StoreShared --> SleepInterval : انتظار ۱۲ ساعته (یا ۱۰ دقیقه در صورت قطعی شبکه)
         SleepInterval --> ServiceLoop
     }
@@ -86,9 +134,7 @@ stateDiagram-v2
 
 ---
 
-## ۳. دیاگرام توزیع شبکه سرور و کلاینت‌ها (Enterprise Hub & Distribution)
-
-در شبکه‌های سازمانی، سرور مرکزی به عنوان **Enterprise Hub** عمل کرده و کلاینت‌ها بدون مصرف اینترنت، تصاویر را مستقیماً از پوشه اشتراکی شبکه دریافت می‌کنند:
+## ۴. دیاگرام توزیع شبکه سرور و کلاینت‌ها (Enterprise Hub & Distribution)
 
 ```mermaid
 sequenceDiagram
@@ -117,7 +163,7 @@ sequenceDiagram
 
 ---
 
-## ۴. دیاگرام جریان عیب‌یابی و رفع خودکار ایرادات (Diagnostics & Auto-Repair Flow)
+## ۵. دیاگرام جریان عیب‌یابی و رفع خودکار ایرادات (Diagnostics & Auto-Repair Flow)
 
 ```mermaid
 flowchart TD
@@ -127,7 +173,7 @@ flowchart TD
     CheckSys --> Test2[بررسی اتصال منابع آنلاین و DNS]
     CheckSys --> Test3[بررسی کلیدهای رجیستری و گروپ پالیسی]
     CheckSys --> Test4[بررسی وضعیت Task Scheduler، دسترسی‌ها و فرآیند اجرایی]
-    CheckSys --> Test5[بررسی وضعیت سرویس ویندوز SahandNamaFeed]
+    CheckSys --> Test5[بررسی وضعیت سرویس ویندوز BingWallpaperProFeed]
     CheckSys --> Test6[بررسی کش و پکیج‌های Spotlight]
     CheckSys --> Test7[بررسی فایل‌های تکراری و صفر بایتی با هش SHA-256]
 
@@ -139,7 +185,7 @@ flowchart TD
     AutoRepair -- بله --> Backup[ایجاد فایل پشتیبان از تنظیمات و رجیستری]
     Backup --> FixSettings[تعمیر ساختار تنظیمات و اعمال مقادیر پیش‌فرض امن]
     FixSettings --> PurgeCache[حذف فایل‌های خراب و ناقص کش]
-    PurgeCache --> FixSched[ثبت مجدد و تصحیح تسک روزانه با رویداد ورود]
+    FixSettings --> FixSched[ثبت مجدد و تصحیح تسک روزانه با رویداد ورود]
     FixSched --> FixSpotlight[بازنشانی بسته‌های ContentDeliveryManager و کلیدهای Spotlight]
     FixSpotlight --> DedupPurge[پاک‌سازی فایل‌های تکراری با الگوریتم SHA-256]
     DedupPurge --> FinalReport([تولید گزارش تایید سلامت و پایان موفقیت‌آمیز])
@@ -147,17 +193,17 @@ flowchart TD
 
 ---
 
-## ۵. ماتریس آزمون‌های اعتبارسنجی خودکار (Automated Verification Matrix)
+## ۶. ماتریس آزمون‌های اعتبارسنجی خودکار (Automated Verification Matrix)
 
-تمام ۶۴ تست پروژه به صورت مداوم وضعیت زیر را ارزیابی می‌کنند:
+تمام **۷۵ تست پروژه** به صورت مداوم وضعیت‌های زیر را ارزیابی می‌کنند:
 
 1. **امنیت شبکه و ضد نفوذ:** رد کردن تمام URLهای غیرمجاز، پروتکل‌های ناامن، پورت‌های غیررسمی و تلاش‌های SSRF.
 2. **عملیات اتمیک فایل و هماهنگی قفل‌ها:** تضمین عدم رها شدن فایل‌های `.tmp`، بازیافت خطای هم‌زمانی و تلاش مجدد با `AcquireLockAsync`.
 3. **صحت دکودینگ تصویر و عدم قفل ماندن فایل:** دکود مستقیم، آزاد شدن فوری Handle فایل و کش در حافظه رم.
-4. **تطبیق فیدهای بین‌المللی:** پارس کردن فیدهای NASA APOD, Wikimedia POTD, ESA Hubble, Picsum/Unsplash, USGS.
+4. **تطبیق فیدهای بین‌المللی:** پارس کردن فیدهای NASA APOD, Wikimedia POTD, ESA Hubble, Picsum/Unsplash, USGS, Wallhaven, MuseumArt.
 5. **مسیریابی هوشمند و تفکیک دسکتاپ و لاک‌اسکرین:** پشتیبانی از حالت‌های مستقل، همزمان، تفکیک مناطق جغرافیایی و کالکشن ایران زیبا.
 6. **محیط کاملاً آفلاین کلاینت:** آزمون بدون اینترنت و واکشی مستقیم از Share شبکه.
-7. **طراحی بصری و فونت فارسی:** تایید بارگذاری قلم فارسی Vazirmatn، جهت‌بندی RTL و آیکون اختصاصی سهند نما.
-8. **ویجت دسکتاپ و کارت اجتماعی:** استخراج پالت رنگ تم ویندوز، فرمت تاریخ هجری خورشیدی و تولید کارت شبکه اجتماعی.
+7. **طراحی بصری و فونت فارسی:** تایید بارگذاری قلم فارسی Vazirmatn، جهت‌بندی RTL، استایل شیشه‌ای `Theme.xaml` و آیکون اختصاصی سهند نما.
+8. **ویجت دسکتاپ، آب‌وهوا و سخت‌افزار:** پایش حافظه RAM، محاسبه دمای شهرها، فرمت تاریخ هجری خورشیدی، استخراج پالت رنگ تم ویندوز و ساخت کارت شبکه اجتماعی.
 
 </div>

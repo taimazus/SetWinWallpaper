@@ -9,11 +9,11 @@
 ---
 
 ### 📐 مستندات فنی
-- [🏛️ معماری سیستم](../docs/ARCHITECTURE.md)
-- [🏢 استقرار سازمانی](../docs/ENTERPRISE_DEPLOYMENT.md)
-- [🔍 عیب‌یابی Spotlight](../docs/SPOTLIGHT_TROUBLESHOOTING.md)
-- [🌐 منابع و APIها](../docs/SOURCES_AND_API.md)
-- [⌨️ خط فرمان و اسکریپت‌ها](../docs/CLI_AND_SCRIPTS.md)
-- [📋 گزارش ممیزی](../docs/audit-report.md)
+- [🏛️ معماری سیستم](../../docs/ARCHITECTURE.md)
+- [🏢 استقرار سازمانی](../../docs/ENTERPRISE_DEPLOYMENT.md)
+- [🔍 عیب‌یابی Spotlight](../../docs/SPOTLIGHT_TROUBLESHOOTING.md)
+- [🌐 منابع و APIها](../../docs/SOURCES_AND_API.md)
+- [⌨️ خط فرمان و اسکریپت‌ها](../../docs/CLI_AND_SCRIPTS.md)
+- [📋 گزارش ممیزی](../../docs/audit-report.md)
 
 </div>
