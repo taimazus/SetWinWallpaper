@@ -14,7 +14,6 @@ public partial class MainWindow : Window
     Photo Selected => Gallery.SelectedItem as Photo ?? throw new InvalidOperationException("ابتدا یک تصویر انتخاب کنید.");
     bool busy;
     DiagnosticReport? diagnosticReport;
-    DesktopWidgetWindow? desktopWidget;
     System.Windows.Interop.HwndSource? hwndSource;
 
     public MainWindow()
@@ -44,9 +43,9 @@ public partial class MainWindow : Window
         AccentColorCheck.IsChecked = preferences.SyncWindowsAccentColor;
         Loaded += MainWindow_Loaded;
         Closing += MainWindow_Closing;
-        if (preferences.ShowDesktopWidget)
+        if (preferences.ShowDesktopWidget && App.ActiveWidget == null)
         {
-            try { desktopWidget = new DesktopWidgetWindow(); desktopWidget.Show(); } catch { }
+            App.ToggleWidget();
         }
         UpdateSourceControls();
         try { LoadArchive(); } catch (Exception ex) { StatusText.Text = ex.Message; }
@@ -384,12 +383,20 @@ public partial class MainWindow : Window
             hwndSource = System.Windows.Interop.HwndSource.FromHwnd(handle);
             hwndSource?.AddHook(HwndHook);
             RegisterHotkeys();
+            TrayManager.Initialize(handle);
         }
         catch { }
     }
 
     void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
+        if (!App.IsExiting)
+        {
+            e.Cancel = true;
+            Hide();
+            TrayManager.ShowBalloon("سهند نما", "برنامه در سینی ویندوز فعال است. برای دسترسی به امکانات یا خروج کامل روی آیکون برنامه در کنار ساعت کلیک کنید.");
+            return;
+        }
         UnregisterHotkeys();
     }
 
@@ -427,7 +434,12 @@ public partial class MainWindow : Window
 
     IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
-        if (msg == WindowsIntegration.WM_HOTKEY)
+        if (msg == TrayManager.WM_TRAYICON)
+        {
+            TrayManager.HandleTrayMessage(lParam.ToInt32());
+            handled = true;
+        }
+        else if (msg == WindowsIntegration.WM_HOTKEY)
         {
             int id = wParam.ToInt32();
             if (id == WindowsIntegration.HOTKEY_ID_NEXT_WALLPAPER)
@@ -463,18 +475,8 @@ public partial class MainWindow : Window
 
     void OpenDesktopWidget_Click(object sender, RoutedEventArgs e)
     {
-        if (desktopWidget == null || !desktopWidget.IsLoaded)
-        {
-            desktopWidget = new DesktopWidgetWindow();
-            desktopWidget.Show();
-            preferences.ShowDesktopWidget = true;
-            DesktopWidgetCheck.IsChecked = true;
-            Store.Save(preferences);
-        }
-        else
-        {
-            desktopWidget.Activate();
-        }
+        App.ToggleWidget();
+        DesktopWidgetCheck.IsChecked = Store.Settings.ShowDesktopWidget;
     }
 
     void ToggleDesktopIcons_Click(object sender, RoutedEventArgs e)

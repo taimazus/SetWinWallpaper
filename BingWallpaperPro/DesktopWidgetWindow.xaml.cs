@@ -1,6 +1,8 @@
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Threading;
 
 namespace BingWallpaperPro;
@@ -9,6 +11,27 @@ public partial class DesktopWidgetWindow : Window
 {
     readonly DispatcherTimer timer;
     Preferences preferences;
+    Photo? currentPhoto;
+
+    [DllImport("user32.dll")]
+    static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct WindowCompositionAttributeData
+    {
+        public int Attribute;
+        public IntPtr Data;
+        public int SizeOfData;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct AccentPolicy
+    {
+        public int AccentState;
+        public int AccentFlags;
+        public int GradientColor;
+        public int AnimationId;
+    }
 
     public DesktopWidgetWindow()
     {
@@ -37,11 +60,43 @@ public partial class DesktopWidgetWindow : Window
         timer.Start();
     }
 
+    void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        EnableAcrylicBlur();
+    }
+
+    void EnableAcrylicBlur()
+    {
+        try
+        {
+            var hwnd = new WindowInteropHelper(this).Handle;
+            var accent = new AccentPolicy
+            {
+                AccentState = 4, // ACCENT_ENABLE_ACRYLICBLURBEHIND
+                AccentFlags = 2,
+                GradientColor = unchecked((int)0x66081420) // Translucent dark glass ABGR
+            };
+            var accentStructSize = Marshal.SizeOf(accent);
+            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
+            Marshal.StructureToPtr(accent, accentPtr, false);
+            var data = new WindowCompositionAttributeData
+            {
+                Attribute = 19, // WCA_ACCENT_POLICY
+                SizeOfData = accentStructSize,
+                Data = accentPtr
+            };
+            SetWindowCompositionAttribute(hwnd, ref data);
+            Marshal.FreeHGlobal(accentPtr);
+        }
+        catch { }
+    }
+
     void UpdateClock()
     {
         var now = DateTime.Now;
         ClockText.Text = now.ToString("HH:mm:ss");
         PersianDateText.Text = PersianDateHelper.GetFormattedPersianDate(now);
+        GregorianDateText.Text = now.ToString("dd MMM yyyy");
     }
 
     public void UpdateWallpaperInfo()
@@ -49,11 +104,19 @@ public partial class DesktopWidgetWindow : Window
         try
         {
             var archive = Store.Read(Path.Combine(Store.Root, "archive.json"), new List<Photo>());
-            var current = archive.FirstOrDefault(p => File.Exists(p.FilePath));
-            if (current != null)
+            currentPhoto = archive.FirstOrDefault(p => File.Exists(p.FilePath));
+            if (currentPhoto != null)
             {
-                WallpaperTitleText.Text = string.IsNullOrWhiteSpace(current.Title) ? "منظره روز ویندوز" : current.Title;
-                WallpaperCreditText.Text = string.IsNullOrWhiteSpace(current.Copyright) ? $"{current.Source} • {current.Market}" : current.Copyright;
+                WallpaperTitleText.Text = string.IsNullOrWhiteSpace(currentPhoto.Title) ? "منظره روز ویندوز" : currentPhoto.Title;
+                WallpaperCreditText.Text = string.IsNullOrWhiteSpace(currentPhoto.Copyright) ? $"{currentPhoto.Source} • {currentPhoto.Market}" : currentPhoto.Copyright;
+                if (preferences.Favorites.Contains(currentPhoto.Id))
+                {
+                    FavoriteBtn.Content = "ستاره‌دار ⭐";
+                }
+                else
+                {
+                    FavoriteBtn.Content = "علاقه‌مندی ❤️";
+                }
             }
         }
         catch { }
@@ -81,11 +144,17 @@ public partial class DesktopWidgetWindow : Window
         }
     }
 
+    void PinBtn_Click(object sender, RoutedEventArgs e)
+    {
+        Topmost = !Topmost;
+        PinBtn.Opacity = Topmost ? 1.0 : 0.55;
+    }
+
     void CloseBtn_Click(object sender, RoutedEventArgs e)
     {
         preferences.ShowDesktopWidget = false;
         Store.Save(preferences);
-        Close();
+        Hide();
     }
 
     async void NextWallpaper_Click(object sender, RoutedEventArgs e)
@@ -98,7 +167,7 @@ public partial class DesktopWidgetWindow : Window
         }
         catch (Exception ex)
         {
-            WallpaperTitleText.Text = "خطا در دریافت: " + ex.Message;
+            WallpaperTitleText.Text = "خطا در تغییر تصویر: " + ex.Message;
         }
     }
 
@@ -106,16 +175,30 @@ public partial class DesktopWidgetWindow : Window
     {
         try
         {
-            var archive = Store.Read(Path.Combine(Store.Root, "archive.json"), new List<Photo>());
-            var current = archive.FirstOrDefault(p => File.Exists(p.FilePath));
-            if (current != null)
+            if (currentPhoto == null) return;
+            preferences = Store.Settings;
+            if (preferences.Favorites.Contains(currentPhoto.Id))
             {
-                if (!preferences.Favorites.Contains(current.Id))
-                {
-                    preferences.Favorites.Add(current.Id);
-                    Store.Save(preferences);
-                    WallpaperTitleText.Text = "❤️ به علاقه‌مندی‌ها اضافه شد!";
-                }
+                preferences.Favorites.Remove(currentPhoto.Id);
+                FavoriteBtn.Content = "علاقه‌مندی ❤️";
+            }
+            else
+            {
+                preferences.Favorites.Add(currentPhoto.Id);
+                FavoriteBtn.Content = "ستاره‌دار ⭐";
+            }
+            Store.Save(preferences);
+        }
+        catch { }
+    }
+
+    void SyncAccent_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (currentPhoto != null && File.Exists(currentPhoto.FilePath))
+            {
+                WindowsIntegration.SyncWindowsAccentColor(currentPhoto.FilePath);
             }
         }
         catch { }
@@ -123,14 +206,6 @@ public partial class DesktopWidgetWindow : Window
 
     void OpenApp_Click(object sender, RoutedEventArgs e)
     {
-        var main = Application.Current.MainWindow;
-        if (main == null || !main.IsLoaded)
-        {
-            main = new MainWindow();
-            Application.Current.MainWindow = main;
-        }
-        main.Show();
-        main.WindowState = WindowState.Normal;
-        main.Activate();
+        App.ShowMainWindow();
     }
 }

@@ -1,9 +1,13 @@
 using System.Windows;
+using Application = System.Windows.Application;
 
 namespace BingWallpaperPro;
 
 public partial class App : Application
 {
+    public static bool IsExiting { get; set; }
+    public static DesktopWidgetWindow? ActiveWidget { get; private set; }
+
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
@@ -178,9 +182,11 @@ public partial class App : Application
         {
             try
             {
-                ShutdownMode = ShutdownMode.OnLastWindowClose;
-                var widget = new DesktopWidgetWindow();
-                widget.Show();
+                ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                ActiveWidget = new DesktopWidgetWindow();
+                ActiveWidget.Show();
+                var handle = new System.Windows.Interop.WindowInteropHelper(ActiveWidget).Handle;
+                TrayManager.Initialize(handle);
                 return;
             }
             catch (Exception ex)
@@ -206,9 +212,90 @@ public partial class App : Application
             return;
         }
 
-        ShutdownMode = ShutdownMode.OnMainWindowClose;
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
         MainWindow = new MainWindow();
         MainWindow.Show();
+
+        if (Store.Settings.ShowDesktopWidget)
+        {
+            try
+            {
+                ActiveWidget = new DesktopWidgetWindow();
+                ActiveWidget.Show();
+            }
+            catch { }
+        }
+    }
+
+    public static void ShowMainWindow()
+    {
+        Current.Dispatcher.Invoke(() =>
+        {
+            if (Current.MainWindow == null || !Current.MainWindow.IsLoaded)
+            {
+                Current.MainWindow = new MainWindow();
+            }
+            Current.MainWindow.Show();
+            if (Current.MainWindow.WindowState == WindowState.Minimized)
+            {
+                Current.MainWindow.WindowState = WindowState.Normal;
+            }
+            Current.MainWindow.Activate();
+            Current.MainWindow.Focus();
+        });
+    }
+
+    public static void ToggleWidget()
+    {
+        Current.Dispatcher.Invoke(() =>
+        {
+            if (ActiveWidget == null || !ActiveWidget.IsLoaded)
+            {
+                ActiveWidget = new DesktopWidgetWindow();
+                ActiveWidget.Show();
+                var prefs = Store.Settings;
+                prefs.ShowDesktopWidget = true;
+                Store.Save(prefs);
+            }
+            else if (ActiveWidget.IsVisible)
+            {
+                ActiveWidget.Hide();
+                var prefs = Store.Settings;
+                prefs.ShowDesktopWidget = false;
+                Store.Save(prefs);
+            }
+            else
+            {
+                ActiveWidget.Show();
+                ActiveWidget.Activate();
+                var prefs = Store.Settings;
+                prefs.ShowDesktopWidget = true;
+                Store.Save(prefs);
+            }
+        });
+    }
+
+    public static void UpdateWidgetInfo()
+    {
+        Current.Dispatcher.Invoke(() =>
+        {
+            if (ActiveWidget != null && ActiveWidget.IsLoaded && ActiveWidget.IsVisible)
+            {
+                ActiveWidget.UpdateWallpaperInfo();
+            }
+        });
+    }
+
+    public static void ExitApplication()
+    {
+        IsExiting = true;
+        TrayManager.Dispose();
+        Current.Dispatcher.Invoke(() =>
+        {
+            ActiveWidget?.Close();
+            Current.MainWindow?.Close();
+            Current.Shutdown(0);
+        });
     }
 }
-

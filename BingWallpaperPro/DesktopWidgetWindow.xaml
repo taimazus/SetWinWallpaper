@@ -1,43 +1,46 @@
 <Window x:Class="BingWallpaperPro.DesktopWidgetWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="سهند نما ویجت دسکتاپ" Height="175" Width="380"
+        Title="سهند نما • ویجت شیشه‌ای دسکتاپ" Height="190" Width="410"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
-        ShowInTaskbar="False" FlowDirection="RightToLeft"
+        ShowInTaskbar="False" FlowDirection="RightToLeft" Topmost="False"
         FontFamily="pack://application:,,,/BingWallpaperPro;component/Assets/Fonts/#Vazirmatn"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
-        LocationChanged="Window_LocationChanged">
+        LocationChanged="Window_LocationChanged"
+        Loaded="Window_Loaded">
  <Window.Resources>
   <FontFamily x:Key="VazirmatnFont">pack://application:,,,/BingWallpaperPro;component/Assets/Fonts/#Vazirmatn</FontFamily>
   <Style TargetType="TextBlock"><Setter Property="FontFamily" Value="{StaticResource VazirmatnFont}"/><Setter Property="Foreground" Value="#EAF2F7"/></Style>
   <Style TargetType="Button">
    <Setter Property="FontFamily" Value="{StaticResource VazirmatnFont}"/>
-   <Setter Property="Background" Value="#172F3F"/>
+   <Setter Property="Background" Value="#331A354A"/>
    <Setter Property="Foreground" Value="#E2EEF5"/>
-   <Setter Property="BorderBrush" Value="#2F556E"/>
+   <Setter Property="BorderBrush" Value="#55386785"/>
    <Setter Property="BorderThickness" Value="1"/>
-   <Setter Property="Padding" Value="8,4"/>
-   <Setter Property="Margin" Value="3,0"/>
+   <Setter Property="Padding" Value="7,4"/>
+   <Setter Property="Margin" Value="2,0"/>
+   <Setter Property="FontSize" Value="11"/>
    <Setter Property="Cursor" Value="Hand"/>
    <Setter Property="Template">
     <Setter.Value>
      <ControlTemplate TargetType="Button">
-      <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="7" Padding="{TemplateBinding Padding}">
+      <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="{TemplateBinding Padding}">
        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
       </Border>
      </ControlTemplate>
     </Setter.Value>
    </Setter>
    <Style.Triggers>
-    <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="#1F4760"/><Setter Property="BorderBrush" Value="#4FBFA8"/></Trigger>
-    <Trigger Property="IsPressed" Value="True"><Setter Property="Background" Value="#0F222F"/></Trigger>
+    <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="#66255173"/><Setter Property="BorderBrush" Value="#665CE8CE"/></Trigger>
+    <Trigger Property="IsPressed" Value="True"><Setter Property="Background" Value="#440E202E"/></Trigger>
    </Style.Triggers>
   </Style>
  </Window.Resources>
 
- <Border Background="#E60A1622" BorderBrush="#2C4E65" BorderThickness="1.5" CornerRadius="18" Padding="16">
+ <!-- Frosted Glass Container -->
+ <Border Background="#4D0B1A28" BorderBrush="#664D7B99" BorderThickness="1.2" CornerRadius="20" Padding="15">
   <Border.Effect>
-   <DropShadowEffect Color="#000000" BlurRadius="25" ShadowDepth="4" Opacity="0.55"/>
+   <DropShadowEffect Color="#000000" BlurRadius="28" ShadowDepth="4" Opacity="0.6"/>
   </Border.Effect>
   <Grid>
    <Grid.RowDefinitions>
@@ -46,7 +49,7 @@
     <RowDefinition Height="Auto"/>
    </Grid.RowDefinitions>
 
-   <!-- Header with Clock & Date -->
+   <!-- Header: Clock & Date -->
    <Grid Grid.Row="0">
     <Grid.ColumnDefinitions>
      <ColumnDefinition Width="*"/>
@@ -54,35 +57,44 @@
     </Grid.ColumnDefinitions>
 
     <StackPanel Orientation="Vertical">
-     <TextBlock x:Name="ClockText" Text="00:00:00" FontSize="26" FontWeight="Bold" Foreground="#FFFFFF" FontFamily="Segoe UI, Tahoma"/>
-     <TextBlock x:Name="PersianDateText" Text="در حال بارگذاری…" FontSize="11" Foreground="#9AC4D9" Margin="0,2,0,0"/>
+     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+      <TextBlock x:Name="ClockText" Text="00:00:00" FontSize="26" FontWeight="Bold" Foreground="#FFFFFF" FontFamily="Segoe UI, Tahoma"/>
+      <Border Background="#3318856F" BorderBrush="#5551D6B8" BorderThickness="1" CornerRadius="6" Padding="6,2" Margin="10,0,0,0" VerticalAlignment="Center">
+       <TextBlock x:Name="GregorianDateText" Text="02 Oct 2026" FontSize="10" Foreground="#8CE9D4" FontFamily="Segoe UI"/>
+      </Border>
+     </StackPanel>
+     <TextBlock x:Name="PersianDateText" Text="در حال بارگذاری تقویم خورشیدی…" FontSize="11" Foreground="#A9D4EB" Margin="0,2,0,0"/>
     </StackPanel>
 
     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
-     <Button x:Name="CloseBtn" Content="✕" Width="26" Height="26" Padding="0" Click="CloseBtn_Click" ToolTip="بستن ویجت"/>
+     <Button x:Name="PinBtn" Content="📌" Width="28" Height="28" Padding="0" Click="PinBtn_Click" ToolTip="سنجاق کردن روی همه پنجره‌ها / چسبیدن به دسکتاپ" Margin="0,0,3,0"/>
+     <Button x:Name="CloseBtn" Content="✕" Width="28" Height="28" Padding="0" Click="CloseBtn_Click" ToolTip="پنهان‌سازی ویجت"/>
     </StackPanel>
    </Grid>
 
-   <!-- Wallpaper Info Middle Section -->
-   <Grid Grid.Row="1" Margin="0,10,0,8">
-    <Grid.ColumnDefinitions>
-     <ColumnDefinition Width="Auto"/>
-     <ColumnDefinition Width="*"/>
-    </Grid.ColumnDefinitions>
-    <Border Width="34" Height="34" CornerRadius="8" Background="#132B3C" BorderBrush="#29516B" BorderThickness="1" Margin="0,0,10,0" VerticalAlignment="Center">
-     <Image Source="Assets/SahandNama.png" Width="24" Height="24" RenderOptions.BitmapScalingMode="HighQuality"/>
-    </Border>
-    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-     <TextBlock x:Name="WallpaperTitleText" Text="سهند نما • والپیپر فعال روز" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" MaxHeight="34"/>
-     <TextBlock x:Name="WallpaperCreditText" Text="منظره هوشمند ویندوز" FontSize="10" Foreground="#7AA2B8" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
-    </StackPanel>
-   </Grid>
+   <!-- Middle: Active Wallpaper Info -->
+   <Border Grid.Row="1" Background="#26000000" BorderBrush="#33406B87" BorderThickness="1" CornerRadius="10" Padding="8" Margin="0,8,0,8">
+    <Grid>
+     <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto"/>
+      <ColumnDefinition Width="*"/>
+     </Grid.ColumnDefinitions>
+     <Border Width="36" Height="36" CornerRadius="8" Background="#3315354D" BorderBrush="#55396B8A" BorderThickness="1" Margin="0,0,10,0" VerticalAlignment="Center">
+      <Image Source="Assets/SahandNama.png" Width="24" Height="24" RenderOptions.BitmapScalingMode="HighQuality"/>
+     </Border>
+     <StackPanel Grid.Column="1" VerticalAlignment="Center">
+      <TextBlock x:Name="WallpaperTitleText" Text="سهند نما • والپیپر فعال روز" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" MaxHeight="34"/>
+      <TextBlock x:Name="WallpaperCreditText" Text="منظره هوشمند ویندوز" FontSize="10" Foreground="#8FB7CC" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+     </StackPanel>
+    </Grid>
+   </Border>
 
-   <!-- Quick Actions Footer -->
+   <!-- Footer: Quick Action Controls -->
    <Grid Grid.Row="2">
     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-     <Button Content="تصویر بعدی ⏭" Click="NextWallpaper_Click" ToolTip="دریافت و اعمال تصویر بعدی (Win+Alt+W)"/>
-     <Button Content="علاقه‌مندی ❤️" Click="Favorite_Click" ToolTip="افزودن به علاقه‌مندی‌ها (Win+Alt+S)"/>
+     <Button Content="تصویر بعدی 🎲" Click="NextWallpaper_Click" ToolTip="دریافت و اعمال تصویر بعدی (Win+Alt+W)"/>
+     <Button x:Name="FavoriteBtn" Content="علاقه‌مندی ❤️" Click="Favorite_Click" ToolTip="افزودن به علاقه‌مندی‌ها (Win+Alt+S)"/>
+     <Button Content="رنگ تم 🎨" Click="SyncAccent_Click" ToolTip="هماهنگ‌سازی رنگ تم ویندوز با والپیپر"/>
      <Button Content="سهند نما ⚙" Click="OpenApp_Click" ToolTip="باز کردن پنجره اصلی برنامه"/>
     </StackPanel>
    </Grid>
