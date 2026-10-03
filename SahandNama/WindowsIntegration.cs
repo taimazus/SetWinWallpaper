@@ -71,13 +71,19 @@ public static class WindowsIntegration
         using var desktop = Registry.CurrentUser.CreateSubKey(@"Control Panel\Desktop");
         desktop.SetValue("WallpaperStyle", backup.Style); desktop.SetValue("TileWallpaper", backup.Tile);
         if (!SystemParametersInfo(20, 0, backup.Path, 3)) throw new Win32Exception(Marshal.GetLastWin32Error());
+        var currentMetadata = Path.Combine(Store.Root, "current-desktop.json");
+        if (File.Exists(currentMetadata)) File.Delete(currentMetadata);
     }
     public static async Task<string> SetLockScreenAsync(string path)
     {
         Store.LoadImage(path, 32);
-        var targetPath = Path.GetFullPath(path);
-        var result = await RunPowerShellAsync($$"""
-            $fullPath = {{QuotePS(targetPath)}}
+        var result = await RunPowerShellAsync(LockScreenScript(Path.GetFullPath(path)));
+        Store.Log("Lock screen: " + result);
+        return result;
+    }
+
+    internal static string LockScreenScript(string path) => $$"""
+            $fullPath = {{QuotePS(path)}}
             $ok = $false
             $lastError = ''
 
@@ -93,19 +99,19 @@ public static class WindowsIntegration
                     $asTaskGeneric = $extType.GetMethods() | Where-Object { $_.Name -eq 'AsTask' -and $_.IsGenericMethod -and $_.GetParameters().Count -eq 1 -and $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncOperation`1' } | Select-Object -First 1
                     $asTaskAction = $extType.GetMethods() | Where-Object { $_.Name -eq 'AsTask' -and !$_.IsGenericMethod -and $_.GetParameters().Count -eq 1 -and $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncAction' } | Select-Object -First 1
 
-                    $getFileAsyncMethod = $storageFileType.GetMethod('GetFileFromPathAsync', @([string]))
+                    $getFileAsyncMethod = $storageFileType.GetMethod('GetFileFromPathAsync', [Type[]]@([string]))
                     if ($getFileAsyncMethod -and $asTaskGeneric) {
                         $getFileOp = $getFileAsyncMethod.Invoke($null, @($fullPath))
                         $getFileTask = $asTaskGeneric.MakeGenericMethod($storageFileType).Invoke($null, @($getFileOp))
                         $file = $getFileTask.GetAwaiter().GetResult()
 
                         if ($userProfileType) {
-                            $isSupportedProp = $userProfileType.GetProperty('IsSupported')
-                            $isSupported = if ($isSupportedProp) { [bool]$isSupportedProp.GetValue($null) } else { $false }
+                            $isSupportedMethod = $userProfileType.GetMethod('IsSupported', [Type[]]@())
+                            $isSupported = if ($isSupportedMethod) { [bool]$isSupportedMethod.Invoke($null, @()) } else { $false }
                             if ($isSupported) {
                                 $currentProp = $userProfileType.GetProperty('Current')
                                 $currentInstance = if ($currentProp) { $currentProp.GetValue($null) } else { $null }
-                                $trySetMethod = $userProfileType.GetMethod('TrySetLockScreenImageAsync', @($storageFileType))
+                                $trySetMethod = $userProfileType.GetMethod('TrySetLockScreenImageAsync', [Type[]]@($storageFileType))
                                 if ($currentInstance -and $trySetMethod) {
                                     try {
                                         $trySetOp = $trySetMethod.Invoke($currentInstance, @($file))
@@ -117,7 +123,7 @@ public static class WindowsIntegration
                         }
 
                         if (!$ok -and $lockScreenType -and $asTaskAction) {
-                            $setImageFileMethod = $lockScreenType.GetMethod('SetImageFileAsync', @($storageFileType))
+                            $setImageFileMethod = $lockScreenType.GetMethod('SetImageFileAsync', [Type[]]@($storageFileType))
                             if ($setImageFileMethod) {
                                 $actionOp = $setImageFileMethod.Invoke($null, @($file))
                                 $actionTask = $asTaskAction.Invoke($null, @($actionOp))
@@ -131,47 +137,32 @@ public static class WindowsIntegration
                 $lastError = $_.Exception.Message
             }
 
-            # Strategy 2: Direct Registry & LockScreen cache fallback
-            if (!$ok) {
-                try {
-                    $userKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Lock Screen'
-                    if (!(Test-Path $userKey)) { New-Item -Path $userKey -Force | Out-Null }
-                    Set-ItemProperty -Path $userKey -Name 'LockScreenImagePath' -Value $fullPath -Force -ErrorAction SilentlyContinue
+            if (!$ok) { throw ('Windows lock screen API did not accept the image. Use the managed policy helper on supported editions. ' + $lastError) }
 
-                    $cspKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\PersonalizationCSP'
-                    if (!(Test-Path $cspKey)) { New-Item -Path $cspKey -Force | Out-Null }
-                    Set-ItemProperty -Path $cspKey -Name 'LockScreenImagePath' -Value $fullPath -Force -ErrorAction SilentlyContinue
-                    Set-ItemProperty -Path $cspKey -Name 'LockScreenImageUrl' -Value $fullPath -Force -ErrorAction SilentlyContinue
-                    Set-ItemProperty -Path $cspKey -Name 'LockScreenImageStatus' -Value 1 -Force -ErrorAction SilentlyContinue
-
-                    $lockCache = Join-Path $env:LOCALAPPDATA 'Microsoft\Windows\LockScreenCache'
-                    if (!(Test-Path $lockCache)) { New-Item -ItemType Directory -Path $lockCache -Force | Out-Null }
-                    Copy-Item -Path $fullPath -Destination (Join-Path $lockCache 'LockScreen.jpg') -Force -ErrorAction SilentlyContinue
-
-                    $ok = $true
-                } catch {
-                    throw ('ویندوز تغییر لاک‌اسکرین را نپذیرفت. در بخش عیب‌یابی، سلامت Spotlight را بررسی کنید.' + [Environment]::NewLine + $lastError + [Environment]::NewLine + $_.Exception.Message)
-                }
+            if ($ok) {
+                Stop-Process -Name LockApp -Force -ErrorAction SilentlyContinue
+                'Lock screen updated successfully.'
             }
-
-            if ($ok) { 'Lock screen updated successfully.' }
-            """);
-        Store.Log("Lock screen: " + result);
-        return result;
-    }
+            """;
 
     public const string ServiceName = "BingWallpaperProFeed";
 
     public static (string Executable, string Arguments) GetUpdateCommandLine()
+        => GetUpdateCommandLine(AppContext.BaseDirectory, Environment.ProcessPath,
+            System.Reflection.Assembly.GetEntryAssembly() == typeof(WindowsIntegration).Assembly);
+
+    internal static (string Executable, string Arguments) GetUpdateCommandLine(string baseDir, string? processPath, bool runningApplication)
     {
-        var baseDir = AppContext.BaseDirectory;
+        if (runningApplication && !string.IsNullOrWhiteSpace(processPath) && File.Exists(processPath) &&
+            processPath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) &&
+            !processPath.EndsWith("dotnet.exe", StringComparison.OrdinalIgnoreCase))
+            return (Path.GetFullPath(processPath), "--update");
         var exePath = Path.Combine(baseDir, "SahandNama.exe");
         if (File.Exists(exePath)) return (Path.GetFullPath(exePath), "--update");
 
         var legacyExe = Path.Combine(baseDir, "BingWallpaperPro.exe");
         if (File.Exists(legacyExe)) return (Path.GetFullPath(legacyExe), "--update");
 
-        var processPath = Environment.ProcessPath;
         if (!string.IsNullOrWhiteSpace(processPath) && File.Exists(processPath))
         {
             if (processPath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) &&
@@ -229,10 +220,26 @@ public static class WindowsIntegration
 
     public static async Task<string> InstallScheduleAsync(string time)
     {
+        try { return await RunPowerShellAsync(ScheduleScript(time), 45); }
+        catch (InvalidOperationException ex) when (IsAccessDenied(ex.Message))
+        {
+            throw new InvalidOperationException("ویندوز اجازهٔ ثبت یا اصلاح زمان‌بندی را نداد. ممکن است مجوز زمان‌بندی قبلی یا سیاست سازمانی مانع باشد. برای اصلاح مجوزها با مدیر سیستم تماس بگیرید یا برنامه را با Run as administrator اجرا کنید. زمان‌بندی برای حسابی ثبت می‌شود که برنامه را اجرا کرده است.", ex);
+        }
+    }
+
+    internal static bool IsAccessDenied(string message) =>
+        message.Contains("Access is denied", StringComparison.OrdinalIgnoreCase) ||
+        message.Contains("Access denied", StringComparison.OrdinalIgnoreCase) ||
+        message.Contains("0x80070005", StringComparison.OrdinalIgnoreCase) ||
+        message.Contains("E_ACCESSDENIED", StringComparison.OrdinalIgnoreCase);
+
+    internal static string ScheduleScript(string time)
+    {
         if (!TimeOnly.TryParseExact(time, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedTime))
             throw new ArgumentException("ساعت باید با ارقام انگلیسی به شکل 09:00 باشد.");
 
         var (exe, args) = GetUpdateCommandLine();
+        args += " --scheduled";
         var workingDir = AppContext.BaseDirectory;
         var hour = parsedTime.Hour;
         var minute = parsedTime.Minute;
@@ -244,14 +251,10 @@ public static class WindowsIntegration
             $workDir = {{QuotePS(workingDir)}}
             $taskName = {{QuotePS(TaskName)}}
 
-            if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
-                Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction SilentlyContinue
-            }
-
             $action = New-ScheduledTaskAction -Execute $exe -Argument $args -WorkingDirectory $workDir
             $triggerTime = (Get-Date -Hour {{hour}} -Minute {{minute}} -Second 0)
             $daily = New-ScheduledTaskTrigger -Daily -At $triggerTime
-            $logon = New-ScheduledTaskTrigger -AtLogOn
+            $logon = New-ScheduledTaskTrigger -AtLogOn -User $user
 
             $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited
 
@@ -259,8 +262,8 @@ public static class WindowsIntegration
                 -StartWhenAvailable `
                 -MultipleInstances IgnoreNew `
                 -ExecutionTimeLimit (New-TimeSpan -Minutes 20) `
-                -RestartCount 3 `
-                -RestartInterval (New-TimeSpan -Minutes 5) `
+                -RestartCount 24 `
+                -RestartInterval (New-TimeSpan -Hours 1) `
                 -AllowStartIfOnBatteries `
                 -DontStopIfGoingOnBatteries `
                 -WakeToRun:$false
@@ -269,77 +272,28 @@ public static class WindowsIntegration
             "زمان‌بندی روزانه در ساعت {{time}} و هنگام ورود برای کاربر $user با موفقیت ثبت شد."
             """;
 
-        return await RunPowerShellAsync(script, 45);
+        return script;
     }
 
-    public static Task<string> RemoveScheduleAsync() => RunPowerShellAsync($"Unregister-ScheduledTask -TaskName {QuotePS(TaskName)} -Confirm:$false; 'Schedule removed.'");
+    internal static string RemoveScheduleScript() => $$"""
+        $taskName = {{QuotePS(TaskName)}}
+        $task = Get-ScheduledTask -TaskPath '\' | Where-Object { $_.TaskName -eq $taskName }
+        if ($task) { $task | Unregister-ScheduledTask -Confirm:$false -ErrorAction Stop }
+        'Schedule removed.'
+        """;
 
-    public static async Task<string> InstallServiceAsync()
+    public static Task<string> RemoveScheduleAsync() => RunPowerShellAsync(RemoveScheduleScript());
+
+    public static string ServiceManagementScript(string action, string? sourceRoot = null)
     {
-        var (exe, _) = GetUpdateCommandLine();
-        var sourceExe = exe;
-
-        var script = $$"""
-            $serviceName = '{{ServiceName}}'
-            $sourceExe = {{QuotePS(sourceExe)}}
-            $installRoot = Join-Path $env:ProgramFiles 'BingWallpaperPro'
-            $feedRoot = Join-Path $env:ProgramData 'BingWallpaperPro\Feed'
-            $targetExe = Join-Path $installRoot 'BingWallpaperPro.exe'
-
-            $existing = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
-            if ($existing) {
-                Stop-Service -Name $serviceName -Force -ErrorAction SilentlyContinue
-            }
-
-            New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
-            if (Test-Path -LiteralPath $sourceExe) {
-                $sourceDir = Split-Path -Path $sourceExe -Parent
-                Get-ChildItem -LiteralPath $sourceDir -File | Where-Object { $_.Extension -in '.exe','.dll','.json','.runtimeconfig.json' } | ForEach-Object {
-                    Copy-Item -LiteralPath $_.FullName -Destination $installRoot -Force
-                }
-            }
-
-            New-Item -ItemType Directory -Path $feedRoot -Force | Out-Null
-            $acl = New-Object Security.AccessControl.DirectorySecurity
-            $acl.SetAccessRuleProtection($false, $true)
-            foreach ($entry in @(@('S-1-5-18','FullControl'),@('S-1-5-32-544','FullControl'),@('S-1-5-19','Modify'),@('S-1-5-20','Modify'),@('S-1-5-11','ReadAndExecute'))) {
-                $sid = New-Object Security.Principal.SecurityIdentifier($entry[0])
-                $rule = New-Object Security.AccessControl.FileSystemAccessRule($sid,$entry[1],'ContainerInherit,ObjectInherit','None','Allow')
-                $acl.AddAccessRule($rule)
-            }
-            Set-Acl -LiteralPath $feedRoot -AclObject $acl
-
-            $binPath = "`"$targetExe`" --service"
-            if ($existing) {
-                & sc.exe config $serviceName binPath= $binPath start= auto
-            } else {
-                & sc.exe create $serviceName binPath= $binPath start= auto DisplayName= "Bing Wallpaper Pro - Download Feed"
-            }
-            & sc.exe config $serviceName start= delayed-auto
-            & sc.exe description $serviceName "سرویس دریافت خودکار تصاویر و مدیریت فید مشترک شبکه (Sahand Nama Feed Service)"
-            & sc.exe failure $serviceName reset= 86400 actions= restart/60000/restart/300000/restart/900000
-
-            Start-Service -Name $serviceName -ErrorAction SilentlyContinue
-            "سرویس $serviceName با موفقیت در ویندوز نصب و فعال شد."
-            """;
-
-        return await RunElevatedPowerShellAsync(script);
+        if (action is not ("Install" or "Remove")) throw new ArgumentException("Unknown service action.");
+        using var stream = typeof(WindowsIntegration).Assembly.GetManifestResourceStream("SahandNama.Scripts.Manage-Service.ps1") ?? throw new IOException("Embedded service helper is missing.");
+        using var reader = new StreamReader(stream);
+        var executable = sourceRoot == null ? GetUpdateCommandLine().Executable : Path.Combine(sourceRoot, "SahandNama.exe");
+        return "& {\n" + reader.ReadToEnd() + "\n} -Action " + action + " -SourceRoot " + QuotePS(sourceRoot ?? AppContext.BaseDirectory) + " -SourceExe " + QuotePS(executable);
     }
-
-    public static async Task<string> RemoveServiceAsync()
-    {
-        var script = $$"""
-            $serviceName = '{{ServiceName}}'
-            $existing = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
-            if ($existing) {
-                Stop-Service -Name $serviceName -Force -ErrorAction SilentlyContinue
-                & sc.exe delete $serviceName
-            }
-            "سرویس $serviceName با موفقیت از سیستم حذف شد."
-            """;
-
-        return await RunElevatedPowerShellAsync(script);
-    }
+    public static Task<string> InstallServiceAsync() => RunElevatedPowerShellAsync(ServiceManagementScript("Install"));
+    public static Task<string> RemoveServiceAsync() => RunElevatedPowerShellAsync(ServiceManagementScript("Remove"));
 
     public static async Task<string> StartServiceAsync()
     {
@@ -395,7 +349,7 @@ public static class WindowsIntegration
             $existing = Get-SmbShare -Name $shareName -ErrorAction SilentlyContinue
             if ($existing) {
                 if ($existing.Path -ne $targetPath) {
-                    Set-SmbShare -Name $shareName -Path $targetPath -Force -Confirm:$false
+                    throw 'An existing share uses another path. Choose a new share name or migrate it explicitly.'
                 }
             } else {
                 New-SmbShare -Name $shareName -Path $targetPath -ReadAccess 'Everyone' -FolderEnumerationMode AccessBased -ErrorAction Stop | Out-Null
@@ -421,7 +375,7 @@ public static class WindowsIntegration
             Store.Log($"Windows SMB Share '{shareName}' created/verified at '{folderPath}'.");
             return unc.Trim();
         }
-        catch
+        catch (InvalidOperationException ex) when (!ex.Message.Contains("An existing share uses another path", StringComparison.Ordinal))
         {
             // Elevation fallback with UAC
             var encodedScript = Convert.ToBase64String(Encoding.Unicode.GetBytes("$ErrorActionPreference='Stop'; " + script));
@@ -494,12 +448,12 @@ public static class WindowsIntegration
             $legacyTasks = @('Bing Wallpaper Daily', 'BingWallpaperDaily', 'BingWallpaper_Enterprise')
             foreach ($t in $legacyTasks) {
                 if (Get-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue) {
-                    Unregister-ScheduledTask -TaskName $t -Confirm:$false -ErrorAction SilentlyContinue
+                    Unregister-ScheduledTask -TaskName $t -Confirm:$false -ErrorAction Stop
                     Write-Output "تسک قدیمی '$t' با موفقیت از سیستم حذف شد."
                 }
             }
             if (Test-Path 'C:\ProgramData\BingWallpaper') {
-                Remove-Item -Path 'C:\ProgramData\BingWallpaper' -Recurse -Force -ErrorAction SilentlyContinue
+                Remove-Item -LiteralPath 'C:\ProgramData\BingWallpaper' -Recurse -Force -ErrorAction Stop
                 Write-Output "پوشه و اسکریپت‌های منسوخ C:\ProgramData\BingWallpaper حذف شدند."
             }
             """;
@@ -511,8 +465,19 @@ public static class WindowsIntegration
                 logs.AddRange(outText.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
             }
         }
-        catch { }
+        catch (Exception ex) { Store.Log("Legacy cleanup failed: " + ex.Message); throw; }
         return logs;
+    }
+
+    internal static List<string> BackupAndRemoveSpotlightSettings(string settings, string backup)
+    {
+        var errors = new List<string>();
+        foreach (var file in Directory.EnumerateFiles(settings))
+        {
+            try { File.Copy(file, Path.Combine(backup, Path.GetFileName(file))); File.Delete(file); }
+            catch (Exception ex) { errors.Add(Path.GetFileName(file) + ": " + ex.Message); }
+        }
+        return errors;
     }
 
     public static async Task<string> ResetSpotlightAsync()
@@ -521,26 +486,19 @@ public static class WindowsIntegration
         var assets = Path.Combine(SpotlightRoot, "LocalState", "Assets");
         if (!Directory.Exists(SpotlightRoot)) throw new InvalidOperationException("بسته Spotlight این حساب موجود نیست؛ بازنشانی برای این نسخه ویندوز قابل اجرا نیست.");
 
-        var backup = Path.Combine(Store.Root, "Backups", "Spotlight-" + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
+        var backup = Path.Combine(Store.Root, "Backups", "Spotlight-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(backup);
 
         var sb = new StringBuilder();
+        var errors = new List<string>();
         sb.AppendLine("✓ شروع فرآیند جامع تعمیر و بازنشانی Windows Spotlight:");
 
         // 1. Backup and reset settings files
         if (Directory.Exists(settings))
         {
-            var files = Directory.EnumerateFiles(settings).ToList();
-            foreach (var file in files)
-            {
-                try
-                {
-                    File.Copy(file, Path.Combine(backup, Path.GetFileName(file)), true);
-                    File.Delete(file);
-                }
-                catch { }
-            }
-            sb.AppendLine("✓ فایل‌های تنظیمات محلی و قفل‌های همگام‌سازی (Settings & Roaming Locks) پاک‌سازی شدند.");
+            var settingErrors = BackupAndRemoveSpotlightSettings(settings, backup);
+            errors.AddRange(settingErrors);
+            if (settingErrors.Count == 0) sb.AppendLine("✓ فایل‌های تنظیمات محلی و قفل‌های همگام‌سازی (Settings & Roaming Locks) پاک‌سازی شدند.");
         }
 
         // 2. Clean corrupted / 0-byte assets cache
@@ -554,7 +512,7 @@ public static class WindowsIntegration
                     var fi = new FileInfo(file);
                     if (fi.Length < 10000) { File.Delete(file); deletedAssets++; }
                 }
-                catch { }
+                catch (Exception ex) { errors.Add(Path.GetFileName(file) + ": " + ex.Message); }
             }
             if (deletedAssets > 0) sb.AppendLine($"✓ تعداد {deletedAssets} فایل کش ناقص و معیوب از Assets حذف شد.");
         }
@@ -574,19 +532,28 @@ public static class WindowsIntegration
             }
             sb.AppendLine("✓ کلیدهای فعال‌سازی Spotlight در رجیستری ویندوز (ContentDeliveryManager) تصحیح شدند.");
         }
-        catch (Exception ex) { sb.AppendLine("• هشدار در تنظیم رجیستری: " + ex.Message); }
+        catch (Exception ex) { errors.Add("Registry: " + ex.Message); }
 
         // 4. Re-register ContentDeliveryManager AppX Package via PowerShell
         try
         {
             await RunPowerShellAsync("""
-                Get-AppxPackage -Name Microsoft.Windows.ContentDeliveryManager -ErrorAction SilentlyContinue | Foreach-Object {
-                    Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" -ErrorAction SilentlyContinue
+                $package = Get-AppxPackage -Name Microsoft.Windows.ContentDeliveryManager -ErrorAction Stop
+                if (!$package) { throw 'ContentDeliveryManager package is unavailable.' }
+                $package | Foreach-Object {
+                    Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" -ErrorAction Stop
                 }
                 """, 30);
             sb.AppendLine("✓ بسته نرم‌افزاری ContentDeliveryManager در ویندوز بازثبت (Re-register) شد.");
         }
-        catch (Exception ex) { sb.AppendLine("• هشدار در ثبت مجدد AppX: " + ex.Message); }
+        catch (Exception ex) { errors.Add("AppX: " + ex.Message); }
+
+        if (errors.Count > 0)
+        {
+            var failure = "Spotlight reset incomplete; backup: " + backup + "\n" + string.Join("\n", errors);
+            Store.Log(failure);
+            throw new InvalidOperationException(failure);
+        }
 
         Store.Log("Spotlight completely repaired and reset: " + backup);
         sb.AppendLine();
@@ -614,18 +581,14 @@ public static class WindowsIntegration
                 using var stream = File.OpenRead(file);
                 var id = "spotlight-" + Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(stream))[..24];
                 var path = Path.Combine(destination, id + ".jpg");
-                if (!File.Exists(path))
-                {
-                    var encoder = new System.Windows.Media.Imaging.JpegBitmapEncoder { QualityLevel = 95 };
-                    encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
-                    using var output = File.Create(path); encoder.Save(output);
-                }
+                if (!File.Exists(path) || !SourceCatalog.IsHealthy(new Photo { FilePath = path }))
+                    SourceCatalog.ConvertToJpeg(file, path);
                 photos.Add(new Photo { Id = id, Source = "Spotlight", Title = "Windows Spotlight", Copyright = "Microsoft Spotlight • cached locally; original attribution unavailable", FilePath = path, Date = info.LastWriteTime.ToString("yyyyMMdd"), Market = "Spotlight" });
             }
             catch (Exception ex) when (ex is IOException or NotSupportedException or ArgumentException or FileFormatException) { Store.Log("Skipped Spotlight asset: " + ex.Message); }
         }
         var archivePath = Path.Combine(archiveRoot, "archive.json");
-        Store.Write(archivePath, photos.Concat(Store.Read(archivePath, new List<Photo>())).DistinctBy(p => p.Id).ToList());
+        Store.MergeArchive(archiveRoot, photos);
         return photos;
     }
     public static void Open(string target) => Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });

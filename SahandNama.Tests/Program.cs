@@ -19,7 +19,46 @@ internal static class Program
     {
         try
         {
+            if (args.Contains("--verify-sources") || args.Contains("--verify-featured"))
+            {
+                var smokeRoot = Path.GetFullPath(Path.Combine("artifacts", "live-sources-" + Guid.NewGuid().ToString("N")));
+                var catalog = new SourceCatalog(smokeRoot);
+                foreach (var source in args.Contains("--verify-featured") ? new[] { "NatGeoNature" } : new[] { "IranNature", "MuseumArt" })
+                {
+                    var photos = catalog.FetchAsync(new(source, "en-US", "UHD", ""), allowOffline: false).GetAwaiter().GetResult();
+                    Check(photos.Count > 0 && photos.All(p => SourceCatalog.IsHealthy(p)), "LIVE " + source + ": " + photos.Count + " healthy downloaded images");
+                    Check(!catalog.UsedOfflineFallback, "LIVE " + source + ": complete online refresh without fallback or partial failure");
+                }
+                Console.WriteLine("Live source verification passed; files: " + smokeRoot + ". No wallpaper, service or task changed.");
+                return 0;
+            }
             var root = Path.GetFullPath(Path.Combine("artifacts", "tests")); Directory.CreateDirectory(root);
+            var instanceName = @"Local\SahandNama.Tests." + Guid.NewGuid().ToString("N");
+            using (var primary = new SingleInstance(instanceName))
+            {
+                Check(primary.IsPrimary, "First UI instance acquires gate");
+                using (var duplicate = new SingleInstance(instanceName))
+                {
+                    Check(!duplicate.IsPrimary, "Duplicate UI instance is rejected");
+                    duplicate.RequestActivation();
+                    Check(primary.TakeActivationRequest(), "Duplicate launch activates existing UI");
+                    Check(!primary.TakeActivationRequest(), "Activation request is consumed once");
+                }
+                using var third = new SingleInstance(instanceName);
+                Check(!third.IsPrimary, "Closing duplicate preserves primary gate");
+            }
+            using (var restarted = new SingleInstance(instanceName))
+                Check(restarted.IsPrimary, "UI can restart after primary exits");
+            if (args.Contains("--verify-single-instance")) return 0;
+            Check(WindowsIntegration.ScheduleScript("10:00").Contains("-AtLogOn -User $user"), "Logon schedule is restricted to the current user");
+            Check(WindowsIntegration.IsAccessDenied("Access is denied.") && WindowsIntegration.IsAccessDenied("HRESULT: 0x80070005") && !WindowsIntegration.IsAccessDenied("Invalid time"), "Schedule access errors are identified without masking other failures");
+            var removalScript = WindowsIntegration.RemoveScheduleScript();
+            var noTask = "function Get-ScheduledTask { param($TaskPath) }; function Unregister-ScheduledTask { throw 'Unexpected deletion' };\n" + removalScript;
+            Check(WindowsIntegration.RunPowerShellAsync(noTask).GetAwaiter().GetResult() == "Schedule removed.", "Removing an absent schedule succeeds without deletion");
+            var deniedRemoval = "function Get-ScheduledTask { param($TaskPath) throw 'Access is denied.' };\n" + removalScript;
+            Reject(() => WindowsIntegration.RunPowerShellAsync(deniedRemoval).GetAwaiter().GetResult(), "Schedule removal preserves permission failures");
+            if (args.Contains("--verify-schedule")) return 0;
+            AuditRegressionTests.Run(Check);
             Check(BingClient.TrustedUri("/th?id=test").Host == "www.bing.com", "Bing relative URLs");
             foreach (var url in new[] { "http://www.bing.com/a", "https://evil.test/a", "https://www.bing.com.evil.test/a", "https://user@www.bing.com/a", "https://www.bing.com:444/a", "//evil.test/a", "file:///C:/test.jpg" }) Reject(() => BingClient.TrustedUri(url), "Reject " + url);
             Check(WindowsIntegration.QuotePS("a'b") == "'a''b'", "PowerShell literal quote escaping");
@@ -192,7 +231,7 @@ internal static class Program
             Check(new Typeface(window.FontFamily, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal).TryGetGlyphTypeface(out var embeddedFont) && embeddedFont.FontUri.ToString().Contains("Vazirmatn", StringComparison.OrdinalIgnoreCase), "Vazirmatn resolves from embedded font resource");
             var (resolvedExe, resolvedArgs) = WindowsIntegration.GetUpdateCommandLine();
             Check(!string.IsNullOrWhiteSpace(resolvedExe) && resolvedArgs.Contains("--update"), "GetUpdateCommandLine resolves valid executable and arguments");
-            Check(window.FlowDirection == FlowDirection.RightToLeft && Brand.Version == "1.8.0" && window.Icon != null, "RTL, release version 1.8.0 and application icon");
+            Check(window.FlowDirection == FlowDirection.RightToLeft && Brand.Version == "1.8.1" && window.Icon != null, "RTL, release version 1.8.1 and application icon");
 
             // Test Persian Date & Calendar
             var testDate = new DateTime(2026, 9, 29);

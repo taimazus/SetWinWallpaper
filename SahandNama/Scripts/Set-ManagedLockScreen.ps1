@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 param([ValidateSet('Apply','Restore')][string]$Action = 'Apply', [string]$ImagePath)
 $ErrorActionPreference = 'Stop'
 $policy = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization'

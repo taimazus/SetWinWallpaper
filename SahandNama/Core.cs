@@ -78,6 +78,59 @@ public static class Store
     }
     public static Preferences Settings => Read(Path.Combine(Root, "settings.json"), new Preferences());
     public static void Save(Preferences settings) => Write(Path.Combine(Root, "settings.json"), settings);
+    public static Preferences ReadSettingsForStartup(string? root = null)
+    {
+        root ??= Root;
+        try { return Read(Path.Combine(root, "settings.json"), new Preferences()); }
+        catch (Exception ex) when (ex is JsonException or InvalidDataException or IOException or UnauthorizedAccessException)
+        {
+            Log("Settings could not be loaded; repair is required: " + ex.Message, root);
+            return new Preferences();
+        }
+    }
+    public static Preferences UpdateSettings(Action<Preferences> update, string? root = null)
+    {
+        root ??= Root;
+        using var gate = AcquireLockAsync(Path.Combine(root, "settings.lock")).GetAwaiter().GetResult();
+        var settings = Read(Path.Combine(root, "settings.json"), new Preferences());
+        update(settings);
+        Write(Path.Combine(root, "settings.json"), settings);
+        return settings;
+    }
+    public static Preferences CloneSettings(Preferences settings) => JsonSerializer.Deserialize<Preferences>(JsonSerializer.Serialize(settings, Json), Json)!;
+    public static Preferences SaveEditorSettings(Preferences edited, Preferences baseline, string? root = null) => UpdateSettings(current =>
+    {
+        foreach (var property in typeof(Preferences).GetProperties())
+        {
+            if (property.Name is nameof(Preferences.Favorites) or nameof(Preferences.WidgetLeft) or nameof(Preferences.WidgetTop)) continue;
+            var value = property.GetValue(edited);
+            if (!Equals(value, property.GetValue(baseline))) property.SetValue(current, value);
+        }
+    }, root);
+    public static void MergeArchive(string root, IEnumerable<Photo> photos)
+    {
+        using var gate = AcquireLockAsync(Path.Combine(root, "archive.lock")).GetAwaiter().GetResult();
+        var path = Path.Combine(root, "archive.json");
+        Write(path, photos.Concat(Read(path, new List<Photo>())).DistinctBy(p => p.Id).OrderByDescending(p => p.Date).ToList());
+    }
+    public static void RecordDesktopPhoto(Photo photo, string? root = null) => Write(Path.Combine(root ?? Root, "current-desktop.json"), photo);
+    public static Photo? CurrentDesktopPhoto(string? root = null)
+    {
+        try { return Read<Photo?>(Path.Combine(root ?? Root, "current-desktop.json"), null); }
+        catch (Exception ex) { Log("Current wallpaper metadata could not be loaded: " + ex.Message, root); return null; }
+    }
+    public static bool IsOwnedFile(string path, string directory)
+    {
+        try
+        {
+            if (!string.Equals(Path.GetDirectoryName(Path.GetFullPath(path)), Path.GetFullPath(directory).TrimEnd(Path.DirectorySeparatorChar), StringComparison.OrdinalIgnoreCase)) return false;
+            if (File.Exists(path) && File.GetAttributes(path).HasFlag(FileAttributes.ReparsePoint)) return false;
+            for (var parent = new DirectoryInfo(directory); parent != null; parent = parent.Parent)
+                if (parent.Exists && parent.Attributes.HasFlag(FileAttributes.ReparsePoint)) return false;
+            return true;
+        }
+        catch { return false; }
+    }
     public static void Log(string message, string? root = null)
     {
         try
@@ -95,9 +148,10 @@ public static class Store
         var start = DateTime.UtcNow;
         while (true)
         {
+            token.ThrowIfCancellationRequested();
             try { return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
             catch (IOException) when (DateTime.UtcNow - start < TimeSpan.FromSeconds(timeoutSeconds))
-            { await Task.Delay(200, token); }
+            { await Task.Delay(200, token).ConfigureAwait(false); }
         }
     }
     public static BitmapImage LoadImage(string path, int width = 1600)
@@ -113,11 +167,14 @@ public static class Store
 
 public sealed class BingClient
 {
-    public static readonly string[] Markets = ["en-US", "en-GB", "de-DE", "fr-FR", "ja-JP", "en-CA", "en-AU", "en-IN", "zh-CN"];
+    public bool UsedOfflineFallback { get; private set; }
+    public static readonly string[] Markets = ["en-US", "en-GB", "de-DE", "fr-FR", "ja-JP", "en-CA", "en-AU", "en-IN", "zh-CN", "pt-BR", "it-IT", "es-ES"];
     public static readonly string[] Resolutions = ["UHD", "1920x1080", "1366x768"];
     static readonly HttpClient Http = new(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = TimeSpan.FromSeconds(45) };
     readonly string root;
-    public BingClient(string? root = null) => this.root = root ?? Store.Root;
+    readonly HttpClient http;
+    public BingClient(string? root = null) : this(root, Http) { }
+    internal BingClient(string? root, HttpClient http) { this.root = root ?? Store.Root; this.http = http; }
     public static Uri TrustedUri(string url)
     {
         var uri = new Uri(new Uri("https://www.bing.com"), url);
@@ -125,19 +182,21 @@ public sealed class BingClient
             throw new InvalidDataException("Only HTTPS images hosted by www.bing.com are accepted.");
         return uri;
     }
-    public async Task<List<Photo>> FetchAsync(string market, string resolution, CancellationToken token = default)
+    public async Task<List<Photo>> FetchAsync(string market, string resolution, CancellationToken token = default, bool allowOffline = true)
+        => await FetchCoreAsync(market, resolution, token, allowOffline, false);
+    internal Task<List<Photo>> FetchUnderFeedLockAsync(string market, string resolution, CancellationToken token, bool allowOffline)
+        => FetchCoreAsync(market, resolution, token, allowOffline, true);
+    async Task<List<Photo>> FetchCoreAsync(string market, string resolution, CancellationToken token, bool allowOffline, bool lockHeld)
     {
         if (!Markets.Contains(market) || !Resolutions.Contains(resolution)) throw new ArgumentException("Invalid region or resolution.");
         Directory.CreateDirectory(root);
         var archivePath = Path.Combine(root, "archive.json");
+        await using var gate = lockHeld ? null : await Store.AcquireLockAsync(Path.Combine(root, "feed.lock"), 10, token);
         var existingArchive = Store.Read(archivePath, new List<Photo>());
 
         try
         {
-            await using var gate = await Store.AcquireLockAsync(Path.Combine(root, "feed.lock"), 10, token);
-            using var response = await Http.GetAsync(TrustedUri($"/HPImageArchive.aspx?format=js&idx=0&n=8&mkt={market}"), token);
-            response.EnsureSuccessStatusCode();
-            using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(token));
+            using var document = JsonDocument.Parse(await SourceHttp.ReadAsync(TrustedUri($"/HPImageArchive.aspx?format=js&idx=0&n=8&mkt={market}").AbsoluteUri, 20_000_000, token, http));
             var result = new List<Photo>();
 
             foreach (var item in document.RootElement.GetProperty("images").EnumerateArray())
@@ -169,14 +228,15 @@ public sealed class BingClient
                 result.Add(photo);
             }
             if (result.Count == 0) throw new InvalidDataException("Bing returned no images.");
-            Store.Write(archivePath, result.Concat(existingArchive).DistinctBy(p => p.Id).OrderByDescending(p => p.Date).ToList());
+            Store.MergeArchive(root, result);
             return result;
         }
-        catch (Exception ex) when (ex is HttpRequestException or IOException or System.Net.Sockets.SocketException or TimeoutException)
+        catch (Exception ex) when (allowOffline && SourceHttp.IsRecoverable(ex, token))
         {
-            var validOffline = existingArchive.Where(p => File.Exists(p.FilePath) && new FileInfo(p.FilePath).Length > 1000).ToList();
+            var validOffline = existingArchive.Where(p => p.Source is "Bing" or "BingGlobal" && p.Market == market && SourceCatalog.IsHealthy(p)).ToList();
             if (validOffline.Count > 0)
             {
+                UsedOfflineFallback = true;
                 Store.Log($"ارتباط با سرور بینگ برقرار نشد ({ex.Message}). استفاده خودکار از {validOffline.Count} تصویر آرشیو محلی.", root);
                 return validOffline;
             }
@@ -196,18 +256,21 @@ public sealed class BingClient
             var temp = photo.FilePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
             try
             {
-                using var response = await Http.GetAsync(TrustedUri(photo.Url), HttpCompletionOption.ResponseHeadersRead, token);
+                using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
+                deadline.CancelAfter(TimeSpan.FromSeconds(120));
+                var transferToken = deadline.Token;
+                using var response = await http.GetAsync(TrustedUri(photo.Url), HttpCompletionOption.ResponseHeadersRead, transferToken);
                 response.EnsureSuccessStatusCode();
                 if (response.Content.Headers.ContentLength > 150_000_000) throw new InvalidDataException("Image exceeds 150 MB.");
-                await using (var source = await response.Content.ReadAsStreamAsync(token))
+                await using (var source = await response.Content.ReadAsStreamAsync(transferToken))
                 await using (var destination = File.Create(temp))
                 {
                     var buffer = new byte[81920]; long total = 0; int count;
-                    while ((count = await source.ReadAsync(buffer, token)) != 0)
+                    while ((count = await source.ReadAsync(buffer, transferToken)) != 0)
                     {
                         total += count;
                         if (total > 150_000_000) throw new InvalidDataException("Image exceeds 150 MB.");
-                        await destination.WriteAsync(buffer.AsMemory(0, count), token);
+                        await destination.WriteAsync(buffer.AsMemory(0, count), transferToken);
                     }
                 }
                 Store.LoadImage(temp, 32); File.Move(temp, photo.FilePath, true); return;
@@ -220,26 +283,15 @@ public sealed class BingClient
 
 public sealed class WallpaperEngine
 {
-    public async Task UpdateAsync()
+    public async Task UpdateAsync(bool scheduled = false)
     {
         Directory.CreateDirectory(Store.Root);
         await using var gate = await Store.AcquireLockAsync(Path.Combine(Store.Root, "update.lock"), 10);
         var settings = Store.Settings;
         if (!settings.Desktop && !settings.LockScreen) throw new InvalidOperationException("حداقل یک مقصد را انتخاب کنید.");
         var catalog = new SourceCatalog();
-        var fetched = new Dictionary<SourceRequest, Task<List<Photo>>>();
         var day = DateOnly.FromDateTime(DateTime.Now);
-        async Task<Photo> SelectAsync(bool lockScreen)
-        {
-            var request = PhotoSelection.Request(settings, lockScreen);
-            if (!fetched.TryGetValue(request, out var fetch)) fetched[request] = fetch = catalog.FetchAsync(request);
-            var photos = await fetch;
-            var isRandom = lockScreen
-                ? (settings.LockMode == "Random" || (settings.LockMode == "Follow" && (settings.DesktopMode == "Random" || settings.Mode == "Random")) || settings.Mode == "Random")
-                : (settings.DesktopMode == "Random" || settings.Mode == "Random");
-            var isPrevious = lockScreen && (settings.LockMode == "Previous" || (settings.LockMode == "Follow" && settings.Mode == "Previous") || settings.Mode == "Previous");
-            return PhotoSelection.Select(photos, request.Id, isPrevious, day, isRandom);
-        }
+        var selection = new PhotoSelectionSession(settings, request => catalog.FetchAsync(request), day);
         var messages = new List<string>();
         var failed = false;
         if (settings.IsServerMode)
@@ -249,15 +301,16 @@ public sealed class WallpaperEngine
                 var synced = await catalog.SyncAllOnlineSourcesAsync(settings.Resolution);
                 messages.Add($"همگام‌سازی مخزن سرور: {synced} تصویر از تمامی گالری‌های آنلاین دریافت و به‌روزرسانی شد.");
             }
-            catch (Exception ex) { messages.Add("همگام‌سازی مخزن سرور: " + ex.Message); }
+            catch (Exception ex) { failed = true; messages.Add("همگام‌سازی مخزن سرور: " + ex.Message); }
         }
 
         if (settings.Desktop)
         {
             try
             {
-                var desktopPhoto = await SelectAsync(false);
+                var desktopPhoto = await selection.SelectAsync(false);
                 WindowsIntegration.SetDesktop(desktopPhoto.FilePath, settings.Fit);
+                Store.RecordDesktopPhoto(desktopPhoto);
                 messages.Add("تصویر دسکتاپ تغییر کرد.");
                 if (settings.SyncWindowsAccentColor && File.Exists(desktopPhoto.FilePath))
                 {
@@ -269,8 +322,13 @@ public sealed class WallpaperEngine
         }
         if (settings.LockScreen)
         {
-            try { await WindowsIntegration.SetLockScreenAsync((await SelectAsync(true)).FilePath); messages.Add("ویندوز درخواست تغییر لاک‌اسکرین را پذیرفت."); }
+            try { await WindowsIntegration.SetLockScreenAsync((await selection.SelectAsync(true)).FilePath); messages.Add("ویندوز درخواست تغییر لاک‌اسکرین را پذیرفت."); }
             catch (Exception ex) { failed = true; messages.Add("تغییر لاک‌اسکرین ناموفق بود: " + ex.Message); }
+        }
+        if (scheduled && catalog.UsedOfflineFallback)
+        {
+            failed = true;
+            messages.Add("دریافت آنلاین کامل نشد؛ تصویر قابل استفاده اعمال شد. زمان‌بندی یک ساعت بعد دوباره تلاش می‌کند.");
         }
         var outcome = string.Join(Environment.NewLine, messages); Store.Log(outcome);
         Store.Write(Path.Combine(Store.Root, "last-run.json"), new { Time = DateTimeOffset.Now, Result = outcome });

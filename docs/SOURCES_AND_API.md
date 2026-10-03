@@ -3,7 +3,7 @@
 # مستندات منابع داده، APIها و الگوریتم یکتاسازی (Sources & API Documentation)
 
 **نرم‌افزار سهند نما (Sahand Nama)**  
-**نسخه:** 1.8.0  
+**نسخه:** 1.8.1
 **توسعه‌دهنده:** شرکت راهکار الکترونیک سهند ([https://irres.ir](https://irres.ir))
 
 ---
@@ -16,16 +16,16 @@
 | :--- | :--- | :--- | :--- | :--- |
 | `Bing` | تصویر روز مایکروسافت بینگ | JSON API | `www.bing.com` | UHD (4K) |
 | `BingGlobal` | گلچین بین‌المللی بینگ (همه مناطق) | Multi-JSON | `www.bing.com` | UHD (4K) |
-| `IranNature` | ایران زیبا (طبیعت و آثار باستانی) | Curated CDN | `upload.wikimedia.org` | UHD (1920x1080+) |
-| `Wallhaven` | والپیپرهای برگزیده ۴K و ۸K | Direct CDN | `w.wallhaven.cc`, `th.wallhaven.cc` | 4K / 8K UHD |
-| `MuseumArt` | شاهکارهای هنر کلاسیک (موزه شیکاگو) | IIIF / REST | `www.artic.edu`, `api.artic.edu` | High-Res Art |
-| `NatGeoNature` | طبیعت و حیات‌وحش نشنال جئوگرافیک | Direct CDN | `images.unsplash.com` | 4K UHD |
-| `CyberpunkArt` | شهر آینده و هنر سایبرپانک (۴K) | Direct CDN | `images.unsplash.com` | 4K UHD |
-| `Architecture4K` | شاهکارهای معماری مدرن جهان | Direct CDN | `images.unsplash.com` | 4K UHD |
+| `IranNature` | ایران زیبا (هشت موضوع طبیعت و میراث) | MediaWiki JSON / imageinfo | `commons.wikimedia.org`, `thumb.wikimedia.org`, `upload.wikimedia.org` | thumbnail تا عرض 1920، وابسته به اصل تصویر |
+| `Wallhaven` | والپیپرهای برگزیده Wallhaven | Direct CDN | `w.wallhaven.cc`, `th.wallhaven.cc` | حداکثر ضلع 3840 پس از تبدیل |
+| `MuseumArt` | نقاشی‌های آزاد موزه شیکاگو در Wikimedia | MediaWiki JSON / imageinfo | `commons.wikimedia.org`, `thumb.wikimedia.org`, `upload.wikimedia.org` | thumbnail تا عرض 1920، وابسته به اصل تصویر |
+| `NatGeoNature` | مناظر برگزیدهٔ ویکی‌مدیا (شناسهٔ تاریخی) | Commons JSON search/imageinfo؛ دستهٔ Featured pictures of landscapes | `commons.wikimedia.org`, `upload.wikimedia.org`, `thumb.wikimedia.org` | حداکثر ضلع 3840 پس از تبدیل |
+| `CyberpunkArt` | هنر سایبرپانک از Wallhaven | REST / CDN | `wallhaven.cc`, `w.wallhaven.cc` | حداکثر ضلع 3840 پس از تبدیل |
+| `Architecture4K` | معماری از Wallhaven | REST / CDN | `wallhaven.cc`, `w.wallhaven.cc` | حداکثر ضلع 3840 پس از تبدیل |
 | `UnsplashNature` | عکس‌های برگزیده طبیعت Unsplash | REST / Direct | `picsum.photos`, `images.unsplash.com` | 4K (3840x2160) |
 | `WikimediaPotd` | تصویر برگزیده روز ویکی‌مدیا | MediaWiki Action API | `commons.wikimedia.org`, `upload.wikimedia.org` | Full Original |
 | `UsgsEarthArt` | شگفتی‌های زمین از فضا (USGS) | RSS / XML Feed | `eros.usgs.gov`, `landsat.usgs.gov` | High-Res Satellite |
-| `NasaDaily` | تصویر نجومی روز ناسا (APOD) | RSS / JSON | `www.nasa.gov`, `images-assets.nasa.gov` | Ultra HD |
+| `NasaDaily` | NASA Image of the Day (غیر از APOD) | RSS | `www.nasa.gov`, `images-assets.nasa.gov` | Ultra HD |
 | `NasaLibrary` | کتابخانه تصاویر نجومی ناسا | REST API | `images-api.nasa.gov` | Ultra HD |
 | `EsaHubble` | تصاویر تلسکوپ هابل و وب (ESA) | RSS 2.0 Feed | `esahubble.org`, `cdn.esahubble.org` | 4K / Full Res |
 | `Spotlight` | مایکروسافت اسپات‌لایت (کش محلی) | Local Cache | دیسک سیستم | کیفیت اصلی |
@@ -44,7 +44,7 @@
   ```
 - **ویژگی‌های معماری:**
   - بدون نیاز به ثبت‌نام یا API Key اختصاصی.
-  - نگاشت مختصات جغرافیایی بیش از ۳۵ کلان‌شهر و مرکز استان ایران (تهران، تبریز، مشهد، اصفهان، شیراز، اهواز، رشت، کیش و...).
+  - نگاشت مختصات جغرافیایی شهرهای ایران و چند شهر خارجی (تهران، تبریز، مشهد، اصفهان، شیراز، اهواز، رشت، کیش و...).
   - سیستم کش هوشمند محلی به مدت ۱۵ دقیقه جهت کاهش بار شبکه.
   - تبدیل خودکار WMO Weather Codes به برچسب‌های فارسی و ایموجی‌های هواشناسی (صاف و آفتابی ☀️، نیمه ابری ⛅، مه 🌫️، بارانی 🌧️، رعد و برق ⛈️، برف ❄️).
 
@@ -61,7 +61,7 @@ flowchart TD
     
     HttpStream --> SizeCheck{بررسی حجم فایل<br/>حداکثر ۱۵۰ مگابایت}
     SizeCheck -- بیش از حد مجاز --> Err2[قطع دانلود جهت جلوگیری از سرریز حافظه]
-    SizeCheck -- مجاز --> HashCalc[محاسبه هش محتوا SHA-256]
+    SizeCheck -- مجاز --> HashCalc[ساخت شناسه از URL و بررسی فایل سالم]
     
     HashCalc --> DupCheck{آیا هش در آرشیو موجود است؟}
     DupCheck -- بله تکراری است --> SkipWrite[صرف‌نظر از ذخیره تکراری و استفاده از فایل موجود]
@@ -72,11 +72,9 @@ flowchart TD
 
 ## ۴. الگوریتم یکتاسازی محتوا و پاک‌سازی فایل‌های تکراری (SHA-256 Deduplication)
 
-برای اطمینان از اینکه هیچ تصویر تکراری حتی با نام فایل یا URL متفاوت دوباره بر روی دیسک ذخیره نشود:
+پیش از دانلود، وجود فایل سالم با همان URL یا شناسه بررسی می‌شود. شناسهٔ منابع آنلاین از هش URL ساخته می‌شود؛ این بررسی جایگزین هش محتوا نیست و مانع دانلود دو URL متفاوت با محتوای یکسان نمی‌شود.
 
-1. **محاسبه هش محتوا:** پیش از نهایی‌سازی فایل، هش `SHA-256` بایت‌های تصویر محاسبه می‌شود.
-2. **بررسی پایگاه داده آرشیو:** اگر فایلی با همان هش در `archive.json` ثبت شده باشد، فرآیند دانلود متوقف شده و فایل موجود استفاده می‌گردد.
-3. **متد `PurgeDuplicates`:** با فراخوانی این متد، تمام فایل‌های موجود در پوشه تصاویر اسکن شده، فایل‌های همسان شناسایی شده و فقط نسخه اصلی (Canonical) حفظ و فایل‌های تکراری حذف می‌گردند.
+متد `PurgeDuplicates` پس از دریافت، فایل‌های JPG هم‌اندازه را با SHA-256 محتوا مقایسه می‌کند، مسیرهای آرشیو را به نسخهٔ canonical تغییر می‌دهد و نسخه‌های تکراری را حذف می‌کند. فایل تصویر فعال در اولویت حفظ قرار دارد. عملیات با دانلود و تغییر آرشیو قفل مشترک دارد.
 
 ---
 
@@ -91,11 +89,14 @@ flowchart TD
     "Title": "دامنه‌های کوهستان سهند و دره باستانی کندوان",
     "Copyright": "طبیعت آذربایجان شرقی • رشته‌کوه سهند",
     "Date": "20261002",
-    "Url": "https://upload.wikimedia.org/...",
-    "Market": "fa-IR",
+    "Url": "https://www.bing.com/th?id=example",
+    "Market": "en-US",
     "FilePath": "C:\\Users\\...\\AppData\\Local\\BingWallpaperPro\\Images\\9b1a5e78c9a3.jpg"
   }
 ]
 ```
 
 </div>
+
+
+منابع ایران و موزه از `generator=search` و `prop=imageinfo` نشانی واقعی thumbnail، نام هنرمند و مجوز را می‌گیرند؛ مسیر فایل و hash CDN به‌صورت حدسی ساخته نمی‌شود. موضوعات ایران ثابت‌اند ولی فایل منتخب به نتایج جست‌وجوی Commons وابسته است. نقاشی‌های موزه از دستهٔ `Paintings in the Art Institute of Chicago` می‌آیند. مسیر IIIF مستقیم Art Institute در شبکهٔ آزمون 403 با Cf-Mitigated=challenge داد؛ برنامه این چالش را دور نمی‌زند و از نسخه‌های آزاد مستقل Commons استفاده می‌کند.

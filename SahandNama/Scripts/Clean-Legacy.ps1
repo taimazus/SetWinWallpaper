@@ -1,4 +1,4 @@
-#Requires -RunAs
+﻿#Requires -RunAs
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $Host.UI.RawUI.WindowTitle = "پاکسازی کامل تسک‌ها و فایل‌های قدیمی Bing Wallpaper"
 

@@ -19,7 +19,7 @@ public static class PhotoSelection
     public static SourceRequest Request(Preferences settings, bool lockScreen)
     {
         if (settings.Mode is not ("Same" or "Previous" or "Regions" or "Random")) throw new InvalidDataException("حالت انتخاب تصویر ناشناخته است.");
-        var independent = lockScreen && (settings.LockMode is "Daily" or "Random" || settings.Mode == "Regions");
+        var independent = lockScreen && LockMode(settings) is "Daily" or "Random";
         return new SourceRequest(
             independent ? settings.LockSource : settings.DesktopSource,
             independent ? settings.LockMarket : settings.Market,
@@ -27,6 +27,8 @@ public static class PhotoSelection
             independent ? settings.LockFolder : settings.DesktopFolder,
             independent ? settings.LockNetworkSharePath : settings.NetworkSharePath);
     }
+    public static string DesktopMode(Preferences settings) => settings.DesktopMode == "Random" || (settings.LockMode == "Follow" && settings.Mode == "Random") ? "Random" : "Daily";
+    public static string LockMode(Preferences settings) => settings.LockMode == "Follow" ? settings.Mode switch { "Regions" => "Daily", "Previous" => "Previous", _ => "Follow" } : settings.LockMode;
     public static Photo Select(IReadOnlyList<Photo> photos, string source, bool previous, DateOnly day, bool random = false)
     {
         if (photos.Count == 0) throw new InvalidOperationException("منبع انتخاب‌شده تصویر قابل استفاده ندارد.");
@@ -42,10 +44,40 @@ public static class PhotoSelection
     }
 }
 
+public sealed class PhotoSelectionSession(Preferences settings, Func<SourceRequest, Task<List<Photo>>> fetch, DateOnly day)
+{
+    readonly Dictionary<SourceRequest, Task<List<Photo>>> fetched = new();
+    Task<Photo>? desktop;
+    Task<List<Photo>> Photos(SourceRequest request)
+    {
+        if (!fetched.TryGetValue(request, out var task)) fetched[request] = task = fetch(request);
+        return task;
+    }
+    async Task<Photo> DesktopAsync()
+    {
+        var request = PhotoSelection.Request(settings, false);
+        return PhotoSelection.Select(await Photos(request), request.Id, false, day, PhotoSelection.DesktopMode(settings) == "Random");
+    }
+    public async Task<Photo> SelectAsync(bool lockScreen)
+    {
+        if (!lockScreen || PhotoSelection.LockMode(settings) == "Follow") return await (desktop ??= DesktopAsync());
+        if (PhotoSelection.LockMode(settings) == "Previous")
+        {
+            var selected = await (desktop ??= DesktopAsync());
+            var photos = await Photos(PhotoSelection.Request(settings, false));
+            if (photos.Count < 2) throw new InvalidOperationException("برای تصویر قبلی، حداقل دو تصویر در منبع لازم است.");
+            var index = photos.FindIndex(p => p.Id == selected.Id);
+            return photos[(index + 1) % photos.Count];
+        }
+        var request = PhotoSelection.Request(settings, true);
+        return PhotoSelection.Select(await Photos(request), request.Id, false, day, PhotoSelection.LockMode(settings) == "Random");
+    }
+}
+
 public static partial class SourceHttp
 {
-    static readonly HttpClient Client = new(new HttpClientHandler { AllowAutoRedirect = true, MaxAutomaticRedirections = 5 }) { Timeout = Timeout.InfiniteTimeSpan };
-    static SourceHttp() => Client.DefaultRequestHeaders.UserAgent.ParseAdd("SahandNama/1.8.0 (Windows desktop wallpaper manager; +https://irres.ir)");
+    static readonly HttpClient Client = new(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = Timeout.InfiniteTimeSpan };
+    static SourceHttp() => Client.DefaultRequestHeaders.UserAgent.ParseAdd("SahandNama/1.8.1 (Windows desktop wallpaper manager; +https://irres.ir)");
 
     public static Uri Validate(string url)
     {
@@ -67,13 +99,32 @@ public static partial class SourceHttp
         return uri;
     }
 
-    public static async Task<byte[]> ReadAsync(string url, int limit = 20_000_000, CancellationToken cancellation = default)
+    public static bool IsRecoverable(Exception ex, CancellationToken caller) => ex is HttpRequestException or IOException or InvalidDataException or System.Net.Sockets.SocketException or TimeoutException or XmlException or JsonException || ex is OperationCanceledException && !caller.IsCancellationRequested;
+    static async Task<HttpResponseMessage> ResponseAsync(HttpClient client, string url, CancellationToken token)
+    {
+        var uri = Validate(url);
+        for (var hop = 0; ; hop++)
+        {
+            var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, token);
+            if ((int)response.StatusCode is 301 or 302 or 303 or 307 or 308)
+            {
+                var location = response.Headers.Location;
+                response.Dispose();
+                if (hop >= 5 || location == null) throw new InvalidDataException("Invalid or excessive source redirects.");
+                uri = Validate(new Uri(uri, location).AbsoluteUri);
+                continue;
+            }
+            try { response.EnsureSuccessStatusCode(); return response; }
+            catch { response.Dispose(); throw; }
+        }
+    }
+    public static async Task<byte[]> ReadAsync(string url, int limit = 20_000_000, CancellationToken cancellation = default) => await ReadAsync(url, limit, cancellation, Client);
+    internal static async Task<byte[]> ReadAsync(string url, int limit, CancellationToken cancellation, HttpClient client)
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
         deadline.CancelAfter(TimeSpan.FromSeconds(60));
         var token = deadline.Token;
-        using var response = await Client.GetAsync(Validate(url), HttpCompletionOption.ResponseHeadersRead, token);
-        response.EnsureSuccessStatusCode();
+        using var response = await ResponseAsync(client, url, token);
         if (response.Content.Headers.ContentLength > limit) throw new InvalidDataException("حجم پاسخ منبع بیش از حد مجاز است.");
         await using var input = await response.Content.ReadAsStreamAsync(token);
         using var output = new MemoryStream(); var buffer = new byte[81920]; int count;
@@ -85,13 +136,13 @@ public static partial class SourceHttp
         return output.ToArray();
     }
 
-    public static async Task DownloadToFileAsync(string url, string targetPath, long limit = 150_000_000, CancellationToken cancellation = default)
+    public static async Task DownloadToFileAsync(string url, string targetPath, long limit = 150_000_000, CancellationToken cancellation = default) => await DownloadToFileAsync(url, targetPath, limit, cancellation, Client);
+    internal static async Task DownloadToFileAsync(string url, string targetPath, long limit, CancellationToken cancellation, HttpClient client)
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
         deadline.CancelAfter(TimeSpan.FromSeconds(120));
         var token = deadline.Token;
-        using var response = await Client.GetAsync(Validate(url), HttpCompletionOption.ResponseHeadersRead, token);
-        response.EnsureSuccessStatusCode();
+        using var response = await ResponseAsync(client, url, token);
         if (response.Content.Headers.ContentLength > limit) throw new InvalidDataException("حجم فایل تصویر بیش از حد مجاز است.");
 
         await using var stream = await response.Content.ReadAsStreamAsync(token);
@@ -108,21 +159,22 @@ public static partial class SourceHttp
 
 public sealed class SourceCatalog
 {
+    public bool UsedOfflineFallback { get; private set; }
     public static readonly SourceOption[] Options =
     [
         new("Bing", "Microsoft Bing — تصویر روز"),
         new("BingGlobal", "گلچین بین‌المللی بینگ (تمام قاره‌ها و کشورها)"),
-        new("Wallhaven", "Wallhaven — والپیپرهای برگزیده 4K/8K (طبیعت، فانتزی، دیجیتال)"),
+        new("Wallhaven", "Wallhaven — والپیپرهای برگزیده (خروجی تا ضلع 3840)"),
         new("IranNature", "ایران زیبا — طبیعت، کوهستان‌ها و میراث باستانی ایران"),
-        new("MuseumArt", "موزه‌های جهان — شاهکارهای نقاشی و هنر کلاسیک (Art Institute)"),
-        new("NatGeoNature", "حیات‌وحش و طبیعت شگفت‌انگیز — عکاسی برتر بین‌المللی"),
+        new("MuseumArt", "موزه هنر شیکاگو — نقاشی‌های آزاد در Wikimedia"),
+        new("NatGeoNature", "Wikimedia — مناظر برگزیدهٔ بین‌المللی"),
         new("UnsplashNature", "Unsplash & Picsum — عکاسی طبیعت و مناظر 4K"),
         new("WikimediaPotd", "Wikimedia Commons — تصویر منتخب روز"),
         new("Spotlight", "Microsoft Spotlight — کش محلی"),
         new("CyberpunkArt", "هنر دیجیتال، سایبرپانک و فانتزی 4K"),
         new("Architecture4K", "معماری مدرن و چشم‌اندازهای شهری 4K"),
         new("UsgsEarthArt", "USGS Earth as Art — شگفتی‌های زمین از فضا"),
-        new("NasaDaily", "NASA — تصویر نجومی روز (APOD)"),
+        new("NasaDaily", "NASA — تصویر روز (Image of the Day)"),
         new("NasaLibrary", "NASA — کتابخانه تصاویر فضا"),
         new("EsaHubble", "ESA / Hubble & Webb — رصدخانه‌های فضایی"),
         new("SharedNetwork", "مخزن اشتراکی سرور (شبکه سازمانی / UNC)"),
@@ -139,18 +191,32 @@ public sealed class SourceCatalog
     public const string WallhavenTopFeed = "https://wallhaven.cc/api/v1/search?sorting=toplist&topRange=1M&purity=100&resolutions=3840x2160,2560x1440,1920x1080";
     public const string WallhavenCyberFeed = "https://wallhaven.cc/api/v1/search?q=cyberpunk&sorting=toplist&topRange=1M&purity=100&resolutions=3840x2160,2560x1440,1920x1080";
     public const string WallhavenArchFeed = "https://wallhaven.cc/api/v1/search?q=architecture&sorting=toplist&topRange=1M&purity=100&resolutions=3840x2160,2560x1440,1920x1080";
-    public const string MuseumArtFeed = "https://api.artic.edu/api/v1/artworks/search?query[term][is_public_domain]=true&limit=25&fields=id,title,artist_title,date_display,image_id";
-    public const string FeaturedNatureFeed = "https://commons.wikimedia.org/w/api.php?action=featuredfeed&feed=featured&feedformat=rss";
+    public static string MuseumArtFeed => CommonsImageFeed("incategory:\"Paintings in the Art Institute of Chicago\"", 25);
+    internal static string CommonsImageFeed(string query, int limit = 3) => "https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch=" + Uri.EscapeDataString(query + " filetype:bitmap") + "&gsrnamespace=6&gsrlimit=" + limit + "&prop=imageinfo&iiprop=url%7Csize%7Cmime%7Cextmetadata&iiurlwidth=1920";
+    public static string FeaturedNatureFeed => CommonsImageFeed("incategory:\"Featured pictures of landscapes\"", 25);
 
     readonly string root;
+    readonly HttpClient? http;
     public SourceCatalog(string? root = null) => this.root = root ?? Store.Root;
+    internal SourceCatalog(string root, HttpClient http) { this.root = root; this.http = http; }
+    internal static bool IsHealthy(Photo photo)
+    {
+        try { if (!File.Exists(photo.FilePath)) return false; Store.LoadImage(photo.FilePath, 32); return true; }
+        catch { return false; }
+    }
 
-    public async Task<List<Photo>> FetchAsync(SourceRequest request, CancellationToken token = default)
+    public async Task<List<Photo>> FetchAsync(SourceRequest request, CancellationToken token = default, bool allowOffline = true)
     {
         if (!Options.Any(o => o.Id == request.Id)) throw new ArgumentException("منبع ناشناخته است: " + request.Id);
-        if (request.Id == "Bing") return await new BingClient(root).FetchAsync(request.Market, request.Resolution, token);
-        if (request.Id == "BingGlobal") return await FetchBingGlobalAsync(request.Resolution, token);
-        if (request.Id == "IranNature") return await FetchIranNatureAsync(token);
+        if (request.Id == "Bing")
+        {
+            var bing = http == null ? new BingClient(root) : new BingClient(root, http);
+            var result = await bing.FetchAsync(request.Market, request.Resolution, token, allowOffline);
+            UsedOfflineFallback |= bing.UsedOfflineFallback;
+            return result;
+        }
+        if (request.Id == "BingGlobal") return await FetchBingGlobalAsync(request.Resolution, token, allowOffline);
+        if (request.Id == "IranNature") return await FetchIranNatureAsync(token, allowOffline);
         if (request.Id == "Favorites")
         {
             var settings = Store.Read(Path.Combine(root, "settings.json"), new Preferences());
@@ -165,6 +231,7 @@ public sealed class SourceCatalog
         Directory.CreateDirectory(root);
         await using var gate = await Store.AcquireLockAsync(Path.Combine(root, "feed.lock"), 10, token);
         List<Photo> photos;
+        string? sourceFailure = null;
         if (request.Id == "Folder") photos = await Task.Run(() => ImportFolder(request.Folder, token), token);
         else
         {
@@ -186,7 +253,7 @@ public sealed class SourceCatalog
 
         try
         {
-            var bytes = await SourceHttp.ReadAsync(url, 20_000_000, token);
+            var bytes = http == null ? await SourceHttp.ReadAsync(url, 20_000_000, token) : await SourceHttp.ReadAsync(url, 20_000_000, token, http);
             var candidates = request.Id switch
             {
                 "NasaDaily" => ParseNasaFeed(bytes),
@@ -196,8 +263,8 @@ public sealed class SourceCatalog
                 "UnsplashNature" => ParsePicsum(bytes),
                 "UsgsEarthArt" => ParseUsgsFeed(bytes),
                 "Wallhaven" or "CyberpunkArt" or "Architecture4K" => ParseWallhaven(bytes, request.Id),
-                "MuseumArt" => ParseMuseumArt(bytes),
-                "NatGeoNature" => ParseWikimediaFeed(bytes, "NatGeoNature"),
+                "MuseumArt" => ParseCommonsImages(bytes, "MuseumArt"),
+                "NatGeoNature" => ParseCommonsImages(bytes, "NatGeoNature"),
                 _ => []
             };
 
@@ -208,11 +275,16 @@ public sealed class SourceCatalog
                 token.ThrowIfCancellationRequested();
                 try { await DownloadAsync(photo, token); photos.Add(photo); }
                 catch (Exception ex) when (ex is HttpRequestException or IOException or NotSupportedException or ArgumentException || ex is OperationCanceledException && !token.IsCancellationRequested)
-                { Store.Log($"Skipped {request.Id} image {photo.Url}: {ex.Message}", root); }
+                {
+                    sourceFailure = ex.Message;
+                    if (ex is HttpRequestException or OperationCanceledException) UsedOfflineFallback = true;
+                    Store.Log($"Skipped {request.Id} image {photo.Url}: {ex.Message}", root);
+                }
             }
         }
-        catch (Exception ex) when (ex is HttpRequestException or IOException or System.Net.Sockets.SocketException or TimeoutException or System.Xml.XmlException or System.Text.Json.JsonException or InvalidDataException)
+        catch (Exception ex) when (allowOffline && SourceHttp.IsRecoverable(ex, token))
         {
+            sourceFailure = ex.Message;
             Store.Log($"ارتباط با منبع {request.Id} برقرار نشد ({ex.Message}). تلاش برای استفاده از آرشیو محلی...", root);
             photos = [];
         }
@@ -220,29 +292,32 @@ public sealed class SourceCatalog
         if (photos.Count == 0)
         {
             var fallback = Store.Read(Path.Combine(root, "archive.json"), new List<Photo>())
-                .Where(p => File.Exists(p.FilePath) && new FileInfo(p.FilePath).Length > 1000)
+                .Where(p => allowOffline && request.Id != "Folder" && p.Source == request.Id && IsHealthy(p))
                 .ToList();
             if (fallback.Count > 0)
             {
+                UsedOfflineFallback = true;
                 Store.Log($"استفاده خودکار از {fallback.Count} تصویر موجود در آرشیو محلی برای منبع {request.Id}.", root);
                 return fallback;
             }
-            throw new InvalidOperationException($"ارتباط با منبع {request.Id} برقرار نشد و تصویری در آرشیو محلی یافت نشد.");
+            throw new InvalidOperationException($"دریافت تصویر از منبع {request.Id} ناموفق بود و تصویر سالمی در آرشیو نیست. علت: {sourceFailure ?? "منبع تصویر قابل دانلود برنگرداند."}");
         }
         MergeArchive(photos); return photos;
     }
 
-    public async Task<List<Photo>> FetchBingGlobalAsync(string resolution, CancellationToken token = default)
+    public async Task<List<Photo>> FetchBingGlobalAsync(string resolution, CancellationToken token = default, bool allowOffline = true)
     {
+        await using var gate = await Store.AcquireLockAsync(Path.Combine(root, "feed.lock"), 10, token);
         var markets = new[] { "en-US", "ja-JP", "de-DE", "fr-FR", "en-GB", "zh-CN", "pt-BR", "it-IT", "es-ES", "en-CA", "en-AU", "en-IN" };
-        var client = new BingClient(root);
+        var client = http == null ? new BingClient(root) : new BingClient(root, http);
         var all = new List<Photo>();
         foreach (var mkt in markets)
         {
             token.ThrowIfCancellationRequested();
             try
             {
-                var photos = await client.FetchAsync(mkt, resolution, token);
+                var photos = await client.FetchUnderFeedLockAsync(mkt, resolution, token, allowOffline);
+                UsedOfflineFallback |= client.UsedOfflineFallback;
                 foreach (var p in photos)
                 {
                     p.Source = "BingGlobal";
@@ -250,7 +325,8 @@ public sealed class SourceCatalog
                 }
                 all.AddRange(photos);
             }
-            catch { }
+            catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
+            catch (Exception ex) { UsedOfflineFallback = true; Store.Log($"BingGlobal {mkt}: {ex.Message}", root); }
         }
         var distinct = all.DistinctBy(p => p.Id).ToList();
         if (distinct.Count == 0) throw new InvalidOperationException("دریافت تصاویر بین‌المللی بینگ با خطا مواجه شد.");
@@ -258,86 +334,108 @@ public sealed class SourceCatalog
         return distinct;
     }
 
-    public async Task<List<Photo>> FetchIranNatureAsync(CancellationToken token = default)
+    public async Task<List<Photo>> FetchIranNatureAsync(CancellationToken token = default, bool allowOffline = true)
     {
-        var curated = new List<(string Id, string Title, string Url, string Credit, string Page)>
+        await using var gate = await Store.AcquireLockAsync(Path.Combine(root, "feed.lock"), 10, token);
+        var topics = new (string Query, string Title)[]
         {
-            ("iran-damavand", "قله دماوند — بام ایران و بلندترین قله آتشفشانی آسیا", "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Mount_Damavand_in_winter.jpg/1920px-Mount_Damavand_in_winter.jpg", "عکاسی از طبیعت البرز • مازندران و تهران", "https://fa.wikipedia.org/wiki/%D8%AF%D9%85%D8%A7%D9%88%D9%86%D8%AF"),
-            ("iran-persepolis", "تخت جمشید (پارسه) — کاخ آپادانا و شکوه هخامنشیان", "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Persepolis_Iran_2.jpg/1920px-Persepolis_Iran_2.jpg", "میراث جهانی یونسکو • استان فارس، شیراز", "https://fa.wikipedia.org/wiki/%D8%AA%D8%AE%D8%AA_%D8%AC%D9%85%D8%B4%DB%8C%D8%AF"),
-            ("iran-sahand", "دامنه‌های کوهستان سهند و دره باستانی کندوان", "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Kandovan_village_in_East_Azerbaijan_Iran.jpg/1920px-Kandovan_village_in_East_Azerbaijan_Iran.jpg", "طبیعت آذربایجان شرقی • رشته‌کوه سهند", "https://fa.wikipedia.org/wiki/%D8%B3%D9%87%D9%86%D8%AF"),
-            ("iran-lut-desert", "کویر لوت و کلوت‌های افسانه‌ای شهداد", "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Kaluts_in_Lut_Desert_Iran.jpg/1920px-Kaluts_in_Lut_Desert_Iran.jpg", "میراث طبیعی جهانی یونسکو • کرمان", "https://fa.wikipedia.org/wiki/%DA%A9%D9%88%DB%8C%D8%B1_%D9%84%D9%88%D8%AA"),
-            ("iran-masouleh", "روستای تاریخی و پلکانی ماسوله در دل مه جنگل", "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Masouleh_village_Gilan_Iran.jpg/1920px-Masouleh_village_Gilan_Iran.jpg", "معماری بومی و طبیعت گیلان", "https://fa.wikipedia.org/wiki/%D9%85%D8%A7%D8%B3%D9%88%D9%84%D9%87"),
-            ("iran-isfahan-khaju", "پل خواجو و زاینده‌رود در شامگاه اصفهان", "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Khaju_Bridge_Isfahan_at_Night.jpg/1920px-Khaju_Bridge_Isfahan_at_Night.jpg", "شاهکار معماری عصر صفوی • اصفهان", "https://fa.wikipedia.org/wiki/%D9%BE%D9%84_%D8%AE%D9%88%D8%A7%D8%AC%D9%88"),
-            ("iran-qeshm-stars", "دره ستارگان — اشکال تماشایی فرسایشی ژئوپارک قشم", "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Stars_Valley_Qeshm_Island_Iran.jpg/1920px-Stars_Valley_Qeshm_Island_Iran.jpg", "ژئوپارک جهانی قشم • خلیج فارس و هرمزگان", "https://fa.wikipedia.org/wiki/%D8%AF%D8%B1%D9%87_%D8%B3%D8%AA%D8%A7%D8%B1%DA%AF%D8%A7%D9%86"),
-            ("iran-hyrcanian-forest", "جنگل‌های کهن هیرکانی و دریاچه مه‌آلود", "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Hyrcanian_Forests_in_Mazandaran.jpg/1920px-Hyrcanian_Forests_in_Mazandaran.jpg", "میراث طبیعی جهانی یونسکو • نوار جنگلی شمال ایران", "https://fa.wikipedia.org/wiki/%D8%AC%D9%86%DA%AF%D9%84%E2%80%8C%D9%87%D8%A7%DB%8C_%D9%87%DB%8C%D8%B1%DA%A9%D8%A7%D9%86%DB%8C")
+            ("Damavand", "قله دماوند"), ("Persepolis", "تخت جمشید"),
+            ("Kandovan Iran", "روستای کندوان"), ("Lut Desert", "کویر لوت"),
+            ("Masouleh", "ماسوله"), ("Khaju Bridge", "پل خواجو"),
+            ("Stars Valley Qeshm", "دره ستارگان قشم"), ("Hyrcanian forest -map -ecoregion -diagram", "جنگل هیرکانی")
         };
-
-        var date = DateTime.UtcNow.ToString("yyyyMMdd");
         var photos = new List<Photo>();
-
-        foreach (var item in curated)
+        var errors = new List<string>();
+        foreach (var topic in topics)
         {
             token.ThrowIfCancellationRequested();
-            var photo = new Photo
-            {
-                Id = item.Id,
-                Source = "IranNature",
-                Title = item.Title,
-                Url = item.Url,
-                Date = date,
-                SourcePage = item.Page,
-                Copyright = item.Credit,
-                FilePath = Path.Combine(root, "Images", item.Id + ".jpg")
-            };
-
             try
             {
-                await DownloadAsync(photo, token);
-                photos.Add(photo);
+                var url = CommonsImageFeed(topic.Query);
+                var bytes = http == null ? await SourceHttp.ReadAsync(url, 20_000_000, token) : await SourceHttp.ReadAsync(url, 20_000_000, token, http);
+                var candidates = ParseCommonsImages(bytes, "IranNature", topic.Title);
+                Photo? selected = null;
+                foreach (var photo in candidates)
+                {
+                    try { await DownloadAsync(photo, token); selected = photo; break; }
+                    catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
+                    catch (Exception ex) when (SourceHttp.IsRecoverable(ex, token)) { errors.Add(topic.Query + ": " + ex.Message); }
+                }
+                if (selected == null) throw new InvalidDataException("Wikimedia returned no downloadable photo for " + topic.Query);
+                photos.Add(selected);
             }
-            catch (Exception ex)
+            catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
+            catch (Exception ex) when (SourceHttp.IsRecoverable(ex, token))
             {
-                Store.Log($"IranNature image download skipped ({item.Id}): {ex.Message}", root);
-                if (File.Exists(photo.FilePath)) photos.Add(photo);
+                UsedOfflineFallback = true;
+                errors.Add(topic.Query + ": " + ex.Message);
+                Store.Log("IranNature: " + topic.Query + ": " + ex.Message, root);
             }
         }
+        if (photos.Count > 0) { MergeArchive(photos.DistinctBy(p => p.Id).ToList()); return photos; }
+        var existing = Store.Read(Path.Combine(root, "archive.json"), new List<Photo>()).Where(p => p.Source == "IranNature" && IsHealthy(p)).ToList();
+        if (allowOffline && existing.Count > 0) { UsedOfflineFallback = true; return existing; }
+        throw new InvalidOperationException("دریافت تصاویر ایران از Wikimedia ناموفق بود: " + string.Join("; ", errors.Take(3)));
+    }
 
-        if (photos.Count == 0)
+    public static List<Photo> ParseCommonsImages(byte[] bytes, string source, string? topicTitle = null)
+    {
+        using var json = JsonDocument.Parse(bytes);
+        if (json.RootElement.TryGetProperty("error", out var error)) throw new InvalidDataException("Wikimedia API: " + error.ToString());
+        var photos = new List<Photo>();
+        if (!json.RootElement.TryGetProperty("query", out var query) || !query.TryGetProperty("pages", out var pages)) return photos;
+        foreach (var page in pages.EnumerateObject().Select(p => p.Value).OrderBy(p => p.TryGetProperty("index", out var index) ? index.GetInt32() : int.MaxValue))
         {
-            var existing = Store.Read(Path.Combine(root, "archive.json"), new List<Photo>())
-                .Where(p => p.Source == "IranNature" && File.Exists(p.FilePath)).ToList();
-            if (existing.Count > 0) return existing;
-            throw new InvalidOperationException("دریافت تصاویر طبیعت ایران با خطا مواجه شد.");
+            if (!page.TryGetProperty("imageinfo", out var images) || images.GetArrayLength() == 0) continue;
+            var info = images[0];
+            if (!info.TryGetProperty("mime", out var mime) || mime.GetString() is not ("image/jpeg" or "image/png")) continue;
+            if (!info.TryGetProperty("width", out var width) || width.GetInt32() < (source == "IranNature" ? 1000 : 600) || !info.TryGetProperty("height", out var height) || height.GetInt32() < 600) continue;
+            var url = info.TryGetProperty("thumburl", out var thumb) ? thumb.GetString() : info.GetProperty("url").GetString();
+            SourceHttp.Validate(url!);
+            var title = page.GetProperty("title").GetString() ?? "Wikimedia";
+            string Metadata(string name)
+            {
+                if (!info.TryGetProperty("extmetadata", out var meta) || !meta.TryGetProperty(name, out var property) || !property.TryGetProperty("value", out var value)) return "";
+                return WebUtility.HtmlDecode(Regex.Replace(value.GetString() ?? "", "<[^>]*>", " ")).Trim();
+            }
+            photos.Add(new Photo { Source = source, Url = url!, Title = topicTitle ?? title.Replace("File:", ""),
+                Date = DateTime.UtcNow.ToString("yyyyMMdd"), SourcePage = "https://commons.wikimedia.org/wiki/" + Uri.EscapeDataString(title.Replace(' ', '_')),
+                Copyright = string.Join(" • ", new[] { Metadata("Artist"), Metadata("LicenseShortName"), "Wikimedia Commons" }.Where(v => !string.IsNullOrWhiteSpace(v))) });
         }
-
-        MergeArchive(photos);
         return photos;
     }
 
     public async Task<int> SyncAllOnlineSourcesAsync(string resolution = "UHD", CancellationToken token = default)
     {
-        var onlineSources = new[] { "BingGlobal", "UnsplashNature", "WikimediaPotd", "UsgsEarthArt", "NasaDaily", "EsaHubble" };
         var totalSynced = 0;
-        foreach (var sourceId in onlineSources)
+        var failures = new List<string>();
+        foreach (var sourceId in OnlineSourceIds)
         {
             token.ThrowIfCancellationRequested();
             try
             {
                 var req = new SourceRequest(sourceId, "en-US", resolution, "");
-                var photos = await FetchAsync(req, token);
+                var sourceCatalog = http == null ? new SourceCatalog(root) : new SourceCatalog(root, http);
+                var photos = await sourceCatalog.FetchAsync(req, token, allowOffline: false);
                 totalSynced += photos.Count;
+                if (sourceCatalog.UsedOfflineFallback) throw new InvalidOperationException("Online source refresh was partial; retry is required.");
             }
+            catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
             catch (Exception ex)
             {
+                failures.Add(sourceId + ": " + ex.Message);
                 Store.Log($"Server sync warning for {sourceId}: {ex.Message}", root);
             }
         }
         PurgeDuplicates(root);
+        if (failures.Count > 0) throw new InvalidOperationException($"Server sync incomplete ({totalSynced} image records refreshed): " + string.Join("; ", failures));
         return totalSynced;
     }
+    public static IReadOnlyList<string> OnlineSourceIds => Options.Where(o => o.Id is not ("Folder" or "Favorites" or "Spotlight" or "SharedNetwork")).Select(o => o.Id).ToArray();
 
     public async Task<List<Photo>> FetchSharedNetworkAsync(string sharePath, CancellationToken token = default)
     {
+        await using var gate = await Store.AcquireLockAsync(Path.Combine(root, "feed.lock"), 10, token);
         if (string.IsNullOrWhiteSpace(sharePath) || !Directory.Exists(sharePath))
             throw new DirectoryNotFoundException("مسیر مخزن اشتراکی سرور در دسترس نیست یا تعریف نشده است: " + sharePath);
 
@@ -353,15 +451,17 @@ public sealed class SourceCatalog
             foreach (var sp in serverPhotos.Take(30))
             {
                 token.ThrowIfCancellationRequested();
-                var sourceFile = File.Exists(sp.FilePath) ? sp.FilePath : Path.Combine(sharePath, "Images", Path.GetFileName(sp.FilePath));
+                var sourceFile = Path.Combine(sharePath, "Images", Path.GetFileName(sp.FilePath));
                 if (!File.Exists(sourceFile)) sourceFile = Path.Combine(sharePath, Path.GetFileName(sp.FilePath));
                 if (!File.Exists(sourceFile)) continue;
+                if (!Store.IsOwnedFile(sourceFile, Path.GetDirectoryName(sourceFile)!) || !IsHealthy(new Photo { FilePath = sourceFile })) continue;
 
                 var localTarget = Path.Combine(localImgDir, Path.GetFileName(sourceFile));
                 var srcInfo = new FileInfo(sourceFile);
+                if (srcInfo.Length > 150_000_000 || !Store.IsOwnedFile(localTarget, localImgDir)) continue;
                 if (!File.Exists(localTarget) || new FileInfo(localTarget).Length != srcInfo.Length || new FileInfo(localTarget).LastWriteTimeUtc != srcInfo.LastWriteTimeUtc)
                 {
-                    await Task.Run(() => File.Copy(sourceFile, localTarget, true), token);
+                    await CopySharedImageAsync(sourceFile, localTarget, token);
                 }
 
                 photos.Add(new Photo
@@ -388,6 +488,21 @@ public sealed class SourceCatalog
         if (photos.Count == 0) throw new InvalidOperationException("هیچ تصویر معتبری در مخزن اشتراکی سرور یافت نشد.");
         MergeArchive(photos);
         return photos;
+    }
+
+    internal static async Task CopySharedImageAsync(string source, string target, CancellationToken token, Action<string, string>? copy = null)
+    {
+        var modified = File.GetLastWriteTimeUtc(source);
+        var temp = target + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        try
+        {
+            await Task.Run(() => { if (copy == null) File.Copy(source, temp); else copy(source, temp); }, token);
+            Store.LoadImage(temp, 32);
+            token.ThrowIfCancellationRequested();
+            File.SetLastWriteTimeUtc(temp, modified);
+            File.Move(temp, target, true);
+        }
+        finally { if (File.Exists(temp)) File.Delete(temp); }
     }
 
     public static List<Photo> ParseNasaFeed(byte[] bytes)
@@ -513,7 +628,7 @@ public sealed class SourceCatalog
             {
                 var imageId = item.TryGetProperty("image_id", out var imgId) ? imgId.GetString() : null;
                 if (string.IsNullOrWhiteSpace(imageId)) continue;
-                var url = $"https://www.artic.edu/iiif/2/{imageId}/full/1680,/0/default.jpg";
+                var url = $"https://www.artic.edu/iiif/2/{imageId}/full/1686,/0/default.jpg";
                 SourceHttp.Validate(url);
                 var id = item.TryGetProperty("id", out var idProp) ? idProp.GetInt32().ToString() : imageId;
                 var title = item.TryGetProperty("title", out var t) ? t.GetString() ?? "شاهکار هنری" : "شاهکار هنری";
@@ -646,7 +761,6 @@ public sealed class SourceCatalog
                 {
                     Store.LoadImage(existing.FilePath, 32);
                     photo.FilePath = existing.FilePath;
-                    photo.Id = existing.Id;
                     return; // Reused existing valid file without re-downloading
                 }
             }
@@ -657,7 +771,8 @@ public sealed class SourceCatalog
         var temp = photo.FilePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
-            await SourceHttp.DownloadToFileAsync(photo.Url, temp, 150_000_000, token);
+            if (http == null) await SourceHttp.DownloadToFileAsync(photo.Url, temp, 150_000_000, token);
+            else await SourceHttp.DownloadToFileAsync(photo.Url, temp, 150_000_000, token, http);
             ConvertToJpeg(temp, photo.FilePath);
         }
         finally { if (File.Exists(temp)) File.Delete(temp); }
@@ -685,7 +800,7 @@ public sealed class SourceCatalog
         return result;
     }
 
-    static void ConvertToJpeg(string input, string output)
+    internal static void ConvertToJpeg(string input, string output)
     {
         using var inStream = File.OpenRead(input);
         var decoder = System.Windows.Media.Imaging.BitmapDecoder.Create(inStream, System.Windows.Media.Imaging.BitmapCreateOptions.PreservePixelFormat, System.Windows.Media.Imaging.BitmapCacheOption.OnLoad);
@@ -718,6 +833,12 @@ public sealed class SourceCatalog
     public static int PurgeDuplicates(string? root = null)
     {
         root ??= Store.Root;
+        using var feedGate = Store.AcquireLockAsync(Path.Combine(root, "feed.lock")).GetAwaiter().GetResult();
+        using var archiveGate = Store.AcquireLockAsync(Path.Combine(root, "archive.lock")).GetAwaiter().GetResult();
+        return PurgeDuplicatesCore(root);
+    }
+    internal static int PurgeDuplicatesCore(string root)
+    {
         var imgDir = Path.Combine(root, "Images");
         if (!Directory.Exists(imgDir)) return 0;
 
@@ -727,7 +848,9 @@ public sealed class SourceCatalog
         var hashToCanonical = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var deletedCount = 0;
 
-        var files = Directory.EnumerateFiles(imgDir, "*.jpg").Select(f => new FileInfo(f)).Where(f => f.Length > 0).ToList();
+        var currentPath = Store.CurrentDesktopPhoto(root)?.FilePath;
+        var files = Directory.EnumerateFiles(imgDir, "*.jpg").Where(f => Store.IsOwnedFile(f, imgDir)).Select(f => new FileInfo(f)).Where(f => f.Length > 0)
+            .OrderBy(f => string.Equals(f.FullName, currentPath, StringComparison.OrdinalIgnoreCase) ? 0 : 1).ToList();
         var sizeGroups = files.GroupBy(f => f.Length).Where(g => g.Count() > 1);
 
         foreach (var group in sizeGroups)
@@ -775,7 +898,6 @@ public sealed class SourceCatalog
 
     void MergeArchive(List<Photo> photos)
     {
-        var path = Path.Combine(root, "archive.json");
-        Store.Write(path, photos.Concat(Store.Read(path, new List<Photo>())).DistinctBy(p => p.Id).ToList());
+        Store.MergeArchive(root, photos);
     }
 }

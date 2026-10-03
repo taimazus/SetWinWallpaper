@@ -2,14 +2,14 @@
 chcp 65001 >nul
 cd /d "%~dp0\.."
 echo ========================================================
-echo [سهند نما] شروع فرآیند خودکار عیب‌یابی و تعمیر Spotlight
+echo [سهند نما] تعمیر تنظیمات، آرشیو و زمان‌بندی برنامه (بازنشانی Spotlight از رابط کاربری)
 echo ========================================================
-if exist "BingWallpaperPro.exe" (
-    "BingWallpaperPro.exe" --repair
+if exist "SahandNama.exe" (
+    "SahandNama.exe" --repair
     echo.
     echo فرآیند تعمیر پایان یافت. گزارش در فایل activity.log ثبت شد.
 ) else (
-    echo خطای اجرایی: فایل BingWallpaperPro.exe یافت نشد.
+    echo خطای اجرایی: فایل SahandNama.exe یافت نشد.
 )
 echo.
 pause

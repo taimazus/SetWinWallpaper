@@ -49,9 +49,9 @@ flowchart TD
 {
   "Mode": "Same",
   "DesktopSource": "SharedNetwork",
-  "DesktopFolder": "\\\\Server\\Wallpapers",
+  "NetworkSharePath": "\\\\Server\\Wallpapers",
   "LockSource": "SharedNetwork",
-  "LockFolder": "\\\\Server\\Wallpapers",
+  "LockNetworkSharePath": "\\\\Server\\Wallpapers",
   "DailyTime": "08:30",
   "Desktop": true,
   "LockScreen": true
@@ -68,4 +68,9 @@ SahandNama.exe --install-service
 ```
 این سرویس با نام `BingWallpaperProFeed` اجرا شده و فایل‌ها را در مسیر عمومی `%ALLUSERSPROFILE%\BingWallpaperPro\Feed\` ذخیره می‌کند.
 
+برای توزیع آرشیو سرویس مستقل، Share جداگانه‌ای از `%ProgramData%\BingWallpaperPro\Feed` با دسترسی خواندن بسازید. Share رابط کاربری به آرشیو کاربر در LocalAppData اشاره می‌کند و با مخزن سرویس یکسان نیست. همگام‌سازی ناقص با وضعیت خطا گزارش می‌شود؛ فایل‌های موفق حفظ می‌شوند.
+
 </div>
+
+
+تلاش مجدد: سرویس پس از sync ناموفق یک ساعت بعد تلاش می‌کند (پس از موفقیت ۱۲ ساعت). task ثبت‌شده توسط برنامه با `--update --scheduled` اجرا می‌شود؛ شکست آنلاین حتی با استفاده از cache کد ۱ می‌دهد و تا ۲۴ بار با فاصلهٔ یک ساعت retry می‌شود. trigger روزانه و ورود کاربر حفظ شده‌اند؛ اجرا بدون نشست تعاملی/هنگام sleep تضمین نمی‌شود.

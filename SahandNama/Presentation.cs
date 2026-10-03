@@ -167,7 +167,7 @@ public static class CardGenerator
                 MaxTextWidth = cardWidth - 120,
                 MaxTextHeight = 160
             };
-            dc.DrawText(formattedTitle, new Point(cardWidth - 60, cardHeight - 280));
+            dc.DrawText(formattedTitle, new Point(60, cardHeight - 280));
 
             var credit = string.IsNullOrWhiteSpace(photo.Copyright) ? $"{photo.Source} • {photo.Market}" : photo.Copyright;
             var formattedCredit = new FormattedText(credit,
@@ -178,7 +178,7 @@ public static class CardGenerator
                 MaxTextWidth = cardWidth - 120,
                 MaxTextHeight = 80
             };
-            dc.DrawText(formattedCredit, new Point(cardWidth - 60, cardHeight - 160));
+            dc.DrawText(formattedCredit, new Point(60, cardHeight - 160));
 
             // Footer branding
             var footerText = new FormattedText("Sahand Nama — مدیریت و تغییر خودکار والپیپر ویندوز",

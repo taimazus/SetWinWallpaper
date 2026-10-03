@@ -3,7 +3,7 @@
 # راهنمای استقرار در شبکه و سرورهای سازمانی (Enterprise Deployment Guide)
 
 **نرم‌افزار سهند نما (Sahand Nama)**  
-**نسخه:** 1.8.0  
+**نسخه:** 1.8.1
 **شرکت سازنده:** راهکار الکترونیک سهند ([https://irres.ir](https://irres.ir))
 
 ---
@@ -66,9 +66,9 @@ New-SmbShare -Name "Wallpapers" -Path "$env:LOCALAPPDATA\BingWallpaperPro" -Read
 {
   "Mode": "Same",
   "DesktopSource": "SharedNetwork",
-  "DesktopFolder": "\\\\SERVER-NAME\\Wallpapers",
+  "NetworkSharePath": "\\\\SERVER-NAME\\Wallpapers",
   "LockSource": "SharedNetwork",
-  "LockFolder": "\\\\SERVER-NAME\\Wallpapers",
+  "LockNetworkSharePath": "\\\\SERVER-NAME\\Wallpapers",
   "DailyTime": "08:30",
   "Desktop": true,
   "LockScreen": true
@@ -85,4 +85,9 @@ New-SmbShare -Name "Wallpapers" -Path "$env:LOCALAPPDATA\BingWallpaperPro" -Read
 **سؤال: آیا کلاینت‌ها امکان تغییر عکس را دارند؟**  
 پاسخ: مدیر شبکه می‌تواند با تنظیم قفل سیاست‌های سازمانی، اعمال عکس را اجباری کند یا به کاربران اجازه انتخاب از میان تصاویر موجود در مخزن سرور را بدهد.
 
+برای توزیع آرشیو سرویس مستقل، Share جداگانه‌ای از `%ProgramData%\BingWallpaperPro\Feed` با دسترسی خواندن بسازید. Share رابط کاربری به آرشیو کاربر در LocalAppData اشاره می‌کند و با مخزن سرویس یکسان نیست. همگام‌سازی ناقص با وضعیت خطا گزارش می‌شود؛ فایل‌های موفق حفظ می‌شوند.
+
 </div>
+
+
+تلاش مجدد: سرویس پس از sync ناموفق یک ساعت بعد تلاش می‌کند (پس از موفقیت ۱۲ ساعت). task ثبت‌شده توسط برنامه با `--update --scheduled` اجرا می‌شود؛ شکست آنلاین حتی با استفاده از cache کد ۱ می‌دهد و تا ۲۴ بار با فاصلهٔ یک ساعت retry می‌شود. trigger روزانه و ورود کاربر حفظ شده‌اند؛ اجرا بدون نشست تعاملی/هنگام sleep تضمین نمی‌شود.

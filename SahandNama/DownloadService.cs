@@ -6,6 +6,7 @@ namespace SahandNama;
 // SCM service: download only. User wallpaper changes belong in the interactive scheduled task.
 public static class DownloadService
 {
+    internal static TimeSpan NextSyncDelay(bool success) => success ? TimeSpan.FromHours(12) : TimeSpan.FromHours(1);
     public const string Name = "BingWallpaperProFeed";
     static ManualResetEventSlim Stopped = new(false);
     static CancellationTokenSource Cancellation = new();
@@ -81,7 +82,7 @@ public static class DownloadService
                     Store.Log($"سرویس فید: بروز خطا در همگام‌سازی — {ex.Message}", Store.SharedRoot);
                 }
 
-                var waitTime = success ? TimeSpan.FromHours(12) : TimeSpan.FromMinutes(10);
+                var waitTime = NextSyncDelay(success);
                 try { Stopped.Wait(waitTime, Cancellation.Token); }
                 catch (OperationCanceledException) { break; }
             }

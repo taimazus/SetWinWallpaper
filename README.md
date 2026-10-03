@@ -4,13 +4,13 @@
   <img src="docs/assets/banner.png" alt="Sahand Nama Header Banner — سهند نما" width="100%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); margin-bottom: 20px;" />
 </p>
 
-# سهند نما | Sahand Nama (نسخه 1.8.0)
+# سهند نما | Sahand Nama (نسخه 1.8.1)
 
 **سامانه جامع، هوشمند و سازمانی مدیریت و به‌روزرسانی تصاویر پس‌زمینه و صفحه قفل ویندوز همراه با ویجت دسکتاپ شیشه‌ای، آب‌وهوا و پایش سیستم**  
 *طراحی و توسعه توسط شرکت راهکار الکترونیک سهند — [https://irres.ir](https://irres.ir)*
 
 [![GitHub Release](https://img.shields.io/github/v/release/taimazus/SetWinWallpaper?color=52d1b2&label=Latest%20Release)](https://github.com/taimazus/SetWinWallpaper/releases/latest)
-[![Tests](https://img.shields.io/badge/Tests-75%20Passed-52d1b2.svg)](docs/ARCHITECTURE.md)
+[![Tests](https://img.shields.io/badge/Tests-regression%20suite-52d1b2.svg)](docs/ARCHITECTURE.md)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20%7C%20Server-blue.svg)](docs/ENTERPRISE_DEPLOYMENT.md)
 [![Architecture](https://img.shields.io/badge/Architecture-x64%20Standalone-orange.svg)](https://github.com/taimazus/SetWinWallpaper/releases/latest)
 [![License](https://img.shields.io/badge/Font-SIL%20OFL%20Vazirmatn-brightgreen.svg)](SahandNama/Assets/Fonts/OFL.txt)
@@ -23,8 +23,8 @@
 
 | نوع فایل | لینک دانلود مستقیم از گیت‌هاب | حجم تقریبی | مناسب برای |
 | :--- | :--- | :--- | :--- |
-| 🚀 **فایل اجرایی مستقل (EXE)** | [**دانلود SahandNama-v1.8.0-win-x64.exe**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.8.0/SahandNama-v1.8.0-win-x64.exe) | ~۱۴۰ مگابایت | اجرای فوری با یک کلیک بدون نیاز به نصب |
-| 📦 **بسته پرتابل فشرده (ZIP)** | [**دانلود SahandNama-v1.8.0-win-x64.zip**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.8.0/SahandNama-v1.8.0-win-x64.zip) | ~۶۱ مگابایت | پکیج کامل شامل اسکریپت‌های PowerShell و راهنما |
+| 🚀 **فایل اجرایی مستقل (EXE)** | [**دانلود SahandNama-v1.8.1-win-x64.exe**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.8.1/SahandNama-v1.8.1-win-x64.exe) | ~۱۴۰ مگابایت | اجرای فوری با یک کلیک بدون نیاز به نصب |
+| 📦 **بسته پرتابل فشرده (ZIP)** | [**دانلود SahandNama-v1.8.1-win-x64.zip**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.8.1/SahandNama-v1.8.1-win-x64.zip) | ~۶۱ مگابایت | پکیج کامل شامل اسکریپت‌های PowerShell و راهنما |
 | 🏷️ **صفحه انتشار نسخه‌ها** | [**مشاهده تمام Releaseها در گیت‌هاب**](https://github.com/taimazus/SetWinWallpaper/releases) | — | تاریخچه تغییرات و دسترسی به تمام نسخه‌ها |
 
 ---
@@ -38,16 +38,16 @@ graph LR
     subgraph Sources ["منابع معتبر جهانی و ملی"]
         B["Bing & Bing Global"]
         IR["ایران زیبا — طبیعت و آثار باستانی"]
-        W4K["Wallhaven 4K/8K"]
-        ART["موزه‌های جهان — Art Institute"]
-        GEO["حیات‌وحش NatGeo & Unsplash"]
-        N["NASA APOD & Library"]
+        W4K["Wallhaven (خروجی تا ضلع 3840)"]
+        ART["موزه شیکاگو — تصاویر آزاد Wikimedia"]
+        GEO["حیات‌وحش Wikimedia & Unsplash"]
+        N["NASA Image of the Day & Library"]
         H["ESA / Hubble & Webb"]
         W["Wikimedia POTD"]
         E["USGS Earth as Art"]
     end
     
-    subgraph Engine ["هاب مرکزی سهند نما v1.8.0"]
+    subgraph Engine ["هاب مرکزی سهند نما v1.8.1"]
         Core["موتور دریافت، کش سریع، استخراج پالت رنگی و کارت گرافیکی"]
     end
     
@@ -89,7 +89,7 @@ graph LR
 
 ---
 
-## ✨ امکانات برجسته نسخه 1.8.0
+## ✨ امکانات برجسته نسخه 1.8.1
 
 1. 🪟 **ویجت دسکتاپ شیشه‌ای مات و شناور بدون قاب (0-100% Floating Acrylic Glass):**
    - افکت بلوری و شیشه‌ای عمیق مات بر پایه API بومی `SetWindowCompositionAttribute` و شتاب‌یافته با GPU.
@@ -102,10 +102,10 @@ graph LR
 2. 🔔 **سینی کنار ساعت ویندوز و خروج دوگانه (System Tray & Dual Exit):**
    - دکمه `✕` پنجره اصلی را به سینی ویندوز منتقل کرده و ویجت و زمان‌بندی را زنده نگه می‌دارد.
    - منوی راست‌کلیک کامل فارسی در کنار ساعت با دکمه **«🚪 خروج کامل از برنامه»**.
-3. 🌄 **گنجینه منابع متنوع و باکیفیت ۴K/8K:**
-   - والپیپرهای برگزیده Wallhaven 4K/8K، آثار موزه هنر شیکاگو، شگفتی‌های نشنال جئوگرافیک، هنر سایبرپانک و معماری مدرن ۴K.
+3. 🌄 **گنجینه منابع متنوع و باکیفیت تا ۴K:**
+   - والپیپرهای برگزیده Wallhaven (خروجی تا ضلع 3840)، آثار موزه هنر شیکاگو، شگفتی‌های تصاویر برگزیدهٔ ویکی‌مدیا، هنر سایبرپانک و معماری مدرن ۴K.
    - تصویر روز بینگ با امکان انتخاب ریجن‌های بین‌المللی مختلف.
-   - تصاویر نجومی ناسا (APOD) و تلسکوپ‌های فضایی هابل و جیمز وب (ESA).
+   - تصاویر روز و کتابخانهٔ ناسا (Image of the Day) و تلسکوپ‌های فضایی هابل و جیمز وب (ESA).
 4. 🏛️ **کالکشن اختصاصی «ایران زیبا» (Iran Nature & Heritage):**
    - دسترسی به تصاویر باکیفیت از طبیعت شگفت‌انگیز و میراث باستانی ایران (دماوند، تخت جمشید، کندوان، کویر لوت، ماسوله، پل خواجو، دره ستارگان و جنگل‌های هیرکانی).
 5. 🎛️ **انتخاب مستقل متد برای دسکتاپ و لاک‌اسکرین:**

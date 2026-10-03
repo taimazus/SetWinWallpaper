@@ -2,7 +2,7 @@
 
 # معماری فنی و دیاگرام سیستم — سهند نما (Sahand Nama Architecture)
 
-**نسخه:** 1.8.0  
+**نسخه:** 1.8.1
 **توسعه‌دهنده:** شرکت راهکار الکترونیک سهند ([https://irres.ir](https://irres.ir))  
 **فناوری:** .NET 10.0 (C# 13), WPF (Windows Presentation Foundation), Win32 Native P/Invoke, DWM Acrylic Blur, PowerShell Native Bridge, SCM Windows Service Dispatcher.
 
@@ -23,7 +23,7 @@ graph TD
     
     TRY["مدیریت سینی ویندوز<br/>(TrayManager Shell_NotifyIcon)"] --> AppCtrl["چرخه حیات برنامه و خروج دوگانه<br/>(App.xaml.cs Lifecycle)"]
 
-    subgraph Core Engine ["موتور مرکزی (Core Engine v1.8.0)"]
+    subgraph Core Engine ["موتور مرکزی (Core Engine v1.8.1)"]
         Controller --> Prefs["مدیریت تنظیمات و ذخیره‌سازی اتمیک<br/>(Preferences & Store)"]
         Controller --> LockCoord["مدیریت قفل هم‌زمانی با تلاش مجدد<br/>(Store.AcquireLockAsync)"]
         Controller --> Catalog["کاتالوگ و بارگذاری منابع<br/>(SourceCatalog & SourceHttp)"]
@@ -35,10 +35,10 @@ graph TD
     subgraph Data Sources ["منابع تصاویر و داده‌ها (Data Sources)"]
         Catalog --> Bing["Bing Daily & Bing Global"]
         Catalog --> Iran["ایران زیبا (IranNature)"]
-        Catalog --> Wallhaven["Wallhaven 4K/8K Wallpapers"]
-        Catalog --> Museum["Art Institute of Chicago"]
-        Catalog --> NatGeo["NatGeo Nature & Cyberpunk"]
-        Catalog --> NASA["NASA APOD & Library"]
+        Catalog --> Wallhaven["Wallhaven (خروجی تا ضلع 3840) Wallpapers"]
+        Catalog --> Museum["Art Institute collection via Wikimedia Commons"]
+        Catalog --> NatGeo["Wikimedia Featured & Wallhaven"]
+        Catalog --> NASA["NASA Image of the Day & Library"]
         Catalog --> Hubble["ESA / Hubble & Webb"]
         Catalog --> Unsplash["Unsplash & Picsum 4K"]
         Catalog --> Wiki["Wikimedia POTD"]
@@ -182,7 +182,7 @@ flowchart TD
     GenReport --> AutoRepair{درخواست رفع خودکار ایرادات؟}
     AutoRepair -- خیر --> EndReport([نمایش یا صدور خروجی گزارش])
     
-    AutoRepair -- بله --> Backup[ایجاد فایل پشتیبان از تنظیمات و رجیستری]
+    AutoRepair -- بله --> Backup[پشتیبان JSON خراب پیش از جایگزینی]
     Backup --> FixSettings[تعمیر ساختار تنظیمات و اعمال مقادیر پیش‌فرض امن]
     FixSettings --> PurgeCache[حذف فایل‌های خراب و ناقص کش]
     FixSettings --> FixSched[ثبت مجدد و تصحیح تسک روزانه با رویداد ورود]
@@ -200,7 +200,7 @@ flowchart TD
 1. **امنیت شبکه و ضد نفوذ:** رد کردن تمام URLهای غیرمجاز، پروتکل‌های ناامن، پورت‌های غیررسمی و تلاش‌های SSRF.
 2. **عملیات اتمیک فایل و هماهنگی قفل‌ها:** تضمین عدم رها شدن فایل‌های `.tmp`، بازیافت خطای هم‌زمانی و تلاش مجدد با `AcquireLockAsync`.
 3. **صحت دکودینگ تصویر و عدم قفل ماندن فایل:** دکود مستقیم، آزاد شدن فوری Handle فایل و کش در حافظه رم.
-4. **تطبیق فیدهای بین‌المللی:** پارس کردن فیدهای NASA APOD, Wikimedia POTD, ESA Hubble, Picsum/Unsplash, USGS, Wallhaven, MuseumArt.
+4. **تطبیق فیدهای بین‌المللی:** پارس کردن فیدهای NASA Image of the Day, Wikimedia POTD, ESA Hubble, Picsum/Unsplash, USGS, Wallhaven, MuseumArt.
 5. **مسیریابی هوشمند و تفکیک دسکتاپ و لاک‌اسکرین:** پشتیبانی از حالت‌های مستقل، همزمان، تفکیک مناطق جغرافیایی و کالکشن ایران زیبا.
 6. **محیط کاملاً آفلاین کلاینت:** آزمون بدون اینترنت و واکشی مستقیم از Share شبکه.
 7. **طراحی بصری و فونت فارسی:** تایید بارگذاری قلم فارسی Vazirmatn، جهت‌بندی RTL، استایل شیشه‌ای `Theme.xaml` و آیکون اختصاصی سهند نما.

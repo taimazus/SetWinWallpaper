@@ -55,7 +55,7 @@ dotnet run --project SahandNama.Tests\SahandNama.Tests.csproj
 
 **خروجی مورد انتظار:**
 ```
-75 checks passed. Live lock screen application: False. No desktop, policy, task, repair or service was applied.
+نتیجهٔ شمارش جاری بررسی‌ها در docs/audit-report.md ثبت می‌شود.
 ```
 
 ---

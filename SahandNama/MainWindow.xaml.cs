@@ -10,6 +10,7 @@ namespace SahandNama;
 public partial class MainWindow : Window
 {
     Preferences preferences = new();
+    Preferences editorBaseline = new();
     List<Photo> photos = [];
     Photo Selected => Gallery.SelectedItem as Photo ?? throw new InvalidOperationException("ابتدا یک تصویر انتخاب کنید.");
     bool busy;
@@ -25,14 +26,15 @@ public partial class MainWindow : Window
         FitBox.ItemsSource = new[] { "Fill", "Fit", "Stretch", "Center", "Span" };
         try { preferences = Store.Settings; }
         catch (Exception ex) { StatusText.Text = "خطا در خواندن تنظیمات؛ پیش‌فرض‌ها نمایش داده می‌شوند: " + ex.Message; }
+        editorBaseline = Store.CloneSettings(preferences);
         DesktopSourceBox.ItemsSource = SourceCatalog.Options; LockSourceBox.ItemsSource = SourceCatalog.Options;
         DesktopSourceBox.SelectedValue = preferences.DesktopSource; LockSourceBox.SelectedValue = preferences.LockSource;
         DesktopFolderBox.Text = string.IsNullOrWhiteSpace(preferences.DesktopFolder) ? preferences.NetworkSharePath : preferences.DesktopFolder;
         LockFolderBox.Text = string.IsNullOrWhiteSpace(preferences.LockFolder) ? preferences.LockNetworkSharePath : preferences.LockFolder;
         MarketBox.SelectedItem = preferences.Market; LockMarketBox.SelectedItem = preferences.LockMarket;
         ResolutionBox.SelectedItem = preferences.Resolution; FitBox.SelectedItem = preferences.Fit;
-        DesktopModeBox.SelectedIndex = (preferences.DesktopMode == "Random" || preferences.Mode == "Random") ? 1 : 0;
-        LockModeBox.SelectedIndex = preferences.LockMode switch { "Daily" => 1, "Random" => 2, "Previous" => 3, _ => (preferences.Mode == "Previous" ? 3 : (preferences.Mode == "Regions" ? 1 : (preferences.Mode == "Random" ? 2 : 0))) };
+        DesktopModeBox.SelectedIndex = PhotoSelection.DesktopMode(preferences) == "Random" ? 1 : 0;
+        LockModeBox.SelectedIndex = PhotoSelection.LockMode(preferences) switch { "Daily" => 1, "Random" => 2, "Previous" => 3, _ => 0 };
         DesktopCheck.IsChecked = preferences.Desktop; LockCheck.IsChecked = preferences.LockScreen;
         TimeBox.Text = preferences.DailyTime;
         QuickSourceBox.ItemsSource = SourceCatalog.Options; QuickSourceBox.SelectedIndex = 0;
@@ -92,13 +94,7 @@ public partial class MainWindow : Window
         preferences.Fit = FitBox.SelectedItem as string ?? "Fill";
         preferences.DesktopMode = (DesktopModeBox.SelectedItem as ComboBoxItem)?.Tag.ToString() ?? "Daily";
         preferences.LockMode = (LockModeBox.SelectedItem as ComboBoxItem)?.Tag.ToString() ?? "Follow";
-        preferences.Mode = preferences.LockMode switch
-        {
-            "Previous" => "Previous",
-            "Daily" => "Regions",
-            "Random" => "Random",
-            _ => preferences.DesktopMode == "Random" ? "Random" : "Same"
-        };
+        preferences.Mode = "Same"; // New independent modes supersede the legacy combined mode.
         preferences.Desktop = DesktopCheck.IsChecked == true; preferences.LockScreen = LockCheck.IsChecked == true;
         preferences.DailyTime = TimeBox.Text;
         preferences.IsServerMode = ServerModeCheck.IsChecked == true;
@@ -116,7 +112,9 @@ public partial class MainWindow : Window
         preferences.WidgetShowWallpaperInfo = WidgetWallpaperInfoCheck.IsChecked == true;
         preferences.WidgetShowQuickActions = WidgetQuickActionsCheck.IsChecked == true;
 
-        Store.Save(preferences);
+        var edited = Store.CloneSettings(preferences);
+        preferences = Store.SaveEditorSettings(edited, editorBaseline);
+        editorBaseline = edited;
         RegisterHotkeys();
         App.ApplyWidgetPreferences();
     }
@@ -220,7 +218,7 @@ public partial class MainWindow : Window
         var catalog = new SourceCatalog();
         var synced = await catalog.SyncAllOnlineSourcesAsync(ResolutionBox.SelectedItem as string ?? "UHD");
         LoadArchive();
-        AppDialog.Show(this, $"همگام‌سازی تمامی گالری‌ها با موفقیت انجام شد.\nتعداد {synced} تصویر جدید از منابع آنلاین دریافت و در مخزن سرور ذخیره شد.", "همگام‌سازی مخزن سرور");
+        AppDialog.Show(this, $"همگام‌سازی تمامی گالری‌ها با موفقیت انجام شد.\nتعداد {synced} رکورد تصویر از منابع آنلاین بررسی و در مخزن سرور آماده شد.", "همگام‌سازی مخزن سرور");
     }, "همگام‌سازی تمامی گالری‌های سرور انجام شد.");
 
     void OpenServerFolder_Click(object sender, RoutedEventArgs e)
@@ -280,7 +278,7 @@ public partial class MainWindow : Window
     async void Archive_Click(object sender, RoutedEventArgs e) => await Work(() => { LoadArchive(); return Task.CompletedTask; }, "آرشیو محلی باز شد.");
     void Filter_Click(object sender, RoutedEventArgs e) => Filter();
     async void Import_Click(object sender, RoutedEventArgs e) => await Work(async () => { var imported = await Task.Run(() => WindowsIntegration.ImportSpotlight()); LoadArchive(); if (imported.Count == 0) throw new InvalidOperationException("تصویر مناسب در کش Spotlight یافت نشد."); }, "تصاویر موجود در کش Spotlight وارد شدند.");
-    async void Desktop_Click(object sender, RoutedEventArgs e) => await Work(() => { WindowsIntegration.SetDesktop(Selected.FilePath, FitBox.SelectedItem as string ?? "Fill"); return Task.CompletedTask; }, "تصویر دسکتاپ اعمال شد.");
+    async void Desktop_Click(object sender, RoutedEventArgs e) => await Work(() => { WindowsIntegration.SetDesktop(Selected.FilePath, FitBox.SelectedItem as string ?? "Fill"); Store.RecordDesktopPhoto(Selected); App.UpdateWidgetInfo(); return Task.CompletedTask; }, "تصویر دسکتاپ اعمال شد.");
     async void Lock_Click(object sender, RoutedEventArgs e) => await Work(async () => { await WindowsIntegration.SetLockScreenAsync(Selected.FilePath); }, "ویندوز درخواست تغییر تصویر لاک‌اسکرین را پذیرفت.");
 
     async Task ManagedLockAction(string action)
@@ -302,7 +300,7 @@ public partial class MainWindow : Window
     }
 
     async void RestorePolicy_Click(object sender, RoutedEventArgs e) => await Work(() => ManagedLockAction("Restore"), "سیاست لاک‌اسکرین به وضعیت قبلی بازگردانده شد.");
-    async void Favorite_Click(object sender, RoutedEventArgs e) => await Work(() => { var id = Selected.Id; if (!preferences.Favorites.Remove(id)) preferences.Favorites.Add(id); SavePreferences(); Filter(); return Task.CompletedTask; }, "علاقه‌مندی‌ها ذخیره شدند.");
+    async void Favorite_Click(object sender, RoutedEventArgs e) => await Work(() => { var id = Selected.Id; preferences = Store.UpdateSettings(p => { if (!p.Favorites.Remove(id)) p.Favorites.Add(id); }); Filter(); return Task.CompletedTask; }, "علاقه‌مندی‌ها ذخیره شدند.");
     async void Export_Click(object sender, RoutedEventArgs e) => await Work(() => { var photo = Selected; var dialog = new SaveFileDialog { Filter = "Image (*.jpg)|*.jpg", FileName = photo.Date + "-" + photo.Id + ".jpg" }; if (dialog.ShowDialog(this) == true) File.Copy(photo.FilePath, dialog.FileName, true); return Task.CompletedTask; }, "عملیات ذخیره تصویر پایان یافت.");
     async void Save_Click(object sender, RoutedEventArgs e) => await Work(() => { SavePreferences(); return Task.CompletedTask; }, "تنظیمات ذخیره شد؛ برای تغییر ساعت، زمان‌بندی را نیز اصلاح کنید.");
     async void Update_Click(object sender, RoutedEventArgs e) => await Work(async () => { SavePreferences(); await new WallpaperEngine().UpdateAsync(); LoadArchive(); }, "به‌روزرسانی انتخاب‌های روزانه انجام شد.");
@@ -324,12 +322,13 @@ public partial class MainWindow : Window
         {
             var result = await Diagnostics.AutoRepairAllAsync();
             diagnosticReport = result.UpdatedReport;
-            DiagnosticText.Text = result.Summary + "\n\n" + new string('─', 40) + "\n\n" + diagnosticReport.ToText();
+            DiagnosticText.Text = result.Summary + result.ErrorSummary + "\n\n" + new string('─', 40) + "\n\n" + diagnosticReport.ToText();
             DiagnosisSummary.Text = diagnosticReport.Summary;
             preferences = Store.Settings;
             DesktopCheck.IsChecked = preferences.Desktop; LockCheck.IsChecked = preferences.LockScreen;
             TimeBox.Text = preferences.DailyTime;
             LoadArchive();
+            if (result.Errors.Count > 0) throw new InvalidOperationException(result.ErrorSummary);
         }, "عملیات رفع خودکار ایرادات انجام شد؛ گزارش وضعیت به‌روزرسانی شد.");
     }
 
@@ -477,12 +476,7 @@ public partial class MainWindow : Window
 
     IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
-        if (msg == TrayManager.WM_TRAYICON)
-        {
-            TrayManager.HandleTrayMessage(lParam.ToInt32());
-            handled = true;
-        }
-        else if (msg == WindowsIntegration.WM_HOTKEY)
+        if (msg == WindowsIntegration.WM_HOTKEY)
         {
             int id = wParam.ToInt32();
             if (id == WindowsIntegration.HOTKEY_ID_NEXT_WALLPAPER)
@@ -492,12 +486,18 @@ public partial class MainWindow : Window
             }
             else if (id == WindowsIntegration.HOTKEY_ID_FAVORITE)
             {
-                Favorite_Click(this, new RoutedEventArgs());
+                FavoriteCurrentDesktop();
                 handled = true;
             }
         }
         return IntPtr.Zero;
     }
+    async void FavoriteCurrentDesktop() => await Work(() =>
+    {
+        var current = Store.CurrentDesktopPhoto() ?? throw new InvalidOperationException("تصویر فعال ثبت نشده است؛ ابتدا از برنامه تصویر دسکتاپ را اعمال کنید.");
+        preferences = Store.UpdateSettings(p => { if (!p.Favorites.Contains(current.Id)) p.Favorites.Add(current.Id); });
+        Filter(); App.UpdateWidgetInfo(); return Task.CompletedTask;
+    }, "تصویر فعال دسکتاپ به علاقه‌مندی‌ها افزوده شد.");
 
     async void MultiMonitor_Click(object sender, RoutedEventArgs e) => await Work(() =>
     {
@@ -506,6 +506,8 @@ public partial class MainWindow : Window
         {
             WindowsIntegration.SetMonitorWallpaper(i, Selected.FilePath);
         }
+        Store.RecordDesktopPhoto(Selected);
+        App.UpdateWidgetInfo();
         return Task.CompletedTask;
     }, "تصویر روی تمامی مانیتورهای سیستم اعمال شد.");
 
@@ -521,7 +523,7 @@ public partial class MainWindow : Window
         SavePreferences();
         DesktopWidgetCheck.IsChecked = true;
         preferences.ShowDesktopWidget = true;
-        Store.Save(preferences);
+        preferences = Store.UpdateSettings(p => p.ShowDesktopWidget = true);
         if (App.ActiveWidget == null || !App.ActiveWidget.IsVisible)
         {
             App.ToggleWidget();

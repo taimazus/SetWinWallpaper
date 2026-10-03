@@ -1,4 +1,4 @@
-Add-Type -AssemblyName System.Drawing
+﻿Add-Type -AssemblyName System.Drawing
 
 function Render-LogoLayer([int]$size) {
     $bmp = [Drawing.Bitmap]::new($size, $size, [Drawing.Imaging.PixelFormat]::Format32bppArgb)
@@ -128,7 +128,7 @@ foreach ($s in $sizes) {
     $bmp.Dispose()
 }
 
-$targetIco = Join-Path $PSScriptRoot '../BingWallpaperPro/Assets/SahandNama.ico'
+$targetIco = Join-Path $PSScriptRoot '../SahandNama/Assets/SahandNama.ico'
 $writer = [IO.BinaryWriter]::new([IO.File]::Create($targetIco))
 try {
     # ICO Header: 0=Reserved, 1=Type (1 for ICO), Count
@@ -158,7 +158,7 @@ try {
 }
 
 # Also save high-res 512x512 PNG for vector-grade image presentation in UI
-$targetPng = Join-Path $PSScriptRoot '../BingWallpaperPro/Assets/SahandNama.png'
+$targetPng = Join-Path $PSScriptRoot '../SahandNama/Assets/SahandNama.png'
 $largeBmp = Render-LogoLayer 512
 $largeBmp.Save($targetPng, [Drawing.Imaging.ImageFormat]::Png)
 $largeBmp.Dispose()

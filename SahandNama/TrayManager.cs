@@ -61,6 +61,7 @@ public static class TrayManager
     [DllImport("user32.dll")]
     static extern IntPtr CopyIcon(IntPtr hIcon);
 
+    static HwndSource? messageSource;
     static IntPtr currentHwnd = IntPtr.Zero;
     static IntPtr iconHandle = IntPtr.Zero;
     static bool isAdded = false;
@@ -68,14 +69,17 @@ public static class TrayManager
 
     public static void Initialize(IntPtr hwnd)
     {
-        currentHwnd = hwnd;
         if (isAdded) return;
+        currentHwnd = hwnd;
+        messageSource?.RemoveHook(MessageHook);
+        messageSource = HwndSource.FromHwnd(hwnd);
+        messageSource?.AddHook(MessageHook);
 
         try
         {
             if (iconHandle == IntPtr.Zero)
             {
-                var stream = Application.GetResourceStream(new Uri("pack://application:,,,/SahandNama;component/Assets/SahandNama.ico"))?.Stream;
+                using var stream = Application.GetResourceStream(new Uri("pack://application:,,,/SahandNama;component/Assets/SahandNama.ico"))?.Stream;
                 if (stream != null)
                 {
                     using var icon = new System.Drawing.Icon(stream, 32, 32);
@@ -151,12 +155,10 @@ public static class TrayManager
             try
             {
                 var prefs = Store.Settings;
-                var archive = Store.Read(Path.Combine(Store.Root, "archive.json"), new List<Photo>());
-                var current = archive.FirstOrDefault(p => File.Exists(p.FilePath));
+                var current = Store.CurrentDesktopPhoto();
                 if (current != null && !prefs.Favorites.Contains(current.Id))
                 {
-                    prefs.Favorites.Add(current.Id);
-                    Store.Save(prefs);
+                    Store.UpdateSettings(p => { if (!p.Favorites.Contains(current.Id)) p.Favorites.Add(current.Id); });
                     App.UpdateWidgetInfo();
                     ShowBalloon("علاقه‌مندی‌ها", $"تصویر «{current.Title}» به لیست علاقه‌مندی‌ها اضافه شد.");
                 }
@@ -177,8 +179,7 @@ public static class TrayManager
         {
             try
             {
-                var archive = Store.Read(Path.Combine(Store.Root, "archive.json"), new List<Photo>());
-                var current = archive.FirstOrDefault(p => File.Exists(p.FilePath));
+                var current = Store.CurrentDesktopPhoto();
                 if (current != null && File.Exists(current.FilePath))
                 {
                     WindowsIntegration.SyncWindowsAccentColor(current.FilePath);
@@ -212,6 +213,12 @@ public static class TrayManager
         var exitItem = new MenuItem { Header = "🚪 خروج کامل از برنامه" };
         exitItem.Click += (_, _) => App.ExitApplication();
         trayMenu.Items.Add(exitItem);
+    }
+
+    static IntPtr MessageHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (msg == WM_TRAYICON) { HandleTrayMessage(lParam.ToInt32()); handled = true; }
+        return IntPtr.Zero;
     }
 
     public static void HandleTrayMessage(int lParam)
@@ -255,6 +262,8 @@ public static class TrayManager
 
     public static void Dispose()
     {
+        messageSource?.RemoveHook(MessageHook);
+        messageSource = null;
         if (isAdded && currentHwnd != IntPtr.Zero)
         {
             var nid = new NOTIFYICONDATA

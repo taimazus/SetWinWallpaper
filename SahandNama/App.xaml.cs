@@ -1,10 +1,12 @@
-﻿using System.Windows;
+using System.Windows;
 using Application = System.Windows.Application;
 
 namespace SahandNama;
 
 public partial class App : Application
 {
+    private SingleInstance? singleInstance;
+    private System.Windows.Threading.DispatcherTimer? activationTimer;
     public static bool IsExiting { get; set; }
     public static DesktopWidgetWindow? ActiveWidget { get; private set; }
 
@@ -22,7 +24,7 @@ public partial class App : Application
         {
             try
             {
-                await new WallpaperEngine().UpdateAsync();
+                await new WallpaperEngine().UpdateAsync(e.Args.Contains("--scheduled"));
                 Shutdown(0);
             }
             catch (Exception ex)
@@ -167,8 +169,8 @@ public partial class App : Application
             try
             {
                 var result = await Diagnostics.AutoRepairAllAsync();
-                Store.Log(result.Summary + "\n" + result.UpdatedReport.ToText());
-                Shutdown(0);
+                Store.Log(result.Summary + result.ErrorSummary + "\n" + result.UpdatedReport.ToText());
+                Shutdown(result.Errors.Count == 0 ? 0 : 1);
             }
             catch (Exception ex)
             {
@@ -176,6 +178,29 @@ public partial class App : Application
                 Shutdown(1);
             }
             return;
+        }
+
+        // Command-line jobs must remain available while the interactive UI runs.
+        if (!e.Args.Contains("--toggle-icons"))
+        {
+            var user = System.Security.Principal.WindowsIdentity.GetCurrent().User?.Value
+                ?? Environment.UserName;
+            singleInstance = new SingleInstance($@"Local\SahandNama.UI.{user}");
+            if (!singleInstance.IsPrimary)
+            {
+                singleInstance.RequestActivation();
+                Shutdown(0);
+                return;
+            }
+            activationTimer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(250)
+            };
+            activationTimer.Tick += (_, _) =>
+            {
+                if (!IsExiting && singleInstance.TakeActivationRequest()) ShowMainWindow();
+            };
+            activationTimer.Start();
         }
 
         if (e.Args.Contains("--widget"))
@@ -217,7 +242,7 @@ public partial class App : Application
         MainWindow = new MainWindow();
         MainWindow.Show();
 
-        if (Store.Settings.ShowDesktopWidget)
+        if (Store.ReadSettingsForStartup().ShowDesktopWidget && ActiveWidget == null)
         {
             try
             {
@@ -228,13 +253,21 @@ public partial class App : Application
         }
     }
 
+    protected override void OnExit(ExitEventArgs e)
+    {
+        activationTimer?.Stop();
+        singleInstance?.Dispose();
+        singleInstance = null;
+        base.OnExit(e);
+    }
+
     public static void ShowMainWindow()
     {
         var app = Current;
         if (app == null) return;
         app.Dispatcher.Invoke(() =>
         {
-            if (app.MainWindow == null || !app.MainWindow.IsLoaded)
+            if (app.MainWindow is not SahandNama.MainWindow || !app.MainWindow.IsLoaded)
             {
                 app.MainWindow = new MainWindow();
             }
@@ -258,24 +291,18 @@ public partial class App : Application
             {
                 ActiveWidget = new DesktopWidgetWindow();
                 ActiveWidget.Show();
-                var prefs = Store.Settings;
-                prefs.ShowDesktopWidget = true;
-                Store.Save(prefs);
+                Store.UpdateSettings(p => p.ShowDesktopWidget = true);
             }
             else if (ActiveWidget.IsVisible)
             {
                 ActiveWidget.Hide();
-                var prefs = Store.Settings;
-                prefs.ShowDesktopWidget = false;
-                Store.Save(prefs);
+                Store.UpdateSettings(p => p.ShowDesktopWidget = false);
             }
             else
             {
                 ActiveWidget.Show();
                 ActiveWidget.Activate();
-                var prefs = Store.Settings;
-                prefs.ShowDesktopWidget = true;
-                Store.Save(prefs);
+                Store.UpdateSettings(p => p.ShowDesktopWidget = true);
             }
         });
     }

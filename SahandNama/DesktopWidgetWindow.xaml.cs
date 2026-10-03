@@ -42,7 +42,7 @@ public partial class DesktopWidgetWindow : Window
     public DesktopWidgetWindow()
     {
         InitializeComponent();
-        preferences = Store.Settings;
+        preferences = Store.ReadSettingsForStartup();
 
         // Position restoring
         if (preferences.WidgetLeft >= 0 && preferences.WidgetTop >= 0 &&
@@ -152,7 +152,7 @@ public partial class DesktopWidgetWindow : Window
 
     public void ApplyPreferences()
     {
-        preferences = Store.Settings;
+        preferences = Store.ReadSettingsForStartup();
 
         // 1. Background-only Opacity (Foreground texts, clock and buttons remain 100% crisp & solid)
         var op = Math.Clamp(preferences.WidgetOpacity, 0.0, 1.0);
@@ -243,6 +243,12 @@ public partial class DesktopWidgetWindow : Window
         };
     }
 
+    protected override void OnClosed(EventArgs e)
+    {
+        clockTimer.Stop(); hardwareTimer.Stop(); weatherTimer.Stop();
+        base.OnClosed(e);
+    }
+
     void UpdateClock()
     {
         var now = DateTime.Now;
@@ -293,8 +299,7 @@ public partial class DesktopWidgetWindow : Window
     {
         try
         {
-            var archive = Store.Read(Path.Combine(Store.Root, "archive.json"), new List<Photo>());
-            currentPhoto = archive.FirstOrDefault(p => File.Exists(p.FilePath));
+            currentPhoto = Store.CurrentDesktopPhoto();
             if (currentPhoto != null)
             {
                 WallpaperTitleText.Text = string.IsNullOrWhiteSpace(currentPhoto.Title) ? "منظره روز ویندوز" : currentPhoto.Title;
@@ -334,9 +339,7 @@ public partial class DesktopWidgetWindow : Window
         if (Math.Abs(Top - workArea.Top) < snapThreshold) Top = workArea.Top + 10;
         if (Math.Abs((Top + Height) - workArea.Bottom) < snapThreshold) Top = workArea.Bottom - Height - 10;
 
-        preferences.WidgetLeft = Left;
-        preferences.WidgetTop = Top;
-        Store.Save(preferences);
+        preferences = Store.UpdateSettings(p => { p.WidgetLeft = Left; p.WidgetTop = Top; });
     }
 
     void Window_LocationChanged(object sender, EventArgs e)
@@ -345,9 +348,7 @@ public partial class DesktopWidgetWindow : Window
         {
             try
             {
-                preferences.WidgetLeft = Left;
-                preferences.WidgetTop = Top;
-                Store.Save(preferences);
+                preferences = Store.UpdateSettings(p => { p.WidgetLeft = Left; p.WidgetTop = Top; });
             }
             catch (Exception ex)
             {
@@ -358,21 +359,20 @@ public partial class DesktopWidgetWindow : Window
 
     void PinModeBtn_Click(object sender, RoutedEventArgs e)
     {
-        var currentMode = preferences.WidgetPinMode ?? "Desktop";
+        var currentMode = Store.Settings.WidgetPinMode ?? "Desktop";
         preferences.WidgetPinMode = currentMode switch
         {
             "Desktop" => "Normal",
             "Normal" => "TopMost",
             _ => "Desktop"
         };
-        Store.Save(preferences);
+        preferences = Store.UpdateSettings(p => p.WidgetPinMode = preferences.WidgetPinMode);
         ApplyPinMode();
     }
 
     void CloseBtn_Click(object sender, RoutedEventArgs e)
     {
-        preferences.ShowDesktopWidget = false;
-        Store.Save(preferences);
+        preferences = Store.UpdateSettings(p => p.ShowDesktopWidget = false);
         Hide();
     }
 
@@ -395,18 +395,8 @@ public partial class DesktopWidgetWindow : Window
         try
         {
             if (currentPhoto == null) return;
-            preferences = Store.Settings;
-            if (preferences.Favorites.Contains(currentPhoto.Id))
-            {
-                preferences.Favorites.Remove(currentPhoto.Id);
-                FavoriteBtn.Content = "علاقه‌مندی ❤️";
-            }
-            else
-            {
-                preferences.Favorites.Add(currentPhoto.Id);
-                FavoriteBtn.Content = "ستاره‌دار ⭐";
-            }
-            Store.Save(preferences);
+            preferences = Store.UpdateSettings(p => { if (!p.Favorites.Remove(currentPhoto.Id)) p.Favorites.Add(currentPhoto.Id); });
+            FavoriteBtn.Content = preferences.Favorites.Contains(currentPhoto.Id) ? "ستاره‌دار ⭐" : "علاقه‌مندی ❤️";
         }
         catch (Exception ex)
         {
@@ -444,66 +434,61 @@ public partial class DesktopWidgetWindow : Window
     void MenuPinDesktop_Click(object sender, RoutedEventArgs e)
     {
         preferences.WidgetPinMode = "Desktop";
-        Store.Save(preferences);
+        preferences = Store.UpdateSettings(p => p.WidgetPinMode = preferences.WidgetPinMode);
         ApplyPinMode();
     }
 
     void MenuPinNormal_Click(object sender, RoutedEventArgs e)
     {
         preferences.WidgetPinMode = "Normal";
-        Store.Save(preferences);
+        preferences = Store.UpdateSettings(p => p.WidgetPinMode = preferences.WidgetPinMode);
         ApplyPinMode();
     }
 
     void MenuPinTopMost_Click(object sender, RoutedEventArgs e)
     {
         preferences.WidgetPinMode = "TopMost";
-        Store.Save(preferences);
+        preferences = Store.UpdateSettings(p => p.WidgetPinMode = preferences.WidgetPinMode);
         ApplyPinMode();
     }
 
     void MenuToggleWeather_Click(object sender, RoutedEventArgs e)
     {
-        preferences.WidgetShowWeather = !preferences.WidgetShowWeather;
-        Store.Save(preferences);
+        preferences = Store.UpdateSettings(p => p.WidgetShowWeather = !p.WidgetShowWeather);
         ApplyPreferences();
     }
 
     void MenuToggleHardware_Click(object sender, RoutedEventArgs e)
     {
-        preferences.WidgetShowHardware = !preferences.WidgetShowHardware;
-        Store.Save(preferences);
+        preferences = Store.UpdateSettings(p => p.WidgetShowHardware = !p.WidgetShowHardware);
         ApplyPreferences();
     }
 
     void MenuToggleClock_Click(object sender, RoutedEventArgs e)
     {
-        preferences.WidgetShowClock = !preferences.WidgetShowClock;
-        Store.Save(preferences);
+        preferences = Store.UpdateSettings(p => p.WidgetShowClock = !p.WidgetShowClock);
         ApplyPreferences();
     }
 
     void MenuToggleWallpaper_Click(object sender, RoutedEventArgs e)
     {
-        preferences.WidgetShowWallpaperInfo = !preferences.WidgetShowWallpaperInfo;
-        Store.Save(preferences);
+        preferences = Store.UpdateSettings(p => p.WidgetShowWallpaperInfo = !p.WidgetShowWallpaperInfo);
         ApplyPreferences();
     }
 
     void MenuToggleActions_Click(object sender, RoutedEventArgs e)
     {
-        preferences.WidgetShowQuickActions = !preferences.WidgetShowQuickActions;
-        Store.Save(preferences);
+        preferences = Store.UpdateSettings(p => p.WidgetShowQuickActions = !p.WidgetShowQuickActions);
         ApplyPreferences();
     }
 
     void MenuOpacity_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is MenuItem item && double.TryParse(item.Tag?.ToString(), out var op))
+        if (sender is MenuItem item && TryParseOpacity(item.Tag?.ToString(), out var op))
         {
-            preferences.WidgetOpacity = op;
-            Store.Save(preferences);
+            preferences = Store.UpdateSettings(p => p.WidgetOpacity = op);
             ApplyPreferences();
         }
     }
+    internal static bool TryParseOpacity(string? value, out double opacity) => double.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out opacity);
 }

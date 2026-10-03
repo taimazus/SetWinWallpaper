@@ -31,10 +31,12 @@ public sealed class DiagnosticReport
 public sealed class AutoRepairResult
 {
     public List<string> RepairedItems { get; set; } = [];
+    public List<string> Errors { get; set; } = [];
     public DiagnosticReport UpdatedReport { get; set; } = new();
     public string Summary => RepairedItems.Count == 0
         ? "هیچ ایراد خودکار قابل تعمیری یافت نشد (یا وضعیت از قبل سالم است)."
-        : $"✓ {RepairedItems.Count} مورد خودکار تعمیر شد:\n• " + string.Join("\n• ", RepairedItems);
+        : $"{RepairedItems.Count} بررسی/عملیات کامل شد:\n• " + string.Join("\n• ", RepairedItems);
+    public string ErrorSummary => Errors.Count == 0 ? "" : "\nخطاهای تعمیر:\n• " + string.Join("\n• ", Errors);
 }
 
 public static class Diagnostics
@@ -132,7 +134,7 @@ public static class Diagnostics
                 try {
                     $uType=[Type]::GetType('Windows.System.UserProfile.UserProfilePersonalizationSettings, Windows.System.UserProfile, ContentType=WindowsRuntime')
                     $lType=[Type]::GetType('Windows.System.UserProfile.LockScreen, Windows.System.UserProfile, ContentType=WindowsRuntime')
-                    $api=if ($uType) { [bool]$uType.GetProperty('IsSupported').GetValue($null) } else { $false }
+                    $api=if ($uType) { [bool]$uType.GetMethod('IsSupported', [Type[]]@()).Invoke($null, @()) } else { $false }
                     $fallback=($null -ne $lType)
                 } catch { $apiError=$_.Exception.Message }
                 $task=Get-ScheduledTask -TaskName {{WindowsIntegration.QuotePS(WindowsIntegration.TaskName)}} -ErrorAction SilentlyContinue
@@ -198,6 +200,7 @@ public static class Diagnostics
     public static Preferences RepairSettings(string? root = null)
     {
         root ??= Store.Root;
+        using var gate = Store.AcquireLockAsync(Path.Combine(root, "settings.lock")).GetAwaiter().GetResult();
         Directory.CreateDirectory(root);
         var settingsPath = Path.Combine(root, "settings.json");
         var repaired = new Preferences();
@@ -207,6 +210,7 @@ public static class Diagnostics
             {
                 var current = Store.Read(settingsPath, new Preferences());
                 repaired = current;
+                repaired.Favorites ??= [];
                 if (!repaired.Desktop && !repaired.LockScreen) repaired.Desktop = true;
                 if (!TimeOnly.TryParseExact(repaired.DailyTime, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out _)) repaired.DailyTime = "09:00";
                 if (!SourceCatalog.Options.Any(s => s.Id == repaired.DesktopSource)) repaired.DesktopSource = "Bing";
@@ -228,15 +232,11 @@ public static class Diagnostics
                 if (repaired.Mode is not ("Same" or "Previous" or "Regions" or "Random")) repaired.Mode = "Same";
             }
         }
-        catch
+        catch (Exception ex) when (ex is JsonException or InvalidDataException)
         {
-            // If file was unparseable, backup old broken one and write fresh healthy defaults
-            try
-            {
-                var backup = settingsPath + ".corrupt." + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".bak";
-                if (File.Exists(settingsPath)) File.Move(settingsPath, backup, true);
-            }
-            catch { }
+            // Never replace corrupt settings unless their original bytes were preserved.
+            if (File.Exists(settingsPath))
+                File.Copy(settingsPath, settingsPath + ".corrupt." + Guid.NewGuid().ToString("N") + ".bak");
             repaired = new Preferences();
         }
         Store.Write(settingsPath, repaired);
@@ -247,6 +247,8 @@ public static class Diagnostics
     public static int RepairArchive(string? root = null)
     {
         root ??= Store.Root;
+        using var feedGate = Store.AcquireLockAsync(Path.Combine(root, "feed.lock")).GetAwaiter().GetResult();
+        using var archiveGate = Store.AcquireLockAsync(Path.Combine(root, "archive.lock")).GetAwaiter().GetResult();
         var archivePath = Path.Combine(root, "archive.json");
         var list = new List<Photo>();
         var cleanedCount = 0;
@@ -254,14 +256,16 @@ public static class Diagnostics
         {
             if (File.Exists(archivePath)) list = Store.Read(archivePath, new List<Photo>());
         }
-        catch
+        catch (Exception ex) when (ex is System.Text.Json.JsonException or InvalidDataException)
         {
+            File.Copy(archivePath, archivePath + ".corrupt." + Guid.NewGuid().ToString("N") + ".bak");
             list = [];
         }
 
         var valid = new List<Photo>();
         foreach (var p in list)
         {
+            if (p == null) { cleanedCount++; continue; }
             if (!File.Exists(p.FilePath)) { cleanedCount++; continue; }
             try
             {
@@ -271,7 +275,7 @@ public static class Diagnostics
             catch
             {
                 cleanedCount++;
-                try { File.Delete(p.FilePath); } catch { }
+                // Metadata is not authority to delete a user's file. Remove only the entry.
             }
         }
 
@@ -281,12 +285,13 @@ public static class Diagnostics
         {
             foreach (var f in Directory.EnumerateFiles(imgDir, "*.tmp"))
             {
-                try { File.Delete(f); cleanedCount++; } catch { }
+                if (Store.IsOwnedFile(f, imgDir))
+                    try { File.Delete(f); cleanedCount++; } catch { }
             }
         }
 
         Store.Write(archivePath, valid.DistinctBy(p => p.Id).OrderByDescending(p => p.Date).ToList());
-        var duplicatePurged = SourceCatalog.PurgeDuplicates(root);
+        var duplicatePurged = SourceCatalog.PurgeDuplicatesCore(root);
         cleanedCount += duplicatePurged;
         Store.Log($"Archive repaired: {cleanedCount} corrupt/missing/duplicate items processed.", root);
         return cleanedCount;
@@ -303,7 +308,7 @@ public static class Diagnostics
             var settings = RepairSettings(root);
             result.RepairedItems.Add("تنظیمات برنامه بررسی، تصحیح و ذخیره شد.");
         }
-        catch (Exception ex) { result.RepairedItems.Add("خطا در تعمیر تنظیمات: " + ex.Message); }
+        catch (Exception ex) { result.Errors.Add("خطا در تعمیر تنظیمات: " + ex.Message); }
 
         // 2. Repair Archive, Cache, and Purge Duplicates
         try
@@ -311,7 +316,7 @@ public static class Diagnostics
             var count = RepairArchive(root);
             result.RepairedItems.Add($"آرشیو و فایل‌های محلی پاک‌سازی و یکپارچه شدند ({count} فایل خراب، مفقود یا تکراری پاک شد).");
         }
-        catch (Exception ex) { result.RepairedItems.Add("خطا در تعمیر آرشیو: " + ex.Message); }
+        catch (Exception ex) { result.Errors.Add("خطا در تعمیر آرشیو: " + ex.Message); }
 
         // 3. Ensure essential directories exist
         try
@@ -320,20 +325,21 @@ public static class Diagnostics
             Directory.CreateDirectory(Path.Combine(root, "Backups"));
             result.RepairedItems.Add("پوشه‌های کاری برنامه (Images / Backups) بازسازی شدند.");
         }
-        catch { }
+        catch (Exception ex) { result.Errors.Add("بازسازی پوشه‌ها: " + ex.Message); }
 
         // 4. Repair Scheduled Task
         try
         {
             var exe = Environment.ProcessPath;
-            if (exe != null && (exe.EndsWith("SahandNama.exe", StringComparison.OrdinalIgnoreCase) || exe.EndsWith("BingWallpaperPro.exe", StringComparison.OrdinalIgnoreCase)))
+            if (System.Reflection.Assembly.GetEntryAssembly() == typeof(Diagnostics).Assembly && exe != null &&
+                exe.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && !exe.EndsWith("dotnet.exe", StringComparison.OrdinalIgnoreCase))
             {
                 var time = Store.Read(Path.Combine(root, "settings.json"), new Preferences()).DailyTime;
                 await WindowsIntegration.InstallScheduleAsync(time);
                 result.RepairedItems.Add($"زمان‌بندی روزانه (ساعت {time}) و هنگام ورود مجدداً با مسیر برنامه ثبت و فعال شد.");
             }
         }
-        catch (Exception ex) { result.RepairedItems.Add("ثبت زمان‌بندی: " + ex.Message); }
+        catch (Exception ex) { result.Errors.Add("ثبت زمان‌بندی: " + ex.Message); }
 
         // 5. Re-run diagnostics to get updated report
         result.UpdatedReport = await RunAsync(false, root);
