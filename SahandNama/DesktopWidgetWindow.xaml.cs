@@ -54,7 +54,8 @@ public partial class DesktopWidgetWindow : Window
         }
         else
         {
-            Left = Math.Max(20, SystemParameters.WorkArea.Right - Width - 30);
+            var initialW = (double.IsNaN(Width) || Width <= 0) ? (ActualWidth > 0 ? ActualWidth : 340) : Width;
+            Left = Math.Max(20, SystemParameters.WorkArea.Right - initialW - 30);
             Top = Math.Max(20, SystemParameters.WorkArea.Top + 40);
         }
 
@@ -157,6 +158,7 @@ public partial class DesktopWidgetWindow : Window
         // 1. Background-only Opacity (Foreground texts, clock and buttons remain 100% crisp & solid)
         var op = Math.Clamp(preferences.WidgetOpacity, 0.0, 1.0);
         GlassRootBorder.Opacity = 1.0;
+        HeaderActionsStack.Opacity = op <= 0.05 ? 0.0 : 0.35;
 
         if (op <= 0.05)
         {
@@ -239,55 +241,25 @@ public partial class DesktopWidgetWindow : Window
         var showHardware = preferences.WidgetShowHardware;
         if (!showWeather && !showHardware)
         {
-            ChipsPanel.Visibility = Visibility.Collapsed;
+            ChipsWrap.Visibility = Visibility.Collapsed;
         }
         else
         {
-            ChipsPanel.Visibility = Visibility.Visible;
-            if (showWeather && showHardware)
-            {
-                WeatherCol.Width = new GridLength(1, GridUnitType.Star);
-                HardwareCol.Width = new GridLength(1, GridUnitType.Star);
-                WeatherChip.Visibility = Visibility.Visible;
-                Grid.SetColumn(WeatherChip, 0);
-                Grid.SetColumnSpan(WeatherChip, 1);
-                WeatherChip.Margin = new Thickness(0, 0, 4, 0);
-
-                HardwareChip.Visibility = Visibility.Visible;
-                Grid.SetColumn(HardwareChip, 1);
-                Grid.SetColumnSpan(HardwareChip, 1);
-                HardwareChip.Margin = new Thickness(4, 0, 0, 0);
-            }
-            else if (showWeather)
-            {
-                WeatherCol.Width = new GridLength(1, GridUnitType.Star);
-                HardwareCol.Width = new GridLength(0);
-                WeatherChip.Visibility = Visibility.Visible;
-                Grid.SetColumn(WeatherChip, 0);
-                Grid.SetColumnSpan(WeatherChip, 2);
-                WeatherChip.Margin = new Thickness(0);
-
-                HardwareChip.Visibility = Visibility.Collapsed;
-            }
-            else // only Hardware
-            {
-                WeatherCol.Width = new GridLength(0);
-                HardwareCol.Width = new GridLength(1, GridUnitType.Star);
-                HardwareChip.Visibility = Visibility.Visible;
-                Grid.SetColumn(HardwareChip, 0);
-                Grid.SetColumnSpan(HardwareChip, 2);
-                HardwareChip.Margin = new Thickness(0);
-
-                WeatherChip.Visibility = Visibility.Collapsed;
-            }
+            ChipsWrap.Visibility = Visibility.Visible;
+            WeatherChip.Visibility = showWeather ? Visibility.Visible : Visibility.Collapsed;
+            HardwareChip.Visibility = showHardware ? Visibility.Visible : Visibility.Collapsed;
+            WeatherChip.Margin = (showWeather && showHardware)
+                ? new Thickness(0, 0, 8, 4)
+                : new Thickness(0, 0, 0, 4);
+            HardwareChip.Margin = new Thickness(0, 0, 0, 4);
         }
 
         // 5. Adaptive Vertical Spacing (Eliminates orphan gaps when bottom cards collapse)
-        bool hasAfterClock = ChipsPanel.Visibility == Visibility.Visible || WallpaperPanel.Visibility == Visibility.Visible || QuickActionsPanel.Visibility == Visibility.Visible;
+        bool hasAfterClock = ChipsWrap.Visibility == Visibility.Visible || WallpaperPanel.Visibility == Visibility.Visible || QuickActionsPanel.Visibility == Visibility.Visible;
         ClockPanel.Margin = new Thickness(0, 0, 0, hasAfterClock ? 8 : 0);
 
         bool hasAfterChips = WallpaperPanel.Visibility == Visibility.Visible || QuickActionsPanel.Visibility == Visibility.Visible;
-        ChipsPanel.Margin = new Thickness(0, 0, 0, hasAfterChips ? 8 : 0);
+        ChipsWrap.Margin = new Thickness(0, 0, 0, hasAfterChips ? 8 : 0);
 
         bool hasAfterWallpaper = QuickActionsPanel.Visibility == Visibility.Visible;
         WallpaperPanel.Margin = new Thickness(0, 0, 0, hasAfterWallpaper ? 8 : 0);
@@ -376,7 +348,8 @@ public partial class DesktopWidgetWindow : Window
             if (currentWeather != null)
             {
                 WeatherIconText.Text = currentWeather.ConditionIcon;
-                WeatherCityAndTemp.Text = $"{currentWeather.City} • {currentWeather.FormattedTemperature}";
+                WeatherCityText.Text = currentWeather.City;
+                WeatherTempText.Text = currentWeather.FormattedTemperature;
                 WeatherConditionText.Text = currentWeather.ConditionText;
                 WeatherChip.ToolTip = currentWeather.DetailedTooltip;
             }
@@ -412,6 +385,17 @@ public partial class DesktopWidgetWindow : Window
         }
     }
 
+    void Window_MouseEnter(object sender, MouseEventArgs e)
+    {
+        HeaderActionsStack.Opacity = 1.0;
+    }
+
+    void Window_MouseLeave(object sender, MouseEventArgs e)
+    {
+        var op = Math.Clamp(preferences.WidgetOpacity, 0.0, 1.0);
+        HeaderActionsStack.Opacity = op <= 0.05 ? 0.0 : 0.35;
+    }
+
     void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ButtonState == MouseButtonState.Pressed)
@@ -426,10 +410,12 @@ public partial class DesktopWidgetWindow : Window
         const double snapThreshold = 24.0;
         var workArea = SystemParameters.WorkArea;
 
+        var curW = ActualWidth > 0 ? ActualWidth : (double.IsNaN(Width) ? 320 : Width);
+        var curH = ActualHeight > 0 ? ActualHeight : (double.IsNaN(Height) ? 140 : Height);
         if (Math.Abs(Left - workArea.Left) < snapThreshold) Left = workArea.Left + 10;
-        if (Math.Abs((Left + Width) - workArea.Right) < snapThreshold) Left = workArea.Right - Width - 10;
+        if (Math.Abs((Left + curW) - workArea.Right) < snapThreshold) Left = workArea.Right - curW - 10;
         if (Math.Abs(Top - workArea.Top) < snapThreshold) Top = workArea.Top + 10;
-        if (Math.Abs((Top + Height) - workArea.Bottom) < snapThreshold) Top = workArea.Bottom - Height - 10;
+        if (Math.Abs((Top + curH) - workArea.Bottom) < snapThreshold) Top = workArea.Bottom - curH - 10;
 
         preferences = Store.UpdateSettings(p => { p.WidgetLeft = Left; p.WidgetTop = Top; });
     }
