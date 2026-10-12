@@ -53,10 +53,12 @@ public partial class MainWindow : Window
         WidgetWeatherCheck.IsChecked = preferences.WidgetShowWeather;
         WidgetHardwareCheck.IsChecked = preferences.WidgetShowHardware;
         WidgetClockCheck.IsChecked = preferences.WidgetShowClock;
+        WidgetSecondsCheck.IsChecked = preferences.WidgetShowSeconds;
         WidgetPersianDateCheck.IsChecked = preferences.WidgetShowPersianDate;
         WidgetGregorianDateCheck.IsChecked = preferences.WidgetShowGregorianDate;
         WidgetHijriDateCheck.IsChecked = preferences.WidgetShowHijriDate;
         WidgetAutostartCheck.IsChecked = WindowsIntegration.IsWidgetAutostartEnabled();
+        WidgetCompactModeCheck.IsChecked = preferences.WidgetCompactMode;
         WidgetWallpaperInfoCheck.IsChecked = preferences.WidgetShowWallpaperInfo;
         WidgetQuickActionsCheck.IsChecked = preferences.WidgetShowQuickActions;
 
@@ -113,6 +115,7 @@ public partial class MainWindow : Window
         preferences.WidgetShowWeather = WidgetWeatherCheck.IsChecked == true;
         preferences.WidgetShowHardware = WidgetHardwareCheck.IsChecked == true;
         preferences.WidgetShowClock = WidgetClockCheck.IsChecked == true;
+        preferences.WidgetShowSeconds = WidgetSecondsCheck.IsChecked == true;
         preferences.WidgetShowPersianDate = WidgetPersianDateCheck.IsChecked == true;
         preferences.WidgetShowGregorianDate = WidgetGregorianDateCheck.IsChecked == true;
         preferences.WidgetShowHijriDate = WidgetHijriDateCheck.IsChecked == true;
@@ -120,6 +123,7 @@ public partial class MainWindow : Window
         WindowsIntegration.SetWidgetAutostart(preferences.WidgetAutostart);
         preferences.WidgetShowWallpaperInfo = WidgetWallpaperInfoCheck.IsChecked == true;
         preferences.WidgetShowQuickActions = WidgetQuickActionsCheck.IsChecked == true;
+        preferences.WidgetCompactMode = WidgetCompactModeCheck.IsChecked == true;
 
         var edited = Store.CloneSettings(preferences);
         preferences = Store.SaveEditorSettings(edited, editorBaseline);

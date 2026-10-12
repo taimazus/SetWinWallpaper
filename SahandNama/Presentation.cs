@@ -81,13 +81,27 @@ public static class PersianDateHelper
             var month = Hc.GetMonth(dt);
             var day = Hc.GetDayOfMonth(dt);
             var monthName = month is >= 1 and <= 12 ? HijriMonthNames[month - 1] : month.ToString();
-            return $"{day} {monthName} {year} هـ.ق";
+            var phase = GetMoonPhaseSymbol(day);
+            return $"{phase} {day} {monthName} {year} هـ.ق";
         }
-        catch
+        catch (Exception ex)
         {
+            Store.Log("GetFormattedHijriDate warning: " + ex.Message);
             return "";
         }
     }
+
+    public static string GetMoonPhaseSymbol(int hijriDay) => hijriDay switch
+    {
+        1 or 2 => "🌑",
+        >= 3 and <= 6 => "🌒",
+        >= 7 and <= 9 => "🌓",
+        >= 10 and <= 13 => "🌔",
+        14 or 15 or 16 => "🌕",
+        >= 17 and <= 20 => "🌖",
+        >= 21 and <= 23 => "🌗",
+        _ => "🌘"
+    };
 
     public static string GetFormattedGregorianDate(DateTime dt) => dt.ToString("dd MMM yyyy", CultureInfo.InvariantCulture);
 }

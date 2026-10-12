@@ -47,6 +47,8 @@ public sealed class Preferences
     public bool WidgetShowGregorianDate { get; set; } = true;
     public bool WidgetShowHijriDate { get; set; } = true;
     public bool WidgetAutostart { get; set; } = false;
+    public bool WidgetCompactMode { get; set; } = false;
+    public bool WidgetShowSeconds { get; set; } = true;
 }
 
 public sealed class Photo

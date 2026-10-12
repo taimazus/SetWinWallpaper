@@ -204,14 +204,17 @@
     <MenuItem x:Name="MenuPinTopMost" Header="📌 همیشه روی همه پنجره‌ها (TopMost)" Click="MenuPinTopMost_Click"/>
    </MenuItem>
    <Separator/>
-   <MenuItem x:Name="MenuToggleWeather" Header="🌤️ نمایش اطلاعات آب و هوا" IsCheckable="True" Click="MenuToggleWeather_Click"/>
-   <MenuItem x:Name="MenuToggleHardware" Header="💻 نمایش وضعیت سخت‌افزار (CPU/RAM)" IsCheckable="True" Click="MenuToggleHardware_Click"/>
-   <MenuItem x:Name="MenuToggleClock" Header="🕒 نمایش بخش زمان و تاریخ" IsCheckable="True" Click="MenuToggleClock_Click"/>
+   <MenuItem x:Name="MenuToggleCompact" Header="🗕 حالت نمایش فشرده (Compact Mode)" IsCheckable="True" Click="MenuToggleCompact_Click"/>
+   <Separator/>
+   <MenuItem x:Name="MenuToggleClock" Header="🕒 نمایش ساعت دیجیتال" IsCheckable="True" Click="MenuToggleClock_Click"/>
+   <MenuItem x:Name="MenuToggleSeconds" Header="⏱️ نمایش ثانیه‌شمار ساعت" IsCheckable="True" Click="MenuToggleSeconds_Click"/>
    <MenuItem Header="📅 انتخاب تقویم‌های نمایشی">
     <MenuItem x:Name="MenuTogglePersianDate" Header="🇮🇷 تقویم خورشیدی (شمسی)" IsCheckable="True" Click="MenuTogglePersianDate_Click"/>
     <MenuItem x:Name="MenuToggleGregorianDate" Header="🌐 تقویم میلادی (Gregorian)" IsCheckable="True" Click="MenuToggleGregorianDate_Click"/>
     <MenuItem x:Name="MenuToggleHijriDate" Header="🌙 تقویم هجری قمری" IsCheckable="True" Click="MenuToggleHijriDate_Click"/>
    </MenuItem>
+   <MenuItem x:Name="MenuToggleWeather" Header="🌤️ نمایش اطلاعات آب و هوا" IsCheckable="True" Click="MenuToggleWeather_Click"/>
+   <MenuItem x:Name="MenuToggleHardware" Header="💻 نمایش وضعیت سخت‌افزار (CPU/RAM)" IsCheckable="True" Click="MenuToggleHardware_Click"/>
    <MenuItem x:Name="MenuToggleWallpaper" Header="🖼️ نمایش اطلاعات تصویر والپیپر" IsCheckable="True" Click="MenuToggleWallpaper_Click"/>
    <MenuItem x:Name="MenuToggleActions" Header="⚡ نمایش دکمه‌های کنترل سریع" IsCheckable="True" Click="MenuToggleActions_Click"/>
    <Separator/>
@@ -239,41 +242,51 @@
   <StackPanel Orientation="Vertical">
 
    <!-- 1. Header: Clock, Date & Widget Mode Controls -->
+   <!-- 1. Header: Clock, Date & Widget Mode Controls -->
    <Grid x:Name="ClockPanel" Margin="0,0,0,8">
     <Grid.ColumnDefinitions>
      <ColumnDefinition Width="*"/>
      <ColumnDefinition Width="Auto"/>
     </Grid.ColumnDefinitions>
 
-    <StackPanel Orientation="Vertical">
-     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+    <StackPanel x:Name="TimeAndDateStack" Orientation="Vertical">
+     <!-- Digital Clock Row -->
+     <StackPanel x:Name="ClockRow" Orientation="Horizontal" VerticalAlignment="Center">
       <TextBlock x:Name="ClockText" Text="00:00:00" FontSize="26" FontWeight="Bold" Foreground="#FFFFFF" FontFamily="Segoe UI, Tahoma"/>
-      <Border x:Name="GregorianDateBadge" Background="#3318856F" BorderBrush="#5551D6B8" BorderThickness="1" CornerRadius="6" Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center">
+     </StackPanel>
+
+     <!-- Calendar Badges WrapPanel (Seamless auto-flow with zero gaps) -->
+     <WrapPanel x:Name="CalendarBadgesWrap" Margin="0,3,0,0" VerticalAlignment="Center">
+      <Border x:Name="PersianDateBadge" Background="#331A473E" BorderBrush="#5545B69C" BorderThickness="1" CornerRadius="6" Padding="6,2" Margin="0,0,6,3" VerticalAlignment="Center">
+       <TextBlock x:Name="PersianDateText" Text="دوشنبه، ۲۰ مهر ۱۴۰۵" FontSize="11" Foreground="#A9EBD9" FontFamily="{StaticResource VazirmatnFont}"/>
+      </Border>
+      <Border x:Name="GregorianDateBadge" Background="#3318856F" BorderBrush="#5551D6B8" BorderThickness="1" CornerRadius="6" Padding="6,2" Margin="0,0,6,3" VerticalAlignment="Center">
        <TextBlock x:Name="GregorianDateText" Text="02 Oct 2026" FontSize="10" Foreground="#8CE9D4" FontFamily="Segoe UI"/>
       </Border>
-      <Border x:Name="HijriDateBadge" Background="#33856018" BorderBrush="#55D6B851" BorderThickness="1" CornerRadius="6" Padding="6,2" Margin="6,0,0,0" VerticalAlignment="Center">
-       <TextBlock x:Name="HijriDateText" Text="۱ ربیع‌الثانی ۱۴۴۸" FontSize="10" Foreground="#F5D061" FontFamily="{StaticResource VazirmatnFont}"/>
+      <Border x:Name="HijriDateBadge" Background="#33856018" BorderBrush="#55D6B851" BorderThickness="1" CornerRadius="6" Padding="6,2" Margin="0,0,6,3" VerticalAlignment="Center">
+       <TextBlock x:Name="HijriDateText" Text="🌙 ۱ ربیع‌الثانی ۱۴۴۸" FontSize="10" Foreground="#F5D061" FontFamily="{StaticResource VazirmatnFont}"/>
       </Border>
-     </StackPanel>
-     <TextBlock x:Name="PersianDateText" Text="در حال بارگذاری تقویم خورشیدی…" FontSize="11" Foreground="#A9D4EB" Margin="0,2,0,0"/>
+     </WrapPanel>
     </StackPanel>
 
+    <!-- Header Quick Actions (Compact Toggle, Window Pin Mode, Settings, Close) -->
     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+     <Button x:Name="CompactModeBtn" Style="{StaticResource HeaderIconButton}" Content="🗕" Click="CompactModeBtn_Click" ToolTip="حالت نمایش: کامل / فشرده (Compact Mode)" Margin="0,0,4,0"/>
      <Button x:Name="PinModeBtn" Style="{StaticResource HeaderIconButton}" Content="🪟" Click="PinModeBtn_Click" ToolTip="تغییر نحوه قرارگیری: چسبیده به دسکتاپ / پنجره عادی / همیشه رو" Margin="0,0,4,0"/>
      <Button Style="{StaticResource HeaderIconButton}" Content="⚙" Click="OpenApp_Click" ToolTip="تنظیمات ویجت و برنامه" Margin="0,0,4,0"/>
      <Button Style="{StaticResource HeaderIconButton}" Content="✕" Click="CloseBtn_Click" ToolTip="پنهان‌سازی ویجت"/>
     </StackPanel>
    </Grid>
 
-   <!-- 2. Live Weather & System Info Chips Row -->
-   <Grid Margin="0,0,0,8">
+   <!-- 2. Live Weather & System Info Chips Row (Smart Adaptive Grid - zero gaps!) -->
+   <Grid x:Name="ChipsPanel" Margin="0,0,0,8">
     <Grid.ColumnDefinitions>
-     <ColumnDefinition Width="*"/>
-     <ColumnDefinition Width="*"/>
+     <ColumnDefinition x:Name="WeatherCol" Width="*"/>
+     <ColumnDefinition x:Name="HardwareCol" Width="*"/>
     </Grid.ColumnDefinitions>
 
     <!-- Weather Chip -->
-    <Border x:Name="WeatherChip" Grid.Column="0" Background="#26002033" BorderBrush="#334A80A3" BorderThickness="1" CornerRadius="8" Padding="7,4" Margin="0,0,4,0" Cursor="Hand" MouseLeftButtonDown="WeatherChip_MouseLeftButtonDown">
+    <Border x:Name="WeatherChip" Grid.Column="0" Background="#26002033" BorderBrush="#334A80A3" BorderThickness="1" CornerRadius="8" Padding="7,4" Cursor="Hand" MouseLeftButtonDown="WeatherChip_MouseLeftButtonDown">
      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
       <TextBlock x:Name="WeatherIconText" Text="🌤️" FontSize="14" Margin="0,0,5,0" VerticalAlignment="Center"/>
       <StackPanel VerticalAlignment="Center">
@@ -284,7 +297,7 @@
     </Border>
 
     <!-- Hardware Monitor Chip -->
-    <Border x:Name="HardwareChip" Grid.Column="1" Background="#26002033" BorderBrush="#334A80A3" BorderThickness="1" CornerRadius="8" Padding="7,4" Margin="4,0,0,0">
+    <Border x:Name="HardwareChip" Grid.Column="1" Background="#26002033" BorderBrush="#334A80A3" BorderThickness="1" CornerRadius="8" Padding="7,4">
      <StackPanel VerticalAlignment="Center">
       <TextBlock x:Name="CpuText" Text="CPU: 12%" FontSize="10" FontWeight="SemiBold" Foreground="#F5D061" TextTrimming="CharacterEllipsis"/>
       <TextBlock x:Name="RamAndBatteryText" Text="RAM: 42% (6.8/16 GB)" FontSize="9" Foreground="#95CBE8" TextTrimming="CharacterEllipsis"/>

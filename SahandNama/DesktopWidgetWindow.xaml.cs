@@ -206,18 +206,96 @@ public partial class DesktopWidgetWindow : Window
 
         EnableAcrylicBlur();
 
-        // 2. Visibility toggles
-        ClockPanel.Visibility = preferences.WidgetShowClock ? Visibility.Visible : Visibility.Collapsed;
-        PersianDateText.Visibility = preferences.WidgetShowPersianDate ? Visibility.Visible : Visibility.Collapsed;
+        // 2. Compact Mode & Container Padding
+        if (preferences.WidgetCompactMode)
+        {
+            CompactModeBtn.Content = "🗖";
+            CompactModeBtn.ToolTip = "حالت نمایش: گسترده (Expanded Mode)";
+            WallpaperPanel.Visibility = Visibility.Collapsed;
+            QuickActionsPanel.Visibility = Visibility.Collapsed;
+            GlassRootBorder.Padding = new Thickness(10, 8, 10, 8);
+        }
+        else
+        {
+            CompactModeBtn.Content = "🗕";
+            CompactModeBtn.ToolTip = "حالت نمایش: فشرده (Compact Mode)";
+            WallpaperPanel.Visibility = preferences.WidgetShowWallpaperInfo ? Visibility.Visible : Visibility.Collapsed;
+            QuickActionsPanel.Visibility = preferences.WidgetShowQuickActions ? Visibility.Visible : Visibility.Collapsed;
+            GlassRootBorder.Padding = new Thickness(14);
+        }
+
+        // 3. Digital Clock & Calendar Badges (Adaptive Zero-Gap Layout)
+        ClockRow.Visibility = preferences.WidgetShowClock ? Visibility.Visible : Visibility.Collapsed;
+        PersianDateBadge.Visibility = preferences.WidgetShowPersianDate ? Visibility.Visible : Visibility.Collapsed;
         GregorianDateBadge.Visibility = preferences.WidgetShowGregorianDate ? Visibility.Visible : Visibility.Collapsed;
         HijriDateBadge.Visibility = preferences.WidgetShowHijriDate ? Visibility.Visible : Visibility.Collapsed;
-        WeatherChip.Visibility = preferences.WidgetShowWeather ? Visibility.Visible : Visibility.Collapsed;
-        HardwareChip.Visibility = preferences.WidgetShowHardware ? Visibility.Visible : Visibility.Collapsed;
-        WallpaperPanel.Visibility = preferences.WidgetShowWallpaperInfo ? Visibility.Visible : Visibility.Collapsed;
-        QuickActionsPanel.Visibility = preferences.WidgetShowQuickActions ? Visibility.Visible : Visibility.Collapsed;
 
-        // 3. Context Menu checks
+        var anyDate = preferences.WidgetShowPersianDate || preferences.WidgetShowGregorianDate || preferences.WidgetShowHijriDate;
+        CalendarBadgesWrap.Visibility = anyDate ? Visibility.Visible : Visibility.Collapsed;
+        TimeAndDateStack.Visibility = (preferences.WidgetShowClock || anyDate) ? Visibility.Visible : Visibility.Collapsed;
+
+        // 4. Smart Adaptive Weather & Hardware Chips Row (Zero Empty Space)
+        var showWeather = preferences.WidgetShowWeather;
+        var showHardware = preferences.WidgetShowHardware;
+        if (!showWeather && !showHardware)
+        {
+            ChipsPanel.Visibility = Visibility.Collapsed;
+        }
+        else
+        {
+            ChipsPanel.Visibility = Visibility.Visible;
+            if (showWeather && showHardware)
+            {
+                WeatherCol.Width = new GridLength(1, GridUnitType.Star);
+                HardwareCol.Width = new GridLength(1, GridUnitType.Star);
+                WeatherChip.Visibility = Visibility.Visible;
+                Grid.SetColumn(WeatherChip, 0);
+                Grid.SetColumnSpan(WeatherChip, 1);
+                WeatherChip.Margin = new Thickness(0, 0, 4, 0);
+
+                HardwareChip.Visibility = Visibility.Visible;
+                Grid.SetColumn(HardwareChip, 1);
+                Grid.SetColumnSpan(HardwareChip, 1);
+                HardwareChip.Margin = new Thickness(4, 0, 0, 0);
+            }
+            else if (showWeather)
+            {
+                WeatherCol.Width = new GridLength(1, GridUnitType.Star);
+                HardwareCol.Width = new GridLength(0);
+                WeatherChip.Visibility = Visibility.Visible;
+                Grid.SetColumn(WeatherChip, 0);
+                Grid.SetColumnSpan(WeatherChip, 2);
+                WeatherChip.Margin = new Thickness(0);
+
+                HardwareChip.Visibility = Visibility.Collapsed;
+            }
+            else // only Hardware
+            {
+                WeatherCol.Width = new GridLength(0);
+                HardwareCol.Width = new GridLength(1, GridUnitType.Star);
+                HardwareChip.Visibility = Visibility.Visible;
+                Grid.SetColumn(HardwareChip, 0);
+                Grid.SetColumnSpan(HardwareChip, 2);
+                HardwareChip.Margin = new Thickness(0);
+
+                WeatherChip.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        // 5. Adaptive Vertical Spacing (Eliminates orphan gaps when bottom cards collapse)
+        bool hasAfterClock = ChipsPanel.Visibility == Visibility.Visible || WallpaperPanel.Visibility == Visibility.Visible || QuickActionsPanel.Visibility == Visibility.Visible;
+        ClockPanel.Margin = new Thickness(0, 0, 0, hasAfterClock ? 8 : 0);
+
+        bool hasAfterChips = WallpaperPanel.Visibility == Visibility.Visible || QuickActionsPanel.Visibility == Visibility.Visible;
+        ChipsPanel.Margin = new Thickness(0, 0, 0, hasAfterChips ? 8 : 0);
+
+        bool hasAfterWallpaper = QuickActionsPanel.Visibility == Visibility.Visible;
+        WallpaperPanel.Margin = new Thickness(0, 0, 0, hasAfterWallpaper ? 8 : 0);
+
+        // 6. Context Menu checkmarks
+        MenuToggleCompact.IsChecked = preferences.WidgetCompactMode;
         MenuToggleClock.IsChecked = preferences.WidgetShowClock;
+        MenuToggleSeconds.IsChecked = preferences.WidgetShowSeconds;
         MenuTogglePersianDate.IsChecked = preferences.WidgetShowPersianDate;
         MenuToggleGregorianDate.IsChecked = preferences.WidgetShowGregorianDate;
         MenuToggleHijriDate.IsChecked = preferences.WidgetShowHijriDate;
@@ -259,7 +337,7 @@ public partial class DesktopWidgetWindow : Window
     void UpdateClock()
     {
         var now = DateTime.Now;
-        ClockText.Text = now.ToString("HH:mm:ss");
+        ClockText.Text = preferences.WidgetShowSeconds ? now.ToString("HH:mm:ss") : now.ToString("HH:mm");
         PersianDateText.Text = PersianDateHelper.GetFormattedPersianDate(now);
         GregorianDateText.Text = PersianDateHelper.GetFormattedGregorianDate(now);
         HijriDateText.Text = PersianDateHelper.GetFormattedHijriDate(now);
@@ -272,6 +350,12 @@ public partial class DesktopWidgetWindow : Window
         {
             var hw = HardwareMonitor.GetCurrentStatus();
             CpuText.Text = hw.CpuSummary;
+            CpuText.Foreground = hw.CpuPercent switch
+            {
+                > 85 => new SolidColorBrush(Color.FromRgb(0xFF, 0x6B, 0x6B)),
+                > 60 => new SolidColorBrush(Color.FromRgb(0xF5, 0xD0, 0x61)),
+                _ => new SolidColorBrush(Color.FromRgb(0x8C, 0xE9, 0xD4))
+            };
             RamAndBatteryText.Text = hw.HasBattery 
                 ? $"{hw.RamSummary} | {hw.BatterySummary}" 
                 : hw.RamSummary;
@@ -475,6 +559,25 @@ public partial class DesktopWidgetWindow : Window
     void MenuToggleClock_Click(object sender, RoutedEventArgs e)
     {
         preferences = Store.UpdateSettings(p => p.WidgetShowClock = !p.WidgetShowClock);
+        ApplyPreferences();
+    }
+
+    void CompactModeBtn_Click(object sender, RoutedEventArgs e)
+    {
+        preferences = Store.UpdateSettings(p => p.WidgetCompactMode = !p.WidgetCompactMode);
+        ApplyPreferences();
+    }
+
+    void MenuToggleCompact_Click(object sender, RoutedEventArgs e)
+    {
+        preferences = Store.UpdateSettings(p => p.WidgetCompactMode = !p.WidgetCompactMode);
+        ApplyPreferences();
+    }
+
+    void MenuToggleSeconds_Click(object sender, RoutedEventArgs e)
+    {
+        preferences = Store.UpdateSettings(p => p.WidgetShowSeconds = !p.WidgetShowSeconds);
+        UpdateClock();
         ApplyPreferences();
     }
 

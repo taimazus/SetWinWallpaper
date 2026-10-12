@@ -308,14 +308,16 @@
 
         <TextBlock Text="ماژول‌های فعال ویجت دسکتاپ" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4"/>
         <WrapPanel>
-         <CheckBox x:Name="WidgetWeatherCheck" Content="🌤️ آب و هوا" Margin="0,0,10,4"/>
-         <CheckBox x:Name="WidgetHardwareCheck" Content="💻 مانیتور سخت‌افزار" Margin="0,0,10,4"/>
-         <CheckBox x:Name="WidgetClockCheck" Content="🕒 ساعت و زمان" Margin="0,0,10,4"/>
+         <CheckBox x:Name="WidgetClockCheck" Content="🕒 ساعت دیجیتال" Margin="0,0,10,4"/>
+         <CheckBox x:Name="WidgetSecondsCheck" Content="⏱️ ثانیه‌شمار" Margin="0,0,10,4"/>
          <CheckBox x:Name="WidgetPersianDateCheck" Content="🇮🇷 تقویم شمسی" Margin="0,0,10,4"/>
          <CheckBox x:Name="WidgetGregorianDateCheck" Content="🌐 تقویم میلادی" Margin="0,0,10,4"/>
          <CheckBox x:Name="WidgetHijriDateCheck" Content="🌙 تقویم قمری" Margin="0,0,10,4"/>
+         <CheckBox x:Name="WidgetWeatherCheck" Content="🌤️ آب و هوا" Margin="0,0,10,4"/>
+         <CheckBox x:Name="WidgetHardwareCheck" Content="💻 مانیتور سخت‌افزار" Margin="0,0,10,4"/>
          <CheckBox x:Name="WidgetWallpaperInfoCheck" Content="🖼️ اطلاعات والپیپر" Margin="0,0,10,4"/>
          <CheckBox x:Name="WidgetQuickActionsCheck" Content="⚡ دکمه‌های کنترل سریع" Margin="0,0,10,4"/>
+         <CheckBox x:Name="WidgetCompactModeCheck" Content="🗕 حالت فشرده (Compact Mode)" Margin="0,0,10,4"/>
         </WrapPanel>
        </StackPanel>
       </Grid>
