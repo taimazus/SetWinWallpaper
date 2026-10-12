@@ -208,6 +208,9 @@ public partial class DesktopWidgetWindow : Window
 
         // 2. Visibility toggles
         ClockPanel.Visibility = preferences.WidgetShowClock ? Visibility.Visible : Visibility.Collapsed;
+        PersianDateText.Visibility = preferences.WidgetShowPersianDate ? Visibility.Visible : Visibility.Collapsed;
+        GregorianDateBadge.Visibility = preferences.WidgetShowGregorianDate ? Visibility.Visible : Visibility.Collapsed;
+        HijriDateBadge.Visibility = preferences.WidgetShowHijriDate ? Visibility.Visible : Visibility.Collapsed;
         WeatherChip.Visibility = preferences.WidgetShowWeather ? Visibility.Visible : Visibility.Collapsed;
         HardwareChip.Visibility = preferences.WidgetShowHardware ? Visibility.Visible : Visibility.Collapsed;
         WallpaperPanel.Visibility = preferences.WidgetShowWallpaperInfo ? Visibility.Visible : Visibility.Collapsed;
@@ -215,10 +218,14 @@ public partial class DesktopWidgetWindow : Window
 
         // 3. Context Menu checks
         MenuToggleClock.IsChecked = preferences.WidgetShowClock;
+        MenuTogglePersianDate.IsChecked = preferences.WidgetShowPersianDate;
+        MenuToggleGregorianDate.IsChecked = preferences.WidgetShowGregorianDate;
+        MenuToggleHijriDate.IsChecked = preferences.WidgetShowHijriDate;
         MenuToggleWeather.IsChecked = preferences.WidgetShowWeather;
         MenuToggleHardware.IsChecked = preferences.WidgetShowHardware;
         MenuToggleWallpaper.IsChecked = preferences.WidgetShowWallpaperInfo;
         MenuToggleActions.IsChecked = preferences.WidgetShowQuickActions;
+        MenuToggleAutostart.IsChecked = WindowsIntegration.IsWidgetAutostartEnabled();
 
         ApplyPinMode();
         _ = UpdateWeatherAsync();
@@ -254,7 +261,8 @@ public partial class DesktopWidgetWindow : Window
         var now = DateTime.Now;
         ClockText.Text = now.ToString("HH:mm:ss");
         PersianDateText.Text = PersianDateHelper.GetFormattedPersianDate(now);
-        GregorianDateText.Text = now.ToString("dd MMM yyyy");
+        GregorianDateText.Text = PersianDateHelper.GetFormattedGregorianDate(now);
+        HijriDateText.Text = PersianDateHelper.GetFormattedHijriDate(now);
     }
 
     void UpdateHardware()
@@ -467,6 +475,33 @@ public partial class DesktopWidgetWindow : Window
     void MenuToggleClock_Click(object sender, RoutedEventArgs e)
     {
         preferences = Store.UpdateSettings(p => p.WidgetShowClock = !p.WidgetShowClock);
+        ApplyPreferences();
+    }
+
+    void MenuTogglePersianDate_Click(object sender, RoutedEventArgs e)
+    {
+        preferences = Store.UpdateSettings(p => p.WidgetShowPersianDate = !p.WidgetShowPersianDate);
+        ApplyPreferences();
+    }
+
+    void MenuToggleGregorianDate_Click(object sender, RoutedEventArgs e)
+    {
+        preferences = Store.UpdateSettings(p => p.WidgetShowGregorianDate = !p.WidgetShowGregorianDate);
+        ApplyPreferences();
+    }
+
+    void MenuToggleHijriDate_Click(object sender, RoutedEventArgs e)
+    {
+        preferences = Store.UpdateSettings(p => p.WidgetShowHijriDate = !p.WidgetShowHijriDate);
+        ApplyPreferences();
+    }
+
+    void MenuToggleAutostart_Click(object sender, RoutedEventArgs e)
+    {
+        var isEnabled = WindowsIntegration.IsWidgetAutostartEnabled();
+        var desired = !isEnabled;
+        WindowsIntegration.SetWidgetAutostart(desired);
+        preferences = Store.UpdateSettings(p => p.WidgetAutostart = desired);
         ApplyPreferences();
     }
 

@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
@@ -43,6 +43,10 @@ public sealed class Preferences
     public bool WidgetShowWeather { get; set; } = true;
     public string WidgetCity { get; set; } = "تهران";
     public bool WidgetShowHardware { get; set; } = true;
+    public bool WidgetShowPersianDate { get; set; } = true;
+    public bool WidgetShowGregorianDate { get; set; } = true;
+    public bool WidgetShowHijriDate { get; set; } = true;
+    public bool WidgetAutostart { get; set; } = false;
 }
 
 public sealed class Photo

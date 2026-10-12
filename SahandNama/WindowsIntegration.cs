@@ -260,8 +260,9 @@ public static class WindowsIntegration
 
             $settings = New-ScheduledTaskSettingsSet `
                 -StartWhenAvailable `
+                -RunOnlyIfNetworkAvailable `
                 -MultipleInstances IgnoreNew `
-                -ExecutionTimeLimit (New-TimeSpan -Minutes 20) `
+                -ExecutionTimeLimit (New-TimeSpan -Minutes 5) `
                 -RestartCount 24 `
                 -RestartInterval (New-TimeSpan -Hours 1) `
                 -AllowStartIfOnBatteries `
@@ -445,7 +446,7 @@ public static class WindowsIntegration
     {
         var logs = new List<string>();
         var script = """
-            $legacyTasks = @('Bing Wallpaper Daily', 'BingWallpaperDaily', 'BingWallpaper_Enterprise')
+            $legacyTasks = @('Bing Wallpaper Daily', 'BingWallpaperDaily', 'BingWallpaper_Enterprise', 'BingWallpaperPro-Daily', 'SahandNama-Daily')
             foreach ($t in $legacyTasks) {
                 if (Get-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue) {
                     Unregister-ScheduledTask -TaskName $t -Confirm:$false -ErrorAction Stop
@@ -811,6 +812,45 @@ public static class WindowsIntegration
         catch (Exception ex)
         {
             Store.Log("ToggleDesktopIcons error: " + ex.Message);
+        }
+    }
+    #endregion
+
+    #region Widget Startup Management
+    const string StartupRunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
+    const string WidgetStartupValueName = "SahandNamaWidget";
+
+    public static bool IsWidgetAutostartEnabled()
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(StartupRunKey, false);
+            var val = key?.GetValue(WidgetStartupValueName) as string;
+            return !string.IsNullOrWhiteSpace(val);
+        }
+        catch { return false; }
+    }
+
+    public static void SetWidgetAutostart(bool enable)
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.CreateSubKey(StartupRunKey, true);
+            if (enable)
+            {
+                var (exe, _) = GetUpdateCommandLine();
+                key.SetValue(WidgetStartupValueName, $"\"{exe}\" --widget");
+                Store.Log("Widget autostart enabled in registry Run key.");
+            }
+            else
+            {
+                key.DeleteValue(WidgetStartupValueName, false);
+                Store.Log("Widget autostart disabled in registry Run key.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Store.Log("SetWidgetAutostart error: " + ex.Message);
         }
     }
     #endregion

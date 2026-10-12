@@ -59,7 +59,9 @@ public static class AppDialog
 public static class PersianDateHelper
 {
     static readonly PersianCalendar Pc = new();
+    static readonly HijriCalendar Hc = new();
     static readonly string[] MonthNames = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
+    static readonly string[] HijriMonthNames = ["محرم", "صفر", "ربیع‌الاول", "ربیع‌الثانی", "جمادی‌الاول", "جمادی‌الثانی", "رجب", "شعبان", "رمضان", "شوال", "ذی‌القعده", "ذی‌الحجه"];
     static readonly string[] DayNames = ["یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه", "شنبه"];
 
     public static string GetFormattedPersianDate(DateTime dt)
@@ -70,6 +72,24 @@ public static class PersianDateHelper
         var dayOfWeek = DayNames[(int)dt.DayOfWeek];
         return $"{dayOfWeek}، {day} {MonthNames[month - 1]} {year}";
     }
+
+    public static string GetFormattedHijriDate(DateTime dt)
+    {
+        try
+        {
+            var year = Hc.GetYear(dt);
+            var month = Hc.GetMonth(dt);
+            var day = Hc.GetDayOfMonth(dt);
+            var monthName = month is >= 1 and <= 12 ? HijriMonthNames[month - 1] : month.ToString();
+            return $"{day} {monthName} {year} هـ.ق";
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
+    public static string GetFormattedGregorianDate(DateTime dt) => dt.ToString("dd MMM yyyy", CultureInfo.InvariantCulture);
 }
 
 public static class CardGenerator

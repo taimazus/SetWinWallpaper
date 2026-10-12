@@ -55,7 +55,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: pwsh
         run: |
-          $ver = if ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME } else { "v1.8.1" }
+          $ver = if ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME } else { "v1.8.2" }
           gh release view $ver *> $null
           if ($LASTEXITCODE -eq 0) {
             gh release upload $ver "output/SahandNama-${ver}-win-x64.exe" "output/SahandNama-${ver}-win-x64.zip"

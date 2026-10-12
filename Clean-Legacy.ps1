@@ -8,7 +8,7 @@ Write-Host "========================================================" -Foregroun
 Write-Host ""
 
 # 1. Delete legacy tasks
-$legacyTasks = @("Bing Wallpaper Daily", "BingWallpaperDaily", "BingWallpaper_Enterprise")
+$legacyTasks = @("Bing Wallpaper Daily", "BingWallpaperDaily", "BingWallpaper_Enterprise", "BingWallpaperPro-Daily", "SahandNama-Daily")
 foreach ($taskName in $legacyTasks) {
     Write-Host "[تسک] در حال بررسی و حذف تسک: '$taskName'..." -NoNewline
     $result = schtasks.exe /Delete /TN $taskName /F 2>&1
@@ -38,7 +38,7 @@ if (Test-Path $legacyDir) {
 Write-Host ""
 Write-Host "========================================================" -ForegroundColor Green
 Write-Host "[موفقیت] فرآیند پاکسازی تکمیل شد." -ForegroundColor Green
-Write-Host "تسک فعال فعلی سیستم: SahandNama-Daily" -ForegroundColor Yellow
+Write-Host "تسک فعال فعلی سیستم: BingWallpaperPro-Daily-{UserSID}" -ForegroundColor Yellow
 Write-Host "========================================================" -ForegroundColor Green
 Write-Host ""
 Read-Host "برای بستن پنجره، کلید Enter را فشار دهید..."

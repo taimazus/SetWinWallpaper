@@ -53,6 +53,10 @@ public partial class MainWindow : Window
         WidgetWeatherCheck.IsChecked = preferences.WidgetShowWeather;
         WidgetHardwareCheck.IsChecked = preferences.WidgetShowHardware;
         WidgetClockCheck.IsChecked = preferences.WidgetShowClock;
+        WidgetPersianDateCheck.IsChecked = preferences.WidgetShowPersianDate;
+        WidgetGregorianDateCheck.IsChecked = preferences.WidgetShowGregorianDate;
+        WidgetHijriDateCheck.IsChecked = preferences.WidgetShowHijriDate;
+        WidgetAutostartCheck.IsChecked = WindowsIntegration.IsWidgetAutostartEnabled();
         WidgetWallpaperInfoCheck.IsChecked = preferences.WidgetShowWallpaperInfo;
         WidgetQuickActionsCheck.IsChecked = preferences.WidgetShowQuickActions;
 
@@ -109,6 +113,11 @@ public partial class MainWindow : Window
         preferences.WidgetShowWeather = WidgetWeatherCheck.IsChecked == true;
         preferences.WidgetShowHardware = WidgetHardwareCheck.IsChecked == true;
         preferences.WidgetShowClock = WidgetClockCheck.IsChecked == true;
+        preferences.WidgetShowPersianDate = WidgetPersianDateCheck.IsChecked == true;
+        preferences.WidgetShowGregorianDate = WidgetGregorianDateCheck.IsChecked == true;
+        preferences.WidgetShowHijriDate = WidgetHijriDateCheck.IsChecked == true;
+        preferences.WidgetAutostart = WidgetAutostartCheck.IsChecked == true;
+        WindowsIntegration.SetWidgetAutostart(preferences.WidgetAutostart);
         preferences.WidgetShowWallpaperInfo = WidgetWallpaperInfoCheck.IsChecked == true;
         preferences.WidgetShowQuickActions = WidgetQuickActionsCheck.IsChecked == true;
 
@@ -165,7 +174,12 @@ public partial class MainWindow : Window
         photos = await new SourceCatalog().FetchAsync(req);
         onlyFavorites = false;
         Filter();
-        if (photos.Count == 0) throw new InvalidOperationException("منبع انتخاب‌شده تصویری ندارد.");
+        if (photos.Count == 0)
+        {
+            if (selectedSource == "Spotlight")
+                throw new InvalidOperationException("کش محلی تصاویر Spotlight ویندوز در حال حاضر خالی است. برای بارگذاری مجدد، در تب «سلامت، عیب‌یابی و تعمیر» روی «بازنشانی کامل Spotlight» کلیک کنید یا در تنظیمات ویندوز حالت Lock Screen را روی Spotlight قرار داده و سیستم را قفل (Win+L) کنید.");
+            throw new InvalidOperationException("منبع انتخاب‌شده تصویری ندارد.");
+        }
     }, "تصاویر منبع با موفقیت دریافت و آماده شدند.");
 
     void ShowArchive_Click(object sender, RoutedEventArgs e) { onlyFavorites = false; LoadArchive(); }
@@ -270,7 +284,7 @@ public partial class MainWindow : Window
     {
         var page = Selected.SourcePage;
         if (!Uri.TryCreate(page, UriKind.Absolute, out var uri) || uri.Scheme != "https" || !uri.IsDefaultPort || uri.UserInfo.Length > 0 ||
-            uri.Host is not ("www.bing.com" or "www.nasa.gov" or "images.nasa.gov" or "commons.wikimedia.org" or "esahubble.org" or "www.eso.org" or "unsplash.com" or "eros.usgs.gov" or "wallhaven.cc" or "www.artic.edu" or "artic.edu" or "fa.wikipedia.org" or "en.wikipedia.org"))
+            uri.Host is not ("www.bing.com" or "www.nasa.gov" or "images.nasa.gov" or "commons.wikimedia.org" or "esahubble.org" or "www.eso.org" or "unsplash.com" or "www.usgs.gov" or "usgs.gov" or "eros.usgs.gov" or "wallhaven.cc" or "www.artic.edu" or "artic.edu" or "fa.wikipedia.org" or "en.wikipedia.org"))
             throw new InvalidOperationException("صفحه اصلی قابل اعتماد برای این تصویر موجود نیست.");
         WindowsIntegration.Open(uri.AbsoluteUri); return Task.CompletedTask;
     }, "صفحه اصلی تصویر باز شد.");

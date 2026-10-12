@@ -206,9 +206,16 @@
    <Separator/>
    <MenuItem x:Name="MenuToggleWeather" Header="🌤️ نمایش اطلاعات آب و هوا" IsCheckable="True" Click="MenuToggleWeather_Click"/>
    <MenuItem x:Name="MenuToggleHardware" Header="💻 نمایش وضعیت سخت‌افزار (CPU/RAM)" IsCheckable="True" Click="MenuToggleHardware_Click"/>
-   <MenuItem x:Name="MenuToggleClock" Header="🕒 نمایش ساعت و تقویم شمسی" IsCheckable="True" Click="MenuToggleClock_Click"/>
+   <MenuItem x:Name="MenuToggleClock" Header="🕒 نمایش بخش زمان و تاریخ" IsCheckable="True" Click="MenuToggleClock_Click"/>
+   <MenuItem Header="📅 انتخاب تقویم‌های نمایشی">
+    <MenuItem x:Name="MenuTogglePersianDate" Header="🇮🇷 تقویم خورشیدی (شمسی)" IsCheckable="True" Click="MenuTogglePersianDate_Click"/>
+    <MenuItem x:Name="MenuToggleGregorianDate" Header="🌐 تقویم میلادی (Gregorian)" IsCheckable="True" Click="MenuToggleGregorianDate_Click"/>
+    <MenuItem x:Name="MenuToggleHijriDate" Header="🌙 تقویم هجری قمری" IsCheckable="True" Click="MenuToggleHijriDate_Click"/>
+   </MenuItem>
    <MenuItem x:Name="MenuToggleWallpaper" Header="🖼️ نمایش اطلاعات تصویر والپیپر" IsCheckable="True" Click="MenuToggleWallpaper_Click"/>
    <MenuItem x:Name="MenuToggleActions" Header="⚡ نمایش دکمه‌های کنترل سریع" IsCheckable="True" Click="MenuToggleActions_Click"/>
+   <Separator/>
+   <MenuItem x:Name="MenuToggleAutostart" Header="🚀 اجرای خودکار ویجت در استارت‌آپ ویندوز" IsCheckable="True" Click="MenuToggleAutostart_Click"/>
    <Separator/>
    <MenuItem Header="🎨 میزان شفافیت پس‌زمینه (Opacity)">
     <MenuItem Header="۱۰۰٪ (کاملاً مات و تیره)" Click="MenuOpacity_Click" Tag="1.0"/>
@@ -241,8 +248,11 @@
     <StackPanel Orientation="Vertical">
      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
       <TextBlock x:Name="ClockText" Text="00:00:00" FontSize="26" FontWeight="Bold" Foreground="#FFFFFF" FontFamily="Segoe UI, Tahoma"/>
-      <Border Background="#3318856F" BorderBrush="#5551D6B8" BorderThickness="1" CornerRadius="6" Padding="6,2" Margin="10,0,0,0" VerticalAlignment="Center">
+      <Border x:Name="GregorianDateBadge" Background="#3318856F" BorderBrush="#5551D6B8" BorderThickness="1" CornerRadius="6" Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center">
        <TextBlock x:Name="GregorianDateText" Text="02 Oct 2026" FontSize="10" Foreground="#8CE9D4" FontFamily="Segoe UI"/>
+      </Border>
+      <Border x:Name="HijriDateBadge" Background="#33856018" BorderBrush="#55D6B851" BorderThickness="1" CornerRadius="6" Padding="6,2" Margin="6,0,0,0" VerticalAlignment="Center">
+       <TextBlock x:Name="HijriDateText" Text="۱ ربیع‌الثانی ۱۴۴۸" FontSize="10" Foreground="#F5D061" FontFamily="{StaticResource VazirmatnFont}"/>
       </Border>
      </StackPanel>
      <TextBlock x:Name="PersianDateText" Text="در حال بارگذاری تقویم خورشیدی…" FontSize="11" Foreground="#A9D4EB" Margin="0,2,0,0"/>

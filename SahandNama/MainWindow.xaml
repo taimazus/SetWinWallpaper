@@ -275,6 +275,7 @@
       <TextBlock Text="شخصی‌سازی ماژول‌های ویجت مات آکریلیک: آب و هوا، مانیتور سخت‌افزار، تقویم، شفافیت و چسبیدن به دسکتاپ" Style="{StaticResource Hint}"/>
       
       <CheckBox x:Name="DesktopWidgetCheck" Content="نمایش ویجت شیشه‌ای دسکتاپ" Margin="0,2,0,8" FontWeight="SemiBold"/>
+      <CheckBox x:Name="WidgetAutostartCheck" Content="🚀 اجرای خودکار ویجت در هنگام بالا آمدن ویندوز (Windows Startup / Run)" Margin="0,2,0,8"/>
       <CheckBox x:Name="HotkeysCheck" Content="فعال‌سازی کلیدهای میانبر سراسری ویندوز (Win+Alt+W تصویر بعدی، Win+Alt+S علاقه‌مندی)" Margin="0,2,0,8"/>
       <CheckBox x:Name="AccentColorCheck" Content="هماهنگ‌سازی خودکار رنگ تم ویندوز (Accent Color) با رنگ تصویر روز" Margin="0,2,0,12"/>
 
@@ -309,7 +310,10 @@
         <WrapPanel>
          <CheckBox x:Name="WidgetWeatherCheck" Content="🌤️ آب و هوا" Margin="0,0,10,4"/>
          <CheckBox x:Name="WidgetHardwareCheck" Content="💻 مانیتور سخت‌افزار" Margin="0,0,10,4"/>
-         <CheckBox x:Name="WidgetClockCheck" Content="🕒 ساعت و تقویم" Margin="0,0,10,4"/>
+         <CheckBox x:Name="WidgetClockCheck" Content="🕒 ساعت و زمان" Margin="0,0,10,4"/>
+         <CheckBox x:Name="WidgetPersianDateCheck" Content="🇮🇷 تقویم شمسی" Margin="0,0,10,4"/>
+         <CheckBox x:Name="WidgetGregorianDateCheck" Content="🌐 تقویم میلادی" Margin="0,0,10,4"/>
+         <CheckBox x:Name="WidgetHijriDateCheck" Content="🌙 تقویم قمری" Margin="0,0,10,4"/>
          <CheckBox x:Name="WidgetWallpaperInfoCheck" Content="🖼️ اطلاعات والپیپر" Margin="0,0,10,4"/>
          <CheckBox x:Name="WidgetQuickActionsCheck" Content="⚡ دکمه‌های کنترل سریع" Margin="0,0,10,4"/>
         </WrapPanel>

@@ -77,7 +77,7 @@ public sealed class PhotoSelectionSession(Preferences settings, Func<SourceReque
 public static partial class SourceHttp
 {
     static readonly HttpClient Client = new(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = Timeout.InfiniteTimeSpan };
-    static SourceHttp() => Client.DefaultRequestHeaders.UserAgent.ParseAdd("SahandNama/1.8.1 (Windows desktop wallpaper manager; +https://irres.ir)");
+    static SourceHttp() => Client.DefaultRequestHeaders.UserAgent.ParseAdd("SahandNama/1.8.2 (Windows desktop wallpaper manager; +https://irres.ir)");
 
     public static Uri Validate(string url)
     {
@@ -89,7 +89,7 @@ public static partial class SourceHttp
             or "commons.wikimedia.org" or "upload.wikimedia.org" or "thumb.wikimedia.org"
             or "esahubble.org" or "cdn.esahubble.org" or "www.eso.org" or "cdn.eso.org"
             or "picsum.photos" or "fastly.picsum.photos" or "images.unsplash.com"
-            or "eros.usgs.gov" or "landsat.usgs.gov" or "pubs.usgs.gov" or "earthexplorer.usgs.gov"
+            or "www.usgs.gov" or "usgs.gov" or "eros.usgs.gov" or "landsat.usgs.gov" or "pubs.usgs.gov" or "earthexplorer.usgs.gov"
             or "wallhaven.cc" or "w.wallhaven.cc" or "th.wallhaven.cc"
             or "api.artic.edu" or "www.artic.edu" or "artic.edu";
 

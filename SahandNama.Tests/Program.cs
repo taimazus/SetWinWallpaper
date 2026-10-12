@@ -110,7 +110,7 @@ internal static class Program
             Check(SourceHttp.Validate("https://upload.wikimedia.org/wikipedia/commons/a/ab/Test.jpg").Host == "upload.wikimedia.org", "Wikimedia upload host allowed");
             Check(SourceHttp.Validate("https://cdn.esahubble.org/archives/images/screen/test.jpg").Host == "cdn.esahubble.org", "ESA Hubble host allowed");
             Check(SourceHttp.Validate("https://picsum.photos/id/10/3840/2160.jpg").Host == "picsum.photos", "Picsum/Unsplash host allowed");
-            Check(SourceHttp.Validate("https://eros.usgs.gov/earth-as-art/test.jpg").Host == "eros.usgs.gov", "USGS host allowed");
+            Check(SourceHttp.Validate("https://eros.usgs.gov/earth-as-art/test.jpg").Host == "eros.usgs.gov" && SourceHttp.Validate("https://www.usgs.gov/test.jpg").Host == "www.usgs.gov", "USGS host allowed");
             Check(SourceHttp.Validate("https://w.wallhaven.cc/full/test.jpg").Host == "w.wallhaven.cc", "Wallhaven host allowed");
             Check(SourceHttp.Validate("https://www.artic.edu/iiif/2/test/full/1680,/0/default.jpg").Host == "www.artic.edu", "Art Institute host allowed");
 
@@ -231,12 +231,16 @@ internal static class Program
             Check(new Typeface(window.FontFamily, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal).TryGetGlyphTypeface(out var embeddedFont) && embeddedFont.FontUri.ToString().Contains("Vazirmatn", StringComparison.OrdinalIgnoreCase), "Vazirmatn resolves from embedded font resource");
             var (resolvedExe, resolvedArgs) = WindowsIntegration.GetUpdateCommandLine();
             Check(!string.IsNullOrWhiteSpace(resolvedExe) && resolvedArgs.Contains("--update"), "GetUpdateCommandLine resolves valid executable and arguments");
-            Check(window.FlowDirection == FlowDirection.RightToLeft && Brand.Version == "1.8.1" && window.Icon != null, "RTL, release version 1.8.1 and application icon");
+            Check(window.FlowDirection == FlowDirection.RightToLeft && Brand.Version == "1.8.2" && window.Icon != null, "RTL, release version 1.8.2 and application icon");
 
-            // Test Persian Date & Calendar
+            // Test Persian, Gregorian & Hijri Date Calendars
             var testDate = new DateTime(2026, 9, 29);
             var persianStr = PersianDateHelper.GetFormattedPersianDate(testDate);
             Check(persianStr.Contains("مهر") && persianStr.Contains("1405"), "Persian Solar Hijri Date formatting (PersianDateHelper)");
+            var hijriStr = PersianDateHelper.GetFormattedHijriDate(testDate);
+            Check(hijriStr.Contains("ربیع") && (hijriStr.Contains("1448") || hijriStr.Contains("۱۴۴۸")), "Islamic Lunar Hijri Date formatting (PersianDateHelper)");
+            var gregStr = PersianDateHelper.GetFormattedGregorianDate(testDate);
+            Check(gregStr.Contains("2026") && gregStr.Contains("Sep"), "Gregorian Date formatting (PersianDateHelper)");
 
             // Test SourceCatalog Options for IranNature
             Check(SourceCatalog.Options.Any(o => o.Id == "IranNature"), "SourceCatalog includes IranNature collection");
