@@ -1,0 +1,7 @@
+name: Bug Report
+description: Report an issue with wallpaper manager
+body:
+  - type: textarea
+    id: bug
+    attributes:
+      label: Description
