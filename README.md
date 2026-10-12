@@ -1,148 +1,123 @@
-<div dir="rtl" align="right" style="font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.8;">
+<div align="center">
 
 <p align="center">
-  <img src="docs/assets/banner.png" alt="Sahand Nama Header Banner — سهند نما" width="100%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); margin-bottom: 20px;" />
+  <img src="docs/assets/banner.png" alt="Sahand Nama Header Banner" width="100%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); margin-bottom: 20px;" />
 </p>
 
-# سهند نما | Sahand Nama (نسخه 1.8.2)
+# 🖼️ Sahand Nama | BingWallpaperPro (v1.8.2)
 
-**سامانه جامع، هوشمند و سازمانی مدیریت و به‌روزرسانی تصاویر پس‌زمینه و صفحه قفل ویندوز همراه با ویجت دسکتاپ شیشه‌ای، آب‌وهوا و پایش سیستم**  
-*طراحی و توسعه توسط شرکت راهکار الکترونیک سهند — [https://irres.ir](https://irres.ir)*
+<p align="center">
+  <b>Comprehensive Enterprise Windows Wallpaper & Lock Screen Automation Platform with Frosted Glass Desktop Widget, Weather Telemetry & Self-Healing Diagnostics</b>
+  <br />
+  <i>Designed & developed by Sahand Electronic Solutions Co. (<a href="https://irres.ir">irres.ir</a>)</i>
+</p>
 
-[![GitHub Release](https://img.shields.io/github/v/release/taimazus/SetWinWallpaper?color=52d1b2&label=Latest%20Release)](https://github.com/taimazus/SetWinWallpaper/releases/latest)
-[![Tests](https://img.shields.io/badge/Tests-regression%20suite-52d1b2.svg)](docs/ARCHITECTURE.md)
-[![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20%7C%20Server-blue.svg)](docs/ENTERPRISE_DEPLOYMENT.md)
-[![Architecture](https://img.shields.io/badge/Architecture-x64%20Standalone-orange.svg)](https://github.com/taimazus/SetWinWallpaper/releases/latest)
-[![License](https://img.shields.io/badge/Font-SIL%20OFL%20Vazirmatn-brightgreen.svg)](SahandNama/Assets/Fonts/OFL.txt)
+<p align="center">
+  <a href="README.fa.md"><b>🇮🇷 مطالعه به زبان فارسی (Persian)</b></a> •
+  <a href="#-direct-downloads"><b>Downloads</b></a> •
+  <a href="#-features"><b>Features</b></a> •
+  <a href="#-architecture"><b>Architecture</b></a> •
+  <a href="#-quick-start"><b>Quick Start</b></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/taimazus/SetWinWallpaper/releases/latest">
+    <img src="https://img.shields.io/github/v/release/taimazus/SetWinWallpaper?color=52d1b2&label=Latest%20Release&style=for-the-badge" alt="Latest Release" />
+  </a>
+  <img src="https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20%7C%20Server-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows" />
+  <img src="https://img.shields.io/badge/C%23-.NET%208%2F9-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET" />
+  <img src="https://img.shields.io/badge/Architecture-x64%20Standalone-orange?style=for-the-badge" alt="x64 Standalone" />
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License" />
+</p>
+
+</div>
 
 ---
 
-## 📥 دریافت و دانلود مستقیم خروجی ویندوز (Downloads)
+## 📥 Direct Downloads
 
-برای استفاده از نرم‌افزار بدون نیاز به نصب هرگونه پیش‌نیاز یا دات‌نت، می‌توانید نسخه‌های آماده ۶۴بیتی را مستقیماً از بخش **Releases** گیت‌هاب دانلود کنید:
+You can run Sahand Nama out of the box with zero runtime dependencies (bundled self-contained .NET runtime):
 
-| نوع فایل | لینک دانلود مستقیم از گیت‌هاب | حجم تقریبی | مناسب برای |
-| :--- | :--- | :--- | :--- |
-| 🚀 **فایل اجرایی مستقل (EXE)** | [**دانلود SahandNama-v1.8.2-win-x64.exe**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.8.2/SahandNama-v1.8.2-win-x64.exe) | ~۱۴۰ مگابایت | اجرای فوری با یک کلیک بدون نیاز به نصب |
-| 📦 **بسته پرتابل فشرده (ZIP)** | [**دانلود SahandNama-v1.8.2-win-x64.zip**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.8.2/SahandNama-v1.8.2-win-x64.zip) | ~۶۱ مگابایت | پکیج کامل شامل اسکریپت‌های PowerShell و راهنما |
-| 🏷️ **صفحه انتشار نسخه‌ها** | [**مشاهده تمام Releaseها در گیت‌هاب**](https://github.com/taimazus/SetWinWallpaper/releases) | — | تاریخچه تغییرات و دسترسی به تمام نسخه‌ها |
+| Package Type | GitHub Direct Download Link | Size | Recommended For |
+| :--- | :--- | :---: | :--- |
+| 🚀 **Standalone Executable (EXE)** | [**Download SahandNama-v1.8.2-win-x64.exe**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.8.2/SahandNama-v1.8.2-win-x64.exe) | ~140 MB | 1-Click instant launch without installation |
+| 📦 **Portable ZIP Archive** | [**Download SahandNama-v1.8.2-win-x64.zip**](https://github.com/taimazus/SetWinWallpaper/releases/download/v1.8.2/SahandNama-v1.8.2-win-x64.zip) | ~61 MB | Complete bundle with PowerShell automation scripts & docs |
+| 🏷️ **All Releases** | [**View GitHub Releases**](https://github.com/taimazus/SetWinWallpaper/releases) | — | Full changelog & release history |
 
 ---
 
-## 🌟 معرفی پروژه
+## 🌟 Overview
 
-«سهند نما» یک نرم‌افزار مدرن، مستقل و بومی‌سازی‌شده با فونت فارسی **Vazirmatn** است که به کاربران و سازمان‌ها امکان می‌دهد تصاویر پس‌زمینه دسکتاپ و صفحه قفل ویندوز (ویندوز ۱۰، ۱۱ و سرورهای ۲۰۱۹ به بعد) را از معتبرترین منابع جهانی به طور خودکار دریافت کرده، در شبکه توزیع کنند، مصرف اینترنت را به حداقل برسانند، ویجت دسکتاپ مات شیشه‌ای با تاریخ شمسی و آب‌وهوا داشته باشند و ایرادات ویندوز و Spotlight را با یک کلیک عیب‌یابی و خودترمیمی نمایند.
+**Sahand Nama** (formerly BingWallpaperPro) is an enterprise-grade Windows desktop customization suite. It automatically retrieves ultra-high-definition wallpapers (up to 4K / 3840px) from global photography and space archives, manages lock screens and Windows Spotlight, renders an elegant acrylic/frosted-glass widget with live weather, and provides 1-click self-healing repair routines for broken Windows Spotlight setups.
 
 ```mermaid
 graph LR
-    subgraph Sources ["منابع معتبر جهانی و ملی"]
+    subgraph Sources ["Curated Global Image Sources"]
         B["Bing & Bing Global"]
-        IR["ایران زیبا — طبیعت و آثار باستانی"]
-        W4K["Wallhaven (خروجی تا ضلع 3840)"]
-        ART["موزه شیکاگو — تصاویر آزاد Wikimedia"]
-        GEO["حیات‌وحش Wikimedia & Unsplash"]
-        N["NASA Image of the Day & Library"]
-        H["ESA / Hubble & Webb"]
-        W["Wikimedia POTD"]
-        E["USGS Earth as Art"]
+        IR["Iran Beautiful Landscapes"]
+        W4K["Wallhaven 4K Archives"]
+        ART["Chicago Art Institute & Open Media"]
+        GEO["Wildlife & Geographic Archives"]
+        N["NASA Image of the Day"]
+        H["ESA / Hubble & James Webb"]
     end
     
-    subgraph Engine ["هاب مرکزی سهند نما v1.8.2"]
-        Core["موتور دریافت، کش سریع، استخراج پالت رنگی و کارت گرافیکی"]
+    subgraph Engine ["Sahand Nama Central Hub"]
+        Core["High-Speed Caching, Color Palette & GPU Renderer"]
     end
     
-    subgraph Targets ["امکانات و خروجی‌ها"]
-        D["دسکتاپ و مانیتورهای چندگانه"]
-        L["لاک‌اسکرین و Spotlight"]
-        WID["ویجت شیشه‌ای ساعت، تقویم، آب‌وهوا و سخت‌افزار"]
-        CLR["هماهنگی رنگ تم ویندوز Accent Color"]
-        HK["کلیدهای میانبر سراسری Win+Alt+W"]
-        TRY["سینی کنار ساعت System Tray با خروج دوگانه"]
-        S["مخزن سرور \\Server\Wallpapers"]
+    subgraph Outputs ["Features & System Integration"]
+        D["Multi-Monitor Desktop Sync"]
+        L["Lock Screen & Spotlight"]
+        WID["Frosted Glass Desktop Widget"]
+        CLR["Dynamic Windows Accent Sync"]
+        HK["Global Hotkeys (Win+Alt+W)"]
+        TRY["Silent System Tray Integration"]
     end
-    
-    Sources --> Core
-    Core --> D
-    Core --> L
-    Core --> WID
-    Core --> CLR
-    Core --> HK
-    Core --> TRY
-    Core --> S
+
+    Sources --> Core --> Outputs
 ```
 
 ---
 
-## 📚 ساختار مستندات و دانشنامه (Documentation & Wiki)
+## ✨ Features
 
-برای مطالعه راهنماهای تفصیلی و تخصصی به بخش‌های زیر مراجعه فرمایید:
-
-| مستند | شرح و موضوع |
-| :--- | :--- |
-| 📖 **[راهنمای جامع کاربری HTML (Guide.fa.html)](SahandNama/Guide.fa.html)** | راهنمای تعاملی، تصویری و کامل کاربر با طراحی شکیل Dark Mode |
-| 📐 **[معماری و دیاگرام‌ها (docs/ARCHITECTURE.md)](docs/ARCHITECTURE.md)** | تحلیل معماری، الگوهای طراحی، دیاگرام‌های توالی و جریان داده‌ها |
-| 🏢 **[استقرار سازمانی (docs/ENTERPRISE_DEPLOYMENT.md)](docs/ENTERPRISE_DEPLOYMENT.md)** | راهنمای هاب سرور، اشتراک شبکه (UNC Share)، تنظیمات GPO و کاهش پهنای باند |
-| 🔍 **[عیب‌یابی Spotlight (docs/SPOTLIGHT_TROUBLESHOOTING.md)](docs/SPOTLIGHT_TROUBLESHOOTING.md)** | بررسی علل خرابی، پاک‌سازی کش و بازنشانی بسته‌های ContentDeliveryManager |
-| 🌐 **[منابع و APIها (docs/SOURCES_AND_API.md)](docs/SOURCES_AND_API.md)** | جزئیات فیدها، کیفیت 4K، پروتکل‌های امنیتی، وب‌سرویس آب‌وهوا و الگوریتم SHA-256 |
-| ⌨️ **[خط فرمان و اسکریپت‌ها (docs/CLI_AND_SCRIPTS.md)](docs/CLI_AND_SCRIPTS.md)** | آرگومان‌های خاموش (Silent)، کلیدهای میانبر، ویجت و سرویس ویندوز |
-| 🏛️ **[دانشنامه پروژه (wiki/Home.md)](wiki/Home.md)** | صفحه اصلی ویکی شامل راهنمای کاربری، ادمین و توسعه‌دهندگان |
+- 🛰️ **Multi-Source 4K Fetching**: Automatic rotation across Bing, NASA, Wallhaven, USGS, and national heritage photography.
+- 🖥️ **Multi-Monitor Awareness**: Distinct or synchronized wallpaper management across multi-display workstations.
+- 🪟 **Frosted Glass Acrylic Widget**: Live clock, Persian & Gregorian calendar, dynamic weather telemetry, and hardware metrics.
+- 🎨 **Adaptive Accent Color Sync**: Automatically synchronizes the Windows accent color with the dominant color palette of the current wallpaper.
+- 🛠️ **Windows Spotlight Self-Healing**: Diagnoses and automatically resets corrupted Windows Spotlight assets and registry configurations.
+- ⚡ **Zero-Overhead Native Performance**: Built in high-performance C# with low CPU/RAM footprint.
 
 ---
 
-## ✨ امکانات برجسته نسخه 1.8.2
+## 🚀 Quick Start (Development & Building)
 
-1. 🪟 **ویجت دسکتاپ شیشه‌ای مات با تقویم سه‌گانه، جانمایی هوشمند و استارت‌آپ ویندوز (Triple Calendar & Zero-Gap Acrylic Glass):**
-   - افکت بلوری و شیشه‌ای عمیق مات بر پایه API بومی `SetWindowCompositionAttribute` و شتاب‌یافته با GPU.
-   - **تقویم سه‌گانه هوشمند با فاز ماه:** نمایش همزمان یا انتخابی تقویم **خورشیدی (شمسی)**، **میلادی (Gregorian)** و **هجری قمری (Islamic Lunar)** همراه با محاسبه و نمایش آیکون واقعی فاز و وضعیت ماه (🌑 🌒 🌓 🌔 🌕 🌖 🌗 🌘).
-   - **جانمایی هوشمند بدون فضای خالی (Smart Zero-Gap Adaptive Layout):** با تیک زدن یا برداشتن هر ویژگی (تقویم‌ها، آب‌وهوا، مانیتور سخت‌افزار، والپیپر روز یا دکمه‌ها)، سایر المان‌ها به‌صورت خودکار کل فضا را پوشش داده و بدون ایجاد کمترین حفره، فضای خالی یا به‌هم‌ریختگی بصری کنار هم چیده می‌شوند.
-   - **حالت نمایش فشرده (Compact Mode) و ثانیه‌شمار:** دکمه سوئیچ سریع `🗕` جهت تبدیل آنی ویجت به یک نوار شیشه‌ای مات و مینیمال دسکتاپ، همراه با امکان خاموش/روشن کردن ثانیه‌شمار ساعت دیجیتال.
-   - **راه‌اندازی خودکار در استارت‌آپ ویندوز (Autostart on Boot):** امکان اجرای خودکار ویجت به همراه ویندوز از طریق رجیستری کاربر (`HKCU\...\Run`) با سوییچ `--widget` و قابلیت فعال/غیرفعال‌سازی سریع از منوی راست‌کلیک و تنظیمات برنامه.
-   - تنظیم دقیق میزان شفافیت پس‌زمینه از ۰٪ (شناور کامل و مستقیم روی والپیپر دسکتاپ بدون باکس و کادر) تا ۱۰۰٪ (شیشه مات غلیظ).
-   - وضعیت زنده آب‌وهوا با آیکون و دمای دقیق شهرهای ایران از Open-Meteo با قابلیت گسترش خودکار به ۱۰۰٪ عرض در غیاب چیپ سخت‌افزار.
-   - پایش زنده مصرف پردازنده (CPU)، حافظه RAM و باتری لپ‌تاپ با رنگ‌آمیزی هوشمند بار پردازشی.
-   - حالت‌های ۳ گانه الصاق: چسبیده به پس‌زمینه دسکتاپ (`Desktop`)، پنجره عادی (`Normal`) یا همیشه رو (`TopMost`).
-   - قابلیت جابجایی آزاد با ماوس و چسبندگی هوشمند به لبه‌های مانیتور (Edge Snapping).
-2. 🔔 **سینی کنار ساعت ویندوز و خروج دوگانه (System Tray & Dual Exit):**
-   - دکمه `✕` پنجره اصلی را به سینی ویندوز منتقل کرده و ویجت و زمان‌بندی را زنده نگه می‌دارد.
-   - منوی راست‌کلیک کامل فارسی در کنار ساعت با دکمه **«🚪 خروج کامل از برنامه»**.
-3. 🌄 **گنجینه منابع متنوع و باکیفیت تا ۴K:**
-   - والپیپرهای برگزیده Wallhaven (خروجی تا ضلع 3840)، آثار موزه هنر شیکاگو، شگفتی‌های تصاویر برگزیدهٔ ویکی‌مدیا، هنر سایبرپانک و معماری مدرن ۴K.
-   - تصویر روز بینگ با امکان انتخاب ریجن‌های بین‌المللی مختلف.
-   - تصاویر روز و کتابخانهٔ ناسا (Image of the Day) و تلسکوپ‌های فضایی هابل و جیمز وب (ESA).
-4. 🏛️ **کالکشن اختصاصی «ایران زیبا» (Iran Nature & Heritage):**
-   - دسترسی به تصاویر باکیفیت از طبیعت شگفت‌انگیز و میراث باستانی ایران (دماوند، تخت جمشید، کندوان، کویر لوت، ماسوله، پل خواجو، دره ستارگان و جنگل‌های هیرکانی).
-5. 🎛️ **انتخاب مستقل متد برای دسکتاپ و لاک‌اسکرین:**
-   - امکان تنظیم همزمان حالت روزانه برای دسکتاپ و رندوم برای صفحه قفل به صورت کاملاً تفکیک‌شده.
-6. ⌨️ **کلیدهای میانبر سراسری ویندوز (Global Hotkeys):**
-   - کلید `Win + Alt + W`: دریافت و اعمال فوری والپیپر بعدی بدون نیاز به باز کردن پنجره برنامه.
-   - کلید `Win + Alt + S`: افزودن سریع تصویر فعال به فهرست علاقه‌مندی‌ها.
-7. 🖥️ **پشتیبانی از چندین مانیتور (Multi-Monitor Customization):**
-   - امکان اعمال تصاویر روی تمام مانیتورهای متصل به سیستم از طریق رابط پیشرفته Win32 `IDesktopWallpaper`.
-8. 🎨 **هماهنگ‌سازی خودکار رنگ تم ویندوز (Accent Color Sync):**
-   - استخراج هوشمند رنگ غالب تصویر روز و تنظیم خودکار Accent Color ویندوز متناسب با منظره.
-9. 📤 **تولید کارت گرافیکی اشتراک‌گذاری (Social Share Card Generator):**
-   - ساخت کارت گرافیکی باکیفیت و آماده انتشار در شبکه‌های اجتماعی همراه با تاریخ شمسی و برند سهند نما.
-10. 🧹 **حالت دسکتاپ تمیز (Clean Desktop Icons):**
-    - قابلیت پنهان/نمایان‌سازی سریع آیکون‌های دسکتاپ برای لذت بردن از والپیپر به عنوان قاب عکس دیجیتال.
-11. ⏰ **سامانه زمان‌بندی هوشمند و پایدار (Reliable Task Scheduler Engine):**
-    - اجرای مستقل از Culture در ساعت مقرر (`Daily`) و هنگام ورود کاربر (`AtLogOn`) با قابلیت `StartWhenAvailable`.
-    - سقف زمانی ۵ دقیقه‌ای اجرای وظیفه (`ExecutionTimeLimit`) جهت جلوگیری از قفل شدن پردازه در شرایط اختلال شبکه یا زمان‌بندی.
-    - شرط بررسی دسترسی به شبکه (`RunOnlyIfNetworkAvailable`) و پاک‌سازی خودکار وظایف موروثی و قدیمی.
-12. 🏢 **مخزن مرکزی سرور (Enterprise Server Hub):**
-    - دانلود متمرکز تمام منابع روزانه در سرور و تغذیه کلاینت‌ها از مسیر شبکه `\\Server\Wallpapers` بدون مصرف اینترنت.
-13. 🛠️ **مرکز عیب‌یابی و خودترمیمی خودکار:**
-    - بررسی جامع رجیستری، سرویس‌ها، تسک‌ها، کش و بازنشانی کامل Windows Spotlight با یک کلیک.
+### Prerequisites
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download) or later
+- Visual Studio 2022 or VS Code with C# Dev Kit
 
----
-
-## 🛠️ کامپایل و اجرای آزمون‌ها
-
-```powershell
-# اجرای ۱۴۵ آزمون فنی و اعتبارسنجی
-dotnet run --project SahandNama.Tests\SahandNama.Tests.csproj
-
-# ساخت و انتشار خروجی نهایی مستقل ۶۴بیتی
-dotnet publish SahandNama\SahandNama.csproj -c Release -r win-x64 --self-contained true -o artifacts\standalone
+### Build from Source
+```bash
+git clone https://github.com/taimazus/SetWinWallpaper.git
+cd SetWinWallpaper
+dotnet restore
+dotnet build -c Release
 ```
 
+### Run Tests
+```bash
+dotnet test
+```
+
+---
+
+## 📄 License
+
+Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for terms.
+
+---
+
+<div align="center">
+  <sub>Developed by <a href="https://irres.ir">Sahand Electronic Solutions Co.</a> • Maintainer <a href="https://github.com/taimazus">Taimaz</a></sub>
 </div>
